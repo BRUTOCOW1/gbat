@@ -1,0 +1,69 @@
+/* Reset some default styles */
+body, h1, h2, p {
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', sans-serif; /* Modern font choice */
+}
+
+body {
+    background-color: #f4f4f9;
+    color: #333;
+    line-height: 1.6;
+}
+
+/* Main container styling */
+.main {
+    max-width: 800px;
+    margin: 40px auto; /* Space around the main content */
+    padding: 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Top section styling */
+.top {
+    text-align: center;
+    padding: 30px 0;
+    border-bottom: 2px solid #ddd;
+}
+
+.top h1 {
+    font-size: 2.5em;
+    color: #4a90e2;
+    margin-bottom: 10px;
+}
+
+.top p {
+    font-size: 1.1em;
+    color: #666;
+}
+
+/* Blog post styling */
+.content > div {
+    padding: 20px;
+    margin: 30px 0; /* Increased space between posts */
+    border-radius: 8px;
+    background: #fafafa;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.content h1 {
+    font-size: 1.8em;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.content p {
+    font-size: 1em;
+    color: #555;
+    margin-bottom: 15px;
+}
+
+/* Loading text styling */
+.loading {
+    text-align: center;
+    font-size: 1.2em;
+    color: #999;
+    padding: 20px;
+}
