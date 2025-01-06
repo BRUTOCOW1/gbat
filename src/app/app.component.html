@@ -1,19 +1,15 @@
 <main class="main">
   <div class="content">
-    <div class="top">
-      <h1>Hello, {{ title }}</h1>
-      <p>Congratulations! Your app is running. 🎉</p>
-    </div>
-    <div *ngIf="data">
-      <div *ngFor="let post of data">
-        <h1>{{ post.title }}</h1>
-        <p>{{ post.full_text }}</p>
-      </div>
-    </div>
-    <div *ngIf="!data">
-      <p>Loading...</p>
-    </div>
-    
+    <nav class="top-nav">
+      <ul>
+        <li><a routerLink="golf-component" routerLinkActive="active" ariaCurrentWhenActive="page">Golf Component</a></li>
+      </ul>
+      <ul>
+        <li><a routerLink="blog-component" routerLinkActive="active" ariaCurrentWhenActive="page">Blog Component</a></li>
+      </ul>
+    </nav>
   </div>
 </main>
+
+<router-outlet></router-outlet>
 

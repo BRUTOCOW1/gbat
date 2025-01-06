@@ -1,30 +1,37 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { FormsModule } from '@angular/forms';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-
-import { Router } from '@angular/router';
+import { ReactiveFormsModule } from '@angular/forms';
 
 import { AppComponent } from './app.component';
+import { RoundComponent } from './round/round.component';
+import { BlogComponent } from './blog/blog.component';
+import { RouterOutlet, RouterModule, RouterLink, RouterLinkActive} from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { GolfComponent } from './golf/golf.component';
+import { GolfShotComponent } from './golf-shot/golf-shot.component';
+
+import {routes} from './app.routes'
 
 @NgModule({
+  declarations: [
+    AppComponent,
+    RoundComponent,
+    BlogComponent,
+    GolfComponent,
+    GolfShotComponent
+
+  ],
   imports: [
     BrowserModule,
-    BrowserAnimationsModule,
-    FormsModule,
-    AppComponent
+    ReactiveFormsModule,
+    CommonModule, 
+    RouterOutlet, 
+    RouterLink, 
+    RouterLinkActive,
+    RouterModule,
+    RouterModule.forRoot(routes)
   ],
-  declarations: [
-    AppComponent
-  ],
+  providers: [],
   bootstrap: [AppComponent]
 })
-export class AppModule {
-  // Diagnostic only: inspect router configuration
-  constructor(router: Router) {
-    // Use a custom replacer to display function names in the route configs
-    // const replacer = (key, value) => (typeof value === 'function') ? value.name : value;
-
-    // console.log('Routes: ', JSON.stringify(router.config, replacer, 2));
-  }
-}
+export class AppModule { }

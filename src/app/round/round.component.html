@@ -1,0 +1,30 @@
+<div class="container">
+    <form [formGroup]="golfForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="date">Date:</label>
+        <input id="date" formControlName="date" type="date" class="form-control" />
+        <div *ngIf="golfForm.get('date')?.invalid && golfForm.get('date')?.touched" class="invalid-feedback">
+          Date is required.
+        </div>
+      </div>
+  
+      <div class="form-group">
+        <label for="courseName">Course Name:</label>
+        <input id="courseName" formControlName="courseName" type="text" class="form-control" />
+        <div *ngIf="golfForm.get('courseName')?.invalid && golfForm.get('courseName')?.touched" class="invalid-feedback">
+          Course name is required.
+        </div>
+      </div>
+  
+      <div class="form-group">
+        <label for="totalStrokes">Total Strokes:</label>
+        <input id="totalStrokes" formControlName="totalStrokes" type="number" class="form-control" />
+        <div *ngIf="golfForm.get('totalStrokes')?.invalid && golfForm.get('totalStrokes')?.touched" class="invalid-feedback">
+          Total strokes must be a positive number.
+        </div>
+      </div>
+  
+      <button type="submit" class="btn btn-primary" [disabled]="golfForm.invalid">Submit</button>
+    </form>
+  </div>
+  

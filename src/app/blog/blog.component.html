@@ -1,0 +1,16 @@
+<main class="main">
+  <div class="content">
+  
+    <div *ngIf="data">
+      <div *ngFor="let post of data">
+        <h1>{{ post.title }}</h1>
+        <p>{{ post.full_text }}</p>
+      </div>
+    </div>
+    <div *ngIf="!data">
+      <p>Loading...</p>
+    </div>
+    
+  </div>
+</main>
+
