@@ -7,8 +7,8 @@ from supabase import create_client, Client
 class BBBlog:
     def __init__(self):
 
-        url: str = "https://pnrjiudqwzklmvdxmlxz.supabase.co"
-        key: str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBucmppdWRxd3prbG12ZHhtbHh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjAwNTQ1NjYsImV4cCI6MjAzNTYzMDU2Nn0.PjnBMGwSPqaW6Shez6xusYJfnKARVX7zstxrG71k7m4"
+        url: str = ""
+        key: str = ""
         # supabase: Client = create_client(url, key)
         supabase: Client = create_client(url, key)
         
@@ -40,7 +40,7 @@ class BBBlog:
 
     def initialCommunications(self):
 
-        self.dbClient.auth.sign_in_with_password({"email": "ben.brutocao@gmail.com", "password": "BBBlogPass1029@"})
+        self.dbClient.auth.sign_in_with_password({"email": "", "password": ""})
 
         response = self.dbClient.table("category") \
         .select("id","title").execute()
@@ -87,7 +87,7 @@ class BBBlog:
     def submit_entry(self):
         # print(self.categories[self.selected_category.get(1.0)])
 
-        self.dbClient.auth.sign_in_with_password({"email": "ben.brutocao@gmail.com", "password": "BBBlogPass1029@"})
+        self.dbClient.auth.sign_in_with_password({"email": "", "password": ""})
 
         print("hey girl")
         
