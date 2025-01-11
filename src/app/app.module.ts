@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { AppComponent } from './app.component';
 import { RoundComponent } from './round/round.component';
@@ -11,6 +11,8 @@ import { GolfComponent } from './golf/golf.component';
 import { GolfShotComponent } from './golf-shot/golf-shot.component';
 
 import {routes} from './app.routes'
+import { GolfBagComponent } from './golf-bag/golf-bag.component';
+import { GolfClubComponent } from './golf-club/golf-club.component';
 
 @NgModule({
   declarations: [
@@ -18,12 +20,15 @@ import {routes} from './app.routes'
     RoundComponent,
     BlogComponent,
     GolfComponent,
-    GolfShotComponent
+    GolfShotComponent,
+    GolfClubComponent,
+    GolfBagComponent
 
   ],
   imports: [
     BrowserModule,
     ReactiveFormsModule,
+    FormsModule,
     CommonModule, 
     RouterOutlet, 
     RouterLink, 

@@ -1,0 +1,109 @@
+/* Main container for the golf clubs component */
+.main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Club List Styling */
+  .club-list {
+    width: 100%;
+    max-width: 500px;
+    margin: 20px 0;
+    padding: 0;
+    list-style: none;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: white;
+  }
+  
+  .club-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .club-list li:last-child {
+    border-bottom: none; /* Remove the border for the last item */
+  }
+  
+  .club-list li:hover {
+    background-color: #f1f1f1;
+  }
+  
+  /* Club name and type styling */
+  .club-list li span {
+    font-size: 16px;
+    color: #333;
+    font-weight: 500;
+  }
+  
+  /* Remove button styling */
+  .btn-danger {
+    background-color: #e63946;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    font-size: 14px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .btn-danger:hover {
+    background-color: #d62839;
+  }
+  
+  /* Form for Adding New Club */
+  .form-group {
+    width: 100%;
+    max-width: 500px;
+    margin: 20px 0;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .form-control {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+  }
+  
+  .form-control:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+  }
+  
+  /* Add Button Styling */
+  .btn-primary {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .btn-primary:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Loading State */
+  .loading {
+    font-size: 14px;
+    color: #777;
+    margin-top: 10px;
+  }

@@ -1,0 +1,45 @@
+<main class="main">
+  <!-- Create a Golf Bag -->
+  <form [formGroup]="golfBagForm" (ngSubmit)="onSubmit()" class="golf-bag-form">
+    <div class="form-group">
+      <label for="bagName">Golf Bag Name</label>
+      <input
+        type="text"
+        id="bagName"
+        formControlName="name"
+        class="form-control"
+        placeholder="Enter golf bag name"
+      />
+    </div>
+
+    <div class="form-group">
+      <label for="user">Assign to User</label>
+      <select id="user" formControlName="userId" class="form-control">
+        <option *ngFor="let user of users" [value]="user.id">{{ user.name }}</option>
+      </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary" [disabled]="golfBagForm.invalid">
+      Create Golf Bag
+    </button>
+  </form>
+
+  <!-- Select a Golf Bag -->
+  <div class="form-group">
+    <label for="selectBag">Select a Golf Bag</label>
+    <select
+  id="selectBag"
+  class="form-control"
+  [disabled]="golfBags.length === 0"
+  (change)="selectBag($event)"
+>
+  <option value="" disabled selected>Select a bag</option>
+  <option *ngFor="let bag of golfBags" [value]="bag.GolfBag_id">
+    {{ bag.name }}
+  </option>
+</select>
+  </div>
+
+  <!-- Show Clubs for the Selected Bag -->
+  <app-golf-clubs *ngIf="selectedBagId" [golfBagId]="selectedBagId"></app-golf-clubs>
+</main>

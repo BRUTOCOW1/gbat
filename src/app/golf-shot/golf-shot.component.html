@@ -1,74 +1,79 @@
 <main class="main">
-    <form [formGroup]="golfShotForm" (ngSubmit)="onSubmit()">
-      <div class="form-group">
-        <label for="club">Club Used</label>
-        <select id="club" formControlName="club" class="form-control">
-          <option value="driver">Driver</option>
-          <option value="wood">Wood</option>
-          <option value="iron">Iron</option>
-          <option value="wedge">Wedge</option>
-          <option value="putter">Putter</option>
-        </select>
-      </div>
-    
-      <div class="form-group">
-        <label for="distance">Distance (yards)</label>
-        <input
-          type="number"
-          id="distance"
-          formControlName="distance"
-          class="form-control"
-          placeholder="Enter distance"
-        />
-      </div>
-    
-      <div class="form-group">
-        <label for="shotType">Shot Type</label>
-        <select id="shotType" formControlName="shotType" class="form-control">
-          <option value="drive">Drive</option>
-          <option value="approach">Approach</option>
-          <option value="chip">Chip</option>
-          <option value="putt">Putt</option>
-        </select>
-      </div>
-    
-      <div class="form-group">
-        <label for="wind">Wind Conditions</label>
-        <input
-          type="text"
-          id="wind"
-          formControlName="wind"
-          class="form-control"
-          placeholder="e.g., 10 mph headwind"
-        />
-      </div>
-    
-      <div class="form-group">
-        <label for="lie">Ball Lie</label>
-        <select id="lie" formControlName="lie" class="form-control">
-          <option value="fairway">Fairway</option>
-          <option value="rough">Rough</option>
-          <option value="sand">Sand</option>
-          <option value="green">Green</option>
-        </select>
-      </div>
-    
-      <div class="form-group">
-        <label for="notes">Additional Notes</label>
-        <textarea
-          id="notes"
-          formControlName="notes"
-          class="form-control"
-          rows="3"
-          placeholder="Enter any additional notes"
-        ></textarea>
-      </div>
-    
-      <button type="submit" class="btn btn-primary" [disabled]="golfShotForm.invalid">
-        Submit
-      </button>
-    </form>
-    
+  <form [formGroup]="golfShotForm" (ngSubmit)="onSubmit()" class="golf-shot-form">
+    <div class="form-group">
+      <label for="club">Club Used</label>
+      <select id="club" formControlName="club" class="form-control" (change)="updateClubOptions()">
+        <option value="driver">Driver</option>
+        <option value="wood">Wood</option>
+        <option value="iron">Iron</option>
+        <option value="wedge">Wedge</option>
+        <option value="putter">Putter</option>
+      </select>
+    </div>
+
+    <div class="form-group" *ngIf="clubOptions.length > 0">
+      <label for="specificClub">Select Specific Club</label>
+      <select id="specificClub" formControlName="specificClub" class="form-control">
+        <option *ngFor="let option of clubOptions" [value]="option">{{ option }}</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="distance">Distance (yards)</label>
+      <input
+        type="number"
+        id="distance"
+        formControlName="distance"
+        class="form-control"
+        placeholder="Enter distance"
+      />
+    </div>
+
+    <div class="form-group">
+      <label for="shotType">Shot Type</label>
+      <select id="shotType" formControlName="shotType" class="form-control">
+        <option value="drive">Drive</option>
+        <option value="approach">Approach</option>
+        <option value="chip">Chip</option>
+        <option value="putt">Putt</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="wind">Wind Conditions</label>
+      <input
+        type="text"
+        id="wind"
+        formControlName="wind"
+        class="form-control"
+        placeholder="e.g., 10 mph headwind"
+      />
+    </div>
+
+    <div class="form-group">
+      <label for="lie">Ball Lie</label>
+      <select id="lie" formControlName="lie" class="form-control">
+        <option value="fairway">Fairway</option>
+        <option value="rough">Rough</option>
+        <option value="sand">Sand</option>
+        <option value="green">Green</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="notes">Additional Notes</label>
+      <textarea
+        id="notes"
+        formControlName="notes"
+        class="form-control"
+        rows="3"
+        placeholder="Enter any additional notes"
+      ></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary" [disabled]="golfShotForm.invalid">
+      Submit
+    </button>
+    <button type="button" class="btn btn-secondary" (click)="resetForm()">Reset</button>
+  </form>
 </main>
-    
-  

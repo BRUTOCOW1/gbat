@@ -2,6 +2,8 @@ import { Routes } from '@angular/router';
 import {GolfComponent} from './golf/golf.component';
 import {GolfShotComponent} from './golf-shot/golf-shot.component';
 import {RoundComponent} from './round/round.component';
+import {GolfBagComponent} from './golf-bag/golf-bag.component';
+import {GolfClubComponent} from './golf-club/golf-club.component';
 
 import {BlogComponent} from './blog/blog.component';
 
@@ -23,6 +25,14 @@ export const routes: Routes = [
     { 
         path: 'round-component', 
         component: RoundComponent,
+    },
+    { 
+        path: 'golf-bag-component', 
+        component: GolfBagComponent,
+    },
+    {
+        path: 'golf-club-component', 
+        component: GolfClubComponent,
     },
 
 

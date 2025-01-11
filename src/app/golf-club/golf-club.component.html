@@ -1,0 +1,41 @@
+<main class="main">
+    <div *ngIf="loading">Loading clubs...</div>
+  
+    <!-- List Existing Clubs -->
+    <ul class="club-list">
+      <li *ngFor="let club of clubs">
+        {{ club.name }} ({{ club.first }})
+        <button (click)="removeClub(club.id)" class="btn btn-danger">Remove</button>
+      </li>
+    </ul>
+  
+    <!-- Add New Club -->
+    <div class="form-group">
+      <input
+        type="text"
+        [(ngModel)]="newClub.name"
+        class="form-control"
+        placeholder="Club Name"
+      />
+      <input
+      type="text"
+      [(ngModel)]="newClub.first"
+      class="form-control"
+      placeholder="First Name"
+    />
+    <input
+      type="text"
+      [(ngModel)]="newClub.last"
+      class="form-control"
+      placeholder="Last Name"
+    />
+    <input
+      type="text"
+      [(ngModel)]="newClub.loft"
+      class="form-control"
+      placeholder="Loft (e.g., 10.5°)"
+    />
+      <button (click)="addClub()" class="btn btn-primary">Add Club</button>
+    </div>
+  </main>
+  
