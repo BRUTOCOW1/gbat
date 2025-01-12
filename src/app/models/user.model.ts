@@ -1,8 +1,7 @@
 export interface User {
-    id: string;
+    id: number;
     email: string;
-    username?: string; // Optional field for username
-    createdAt: string;
+    createdAt?: string;
     updatedAt?: string; // Optional field
   }
   

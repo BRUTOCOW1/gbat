@@ -15,6 +15,7 @@ import { GolfBagComponent } from './golf-bag/golf-bag.component';
 import { GolfClubComponent } from './golf-club/golf-club.component';
 import { RegisterComponent } from './register/register.component';
 import { NavbarComponent } from './shared/navbar/navbar.component';
+import { CreateGolfBagComponent } from './create-golf-bag/create-golf-bag.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -26,7 +27,8 @@ import { NavbarComponent } from './shared/navbar/navbar.component';
     GolfBagComponent,
     LoginComponent,
     RegisterComponent,
-    NavbarComponent
+    NavbarComponent,
+    CreateGolfBagComponent
 
   ],
   imports: [

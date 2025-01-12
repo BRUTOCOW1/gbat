@@ -58,6 +58,10 @@ package-lock.json
 
 # Lock files (optional: exclude one if using Yarn or npm)
 package-lock.json
+package.json
+tsconfic-app.json
+tsconfig.json
+main.ts
 yarn.lock
 pnpm-lock.yaml
 

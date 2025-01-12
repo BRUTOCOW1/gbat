@@ -9,6 +9,7 @@ import { AuthGuard } from './guards/auth.guard';
 import {BlogComponent} from './blog/blog.component';
 import { RegisterComponent } from './register/register.component';
 import { ProfileComponent } from './profile/profile.component';
+import { CreateGolfBagComponent } from './create-golf-bag/create-golf-bag.component';
 export const routes: Routes = [
     
     // Individual Components
@@ -31,6 +32,10 @@ export const routes: Routes = [
     { 
         path: 'golf-bag-component', 
         component: GolfBagComponent,
+    },
+    { 
+        path: 'new-bag', 
+        component: CreateGolfBagComponent,
     },
     {
         path: 'golf-club-component', 

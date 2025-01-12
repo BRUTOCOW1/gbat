@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { BehaviorSubject } from 'rxjs';
 import { GolfBag } from './models/golf-bag.model';
-
+import { User } from './models/user.model';
 @Injectable({
   providedIn: 'root',
 })
@@ -80,21 +80,63 @@ async signOut() {
     this.authStateSubject.next(false); // Update the state to logged out
   }
 }
-  // Fetch users from the `users` table
-  async getUsers() {
-    return await this.supabase.from('users').select('id, name');
-  }
+async getUsers(): Promise<User[] | null> {
+  try {
+    const response = await this.supabase.from('users_view').select('*');
+    
+    // Check for errors in the response
+    if (response.error) {
+      console.error('Error fetching users:', response.error.message);
+      return null;
+    }
 
-  // Create a new golf bag
-  async createGolfBag(bag: { name: string; user_id: string }): Promise<{ data: GolfBag[] | null; error: any }> {
-    return await this.supabase.from('golfbag').insert(bag).select('*');
+    // Access the `data` property, which contains the rows
+    console.log('Users fetched successfully:', response.data);
+    return response.data; // `response.data` is the array of users
+  } catch (err) {
+    console.error('Unexpected error:', err);
+    return null;
   }
-  
+}
+
+
+async createGolfBag(bag: { name: string; user_id: string }): Promise<{ data: GolfBag[] | null; error: any }> {
+  try {
+    const { data, error } = await this.supabase
+      .from('golfbag')
+      .insert(bag)
+      .select('*');
+
+    if (error) {
+      console.error('Error inserting golf bag:', error.message);
+      return { data: null, error };
+    }
+
+    console.log('Inserted golf bag:', data);
+    return { data, error: null };
+  } catch (err) {
+    console.error('Unexpected error creating golf bag:', err);
+    return { data: null, error: err };
+  }
+}
+ // Fetch the currently authenticated user
+ async getCurrentUser() {
+  const { data, error } = await this.supabase.auth.getUser();
+  if (error) {
+    console.error('Error fetching user:', error.message);
+    return null;
+  }
+  return data.user; // Return the authenticated user's details
+}
 
   // Fetch golf bags by user (optional if needed for displaying a list)
-  async getGolfBagsByUser(userId: string) {
-    return await this.supabase.from('golfbag').select('*').eq('user_id', userId);
+  async getGolfBagsByUser(userId: string): Promise<{ data: GolfBag[] | null; error: any }> {
+    return await this.supabase
+      .from('golfbag')
+      .select('*')
+      .eq('user_id', userId); // Filter by user_id
   }
+  
   async getClubsByBag(golfBagId: string) {
     return await this.supabase
       .from('golfclub')

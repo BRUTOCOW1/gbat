@@ -1,0 +1,40 @@
+<main class="main">
+    <!-- Create a Golf Bag -->
+    <form [formGroup]="golfBagForm" (ngSubmit)="onSubmit()" class="golf-bag-form">
+      <div class="form-group">
+        <label for="bagName" i18n>Golf Bag Name</label>
+        <input
+          type="text"
+          id="bagName"
+          formControlName="name"
+          class="form-control"
+          placeholder="Enter golf bag name"
+          aria-label="Golf Bag Name"
+          i18n-placeholder="Enter golf bag name"
+        />
+        <div *ngIf="golfBagForm.get('name')?.invalid && golfBagForm.get('name')?.touched" class="error">
+          Golf bag name is required.
+        </div>
+      </div>
+  
+      <div class="form-group">
+        <label for="user" i18n>Assign to User</label>
+        <select
+          id="user"
+          formControlName="userId"
+          class="form-control"
+          aria-label="Assign to User"
+        >
+          <option value="" disabled selected *ngIf="!users.length" i18n>No users available</option>
+          <option *ngFor="let user of users; trackBy: trackByUserId" [value]="user.id">
+            {{ user.email }}
+          </option>
+        </select>
+      </div>
+  
+      <button type="submit" class="btn btn-primary" [disabled]="golfBagForm.invalid">
+        Create Golf Bag
+      </button>
+    </form>
+  
+</main>
