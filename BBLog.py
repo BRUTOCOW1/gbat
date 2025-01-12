@@ -7,13 +7,12 @@ from supabase import create_client, Client
 class BBBlog:
     def __init__(self):
 
-        url: str = ""
-        key: str = ""
+        url = os.getenv("SUPABASE_URL")
+        key = os.getenv("SUPABASE_ANON_KEY")
         # supabase: Client = create_client(url, key)
         supabase: Client = create_client(url, key)
         
         self.dbClient = supabase
-
         self.initialCommunications()
 
         self.root = tk.Tk()
@@ -40,14 +39,12 @@ class BBBlog:
 
     def initialCommunications(self):
 
-        self.dbClient.auth.sign_in_with_password({"email": "", "password": ""})
+        response = self.dbClient.table("category").select("id","title").execute()
 
-        response = self.dbClient.table("category") \
-        .select("id","title").execute()
-        print(response)
         self.categories = {}
         for category in response.data:
             self.categories[category['title']] = category['id']
+            
         return 3
 
          
@@ -86,11 +83,6 @@ class BBBlog:
 
     def submit_entry(self):
         # print(self.categories[self.selected_category.get(1.0)])
-
-        self.dbClient.auth.sign_in_with_password({"email": "", "password": ""})
-
-        print("hey girl")
-        
         response = self.dbClient.table("post") \
         .insert({"category_id": self.categories[self.selected_category.get()],
                  "time_stamp" : datetime.datetime.now().isoformat(),
@@ -98,7 +90,6 @@ class BBBlog:
                  "full_text" : self.full_text.get(1.0, "end-1c")}) \
         .execute()
         
-        print(response)
         self.root.destroy()
 
         return 23
@@ -120,5 +111,7 @@ class BBBlog:
 
 
 if __name__ == "__main__":
+    os.environ["SUPABASE_URL"] = "https://mgpgbijsyiwkappxedfu.supabase.co"
+    os.environ["SUPABASE_ANON_KEY"] = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ncGdiaWpzeWl3a2FwcHhlZGZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzYyMDY4NDQsImV4cCI6MjA1MTc4Mjg0NH0.IkpfzHy9xE00p7GjbSyhg30H_5hZ7_4zHFJoXhBTdmY"
     BBBlog()
     os._exit(0)

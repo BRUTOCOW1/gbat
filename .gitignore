@@ -40,3 +40,33 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+package-lock.json
+# Angular CLI specific files
+.angular/
+.angular/cache/
+
+# Editor and IDE specific
+.vscode/
+.idea/
+*.iml
+
+# Temporary files
+*.tmp
+*.temp
+~*
+
+# Lock files (optional: exclude one if using Yarn or npm)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Lint and formatting
+.eslintcache
+.prettierignore
+.prettiercache
+
+# Test-related files
+jest/
+*.test-results/
+*.snap

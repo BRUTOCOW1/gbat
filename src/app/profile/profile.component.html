@@ -1,0 +1,30 @@
+<div class="profile-container">
+    <h1>Your Profile</h1>
+    <p>Welcome! Use the options below to manage your golf-related details.</p>
+    <div class="profile-grid">
+      <!-- Manage Bags -->
+      <div class="profile-card" (click)="navigateTo('golf-bag-component')">
+        <h2>Bags</h2>
+        <p>View or manage your golf bags.</p>
+      </div>
+  
+      <!-- Manage Rounds -->
+      <div class="profile-card" (click)="navigateTo('round')">
+        <h2>Rounds</h2>
+        <p>Track your past rounds or start a new one.</p>
+      </div>
+  
+      <!-- Manage Clubs -->
+      <div class="profile-card" (click)="navigateTo('golf-club-component')">
+        <h2>Clubs</h2>
+        <p>View and manage your golf clubs.</p>
+      </div>
+  
+      <!-- Personal Info -->
+      <div class="profile-card" (click)="navigateTo('personal-info')">
+        <h2>Personal Info</h2>
+        <p>Update your account details and preferences.</p>
+      </div>
+    </div>
+  </div>
+  

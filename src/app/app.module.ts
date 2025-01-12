@@ -9,11 +9,12 @@ import { RouterOutlet, RouterModule, RouterLink, RouterLinkActive} from '@angula
 import { CommonModule } from '@angular/common';
 import { GolfComponent } from './golf/golf.component';
 import { GolfShotComponent } from './golf-shot/golf-shot.component';
-
+import { LoginComponent } from './login/login.component';
 import {routes} from './app.routes'
 import { GolfBagComponent } from './golf-bag/golf-bag.component';
 import { GolfClubComponent } from './golf-club/golf-club.component';
-
+import { RegisterComponent } from './register/register.component';
+import { NavbarComponent } from './shared/navbar/navbar.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -22,7 +23,10 @@ import { GolfClubComponent } from './golf-club/golf-club.component';
     GolfComponent,
     GolfShotComponent,
     GolfClubComponent,
-    GolfBagComponent
+    GolfBagComponent,
+    LoginComponent,
+    RegisterComponent,
+    NavbarComponent
 
   ],
   imports: [
