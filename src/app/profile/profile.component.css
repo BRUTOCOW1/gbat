@@ -1,9 +1,4 @@
-.profile-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-    text-align: center;
-  }
+
   
   h1 {
     font-size: 2rem;
@@ -12,7 +7,7 @@
   
   p {
     font-size: 1rem;
-    color: #555;
+    color: #b3b1b1;
     margin-bottom: 20px;
   }
   
@@ -41,10 +36,47 @@
   .profile-card h2 {
     font-size: 1.5rem;
     margin-bottom: 10px;
+    color: #080808;
+
   }
   
   .profile-card p {
     font-size: 0.9rem;
     color: #777;
+  }
+  .profile-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
+  }
+  
+  .loading {
+    font-size: 18px;
+    color: #888;
+  }
+  
+  button {
+    padding: 10px 15px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    transition: background-color 0.3s ease;
+  }
+  
+  button:hover {
+    background-color: #0056b3;
+  }
+  
+  h2 {
+    margin-bottom: 15px;
+  }
+  
+  p {
+    font-size: 14px;
+    margin: 5px 0;
   }
   

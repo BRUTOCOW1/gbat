@@ -100,34 +100,64 @@ async getUsers(): Promise<User[] | null> {
 }
 
 
-async createGolfBag(bag: { name: string; user_id: string }): Promise<{ data: GolfBag[] | null; error: any }> {
-  try {
-    const { data, error } = await this.supabase
-      .from('golfbag')
-      .insert(bag)
-      .select('*');
-
-    if (error) {
-      console.error('Error inserting golf bag:', error.message);
-      return { data: null, error };
-    }
-
-    console.log('Inserted golf bag:', data);
-    return { data, error: null };
-  } catch (err) {
-    console.error('Unexpected error creating golf bag:', err);
-    return { data: null, error: err };
-  }
+async createGolfBag(bag: { user_id: string; name: string }): Promise<any> {
+  return await this.supabase
+    .from('golfbag')
+    .insert(bag)
+    .select('*'); // Returns the inserted record
 }
- // Fetch the currently authenticated user
- async getCurrentUser() {
-  const { data, error } = await this.supabase.auth.getUser();
+
+async getProfile(): Promise<any> {
+  const { data, error } = await this.supabase
+    .from('profile')
+    .select('id')
+    .single(); // Fetch the current user's profile
   if (error) {
-    console.error('Error fetching user:', error.message);
+    console.error('Error fetching profile:', error.message);
     return null;
   }
-  return data.user; // Return the authenticated user's details
+  return data;
 }
+
+async createProfile(profile: {
+  id: string;
+  name: string;
+  email: string;
+  height: number;
+  weight: number;
+  sex: string;
+}): Promise<any> {
+  return await this.supabase
+    .from('profile')
+    .insert(profile)
+    .select('*'); // Return the inserted profile
+}
+
+async getProfileById(userId: string): Promise<any> {
+  const { data, error } = await this.supabase
+    .from('profile')
+    .select('*')
+    .eq('id', userId)
+    .single();
+
+  if (error) {
+    console.error('Error fetching profile:', error.message);
+    return null;
+  }
+
+  return data;
+}
+
+async getCurrentUser(): Promise<any> {
+  const { data, error } = await this.supabase.auth.getUser();
+  if (error) {
+    console.error('Error fetching current user:', error.message);
+    return null;
+  }
+
+  return data?.user;
+}
+
 
   // Fetch golf bags by user (optional if needed for displaying a list)
   async getGolfBagsByUser(userId: string): Promise<{ data: GolfBag[] | null; error: any }> {

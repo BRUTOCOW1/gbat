@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-
+import { ProfileComponent } from './profile/profile.component';
 import { AppComponent } from './app.component';
 import { RoundComponent } from './round/round.component';
 import { BlogComponent } from './blog/blog.component';
@@ -28,7 +28,8 @@ import { CreateGolfBagComponent } from './create-golf-bag/create-golf-bag.compon
     LoginComponent,
     RegisterComponent,
     NavbarComponent,
-    CreateGolfBagComponent
+    CreateGolfBagComponent,
+    ProfileComponent
 
   ],
   imports: [

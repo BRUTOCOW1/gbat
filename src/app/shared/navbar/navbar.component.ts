@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, Renderer2 } from '@angular/core';
 import { SupabaseService } from '../../supabase.service';
 import { Subscription } from 'rxjs';
 
@@ -10,10 +10,12 @@ import { Subscription } from 'rxjs';
 export class NavbarComponent implements OnInit, OnDestroy {
   isLoggedIn: boolean = false; // Track login state
   private authSubscription: Subscription | undefined;
-
-  constructor(private supabaseService: SupabaseService) {}
+  isDarkMode: boolean = false;
+  constructor(private supabaseService: SupabaseService, private renderer: Renderer2 ) {}
 
   async ngOnInit() {
+    this.loadDarkModePreference(); // Load dark mode state on component initialization
+
     // Check the current session on component load
     const session = await this.supabaseService.getSession();
     this.isLoggedIn = !!session;
@@ -24,6 +26,32 @@ export class NavbarComponent implements OnInit, OnDestroy {
         this.isLoggedIn = isLoggedIn;
       }
     );
+  }
+
+  toggleDarkMode(): void {
+    this.isDarkMode = !this.isDarkMode;
+
+    // Add or remove the 'dark-mode' class on <body>
+    if (this.isDarkMode) {
+      this.renderer.addClass(document.body, 'dark-mode');
+    } else {
+      this.renderer.removeClass(document.body, 'dark-mode');
+    }
+
+    // Save the preference to localStorage
+    localStorage.setItem('darkMode', JSON.stringify(this.isDarkMode));
+  }
+
+  loadDarkModePreference(): void {
+    const darkModePref = localStorage.getItem('darkMode');
+    this.isDarkMode = darkModePref ? JSON.parse(darkModePref) : false;
+
+    // Apply the 'dark-mode' class based on the preference
+    if (this.isDarkMode) {
+      this.renderer.addClass(document.body, 'dark-mode');
+    } else {
+      this.renderer.removeClass(document.body, 'dark-mode');
+    }
   }
 
   async logout() {

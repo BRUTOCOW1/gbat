@@ -1,41 +1,64 @@
-.navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 20px;
-    background-color: #333;
-    color: white;
+/* General Button Styling */
+.navbar button, 
+.navbar a {
+  display: inline-flex; /* Ensure consistent alignment */
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px; /* Equal padding for all buttons */
+  font-size: 14px; /* Match font size */
+  height: 40px; /* Consistent height */
+  line-height: 1; /* Prevent text alignment issues */
+  border-radius: 5px; /* Rounded corners */
+  border: none; /* Remove borders */
+  text-decoration: none; /* For links styled as buttons */
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+
+.navbar button:hover {
+  background-color: #0056b3;
+}
+
+/* Logout Button */
+.logout-button {
+  background-color: #007bff; /* Same style as other buttons */
+  color: white;
+}
+
+.logout-button:hover {
+  background-color: #0056b3;
+}
+
+/* Dark Mode Button */
+.toggle-dark-mode {
+  background-color: #444;
+  color: white;
+}
+
+body.dark-mode .toggle-dark-mode {
+  background-color: #555;
+}
+
+.toggle-dark-mode:hover {
+  background-color: #666;
+}
+
+/* Responsive Styles for Navbar */
+@media (max-width: 768px) {
+  .navbar {
+    flex-wrap: wrap; /* Allow items to wrap on small screens */
+    padding: 10px;
   }
-  
-  .navbar a {
-    color: white;
-    text-decoration: none;
-    margin-right: 15px;
-  }
-  
-  .navbar .logo {
-    font-size: 1.5rem;
-    font-weight: bold;
-  }
-  
+
+  .navbar-left,
   .navbar-right {
-    display: flex;
-    align-items: center;
+    justify-content: center; /* Center items in smaller screens */
+    width: 100%; /* Full width for both sections */
+    text-align: center;
   }
-  
-  .profile-link {
-    font-size: 1rem;
+
+  .navbar-right {
+    margin-top: 10px;
   }
-  
-  .logout-button {
-    background-color: #555;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    cursor: pointer;
-  }
-  
-  .logout-button:hover {
-    background-color: #777;
-  }
-  
+}

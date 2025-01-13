@@ -1,33 +1,42 @@
 <div class="register-container">
-    <h1>Register</h1>
-    <form (ngSubmit)="register()">
-      <div class="form-group">
-        <label for="email">Email</label>
-        <input
-          type="email"
-          id="email"
-          [(ngModel)]="newUser.email"
-          name="email"
-          required
-          placeholder="Enter your email"
-        />
-      </div>
-      <div class="form-group">
-        <label for="password">Password</label>
-        <input
-          type="password"
-          id="password"
-          [(ngModel)]="newUser.password"
-          name="password"
-          required
-          placeholder="Enter your password"
-        />
-      </div>
-      <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
-      <div class="success-message" *ngIf="successMessage">{{ successMessage }}</div>
-      <button type="submit" class="register-button" [disabled]="loading">
-        {{ loading ? 'Registering...' : 'Register' }}
-      </button>
-    </form>
-  </div>
-  
+  <h1>Join Us</h1>
+  <form class="register-form" (ngSubmit)="onSubmit()" [formGroup]="registerForm">
+    <div>
+      <label for="username">Username</label>
+      <input
+        id="username"
+        type="text"
+        formControlName="username"
+        placeholder="Enter your username"
+      />
+      <p class="error-message" *ngIf="registerForm.get('username')?.touched && registerForm.get('username')?.invalid">
+        Username is required.
+      </p>
+    </div>
+    <div>
+      <label for="email">Email</label>
+      <input
+        id="email"
+        type="email"
+        formControlName="email"
+        placeholder="Enter your email"
+      />
+      <p class="error-message" *ngIf="registerForm.get('email')?.touched && registerForm.get('email')?.invalid">
+        A valid email is required.
+      </p>
+    </div>
+    <div>
+      <label for="password">Password</label>
+      <input
+        id="password"
+        type="password"
+        formControlName="password"
+        placeholder="Enter your password"
+      />
+      <p class="error-message" *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.invalid">
+        Password is required (min. 6 characters).
+      </p>
+    </div>
+    <button type="submit" class="btn-submit" [disabled]="registerForm.invalid">Register</button>
+  </form>
+</div>

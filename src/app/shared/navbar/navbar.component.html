@@ -1,16 +1,20 @@
 <nav class="navbar">
-    <div class="navbar-left">
-      <a routerLink="/" class="logo">GBAT</a>
-      <a routerLink="golf-component" routerLinkActive="active" ariaCurrentWhenActive="page">Golf Component</a>
-      <a routerLink="blog-component" routerLinkActive="active" ariaCurrentWhenActive="page">Blog Component</a>
-    </div>
-    <div class="navbar-right">
-      <ng-container *ngIf="isLoggedIn">
-        <a routerLink="/profile" class="profile-link">Profile</a>
-        <button (click)="logout()" class="logout-button">Logout</button>
-      </ng-container>
-      <ng-container *ngIf="!isLoggedIn">
-        <a routerLink="/login">Login</a>      </ng-container>
-    </div>
-  </nav>
-  
+  <div class="navbar-left">
+    <a routerLink="/" class="logo">GBAT</a>
+    <a routerLink="golf-component" routerLinkActive="active">Golf Component</a>
+    <a routerLink="blog-component" routerLinkActive="active">Blog Component</a>
+  </div>
+  <div class="navbar-right">
+    <ng-container *ngIf="isLoggedIn">
+      <a routerLink="/profile">Profile</a>
+      <button (click)="logout()" class="logout-button">Logout</button>
+    </ng-container>
+    <ng-container *ngIf="!isLoggedIn">
+      <a routerLink="/login">Login</a>
+      <a routerLink="/register">Register</a>
+    </ng-container>
+    <button class="toggle-dark-mode" (click)="toggleDarkMode()">
+      {{ isDarkMode ? 'Light Mode' : 'Dark Mode' }}
+    </button>
+  </div>
+</nav>

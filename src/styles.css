@@ -1,1 +1,178 @@
-/* You can add global styles to this file, and also import other style files */
+/* Global Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f9f9f9;
+    color: #333;
+    transition: background-color 0.3s, color 0.3s;
+  }
+  
+  a {
+    text-decoration: none;
+    color: inherit;
+    transition: color 0.3s;
+  }
+  
+  a:hover {
+    color: #007bff;
+  }
+
+  /* Spacing Utilities */
+.mt-10 { margin-top: 10px; }
+.mb-10 { margin-bottom: 10px; }
+.px-20 { padding-left: 20px; padding-right: 20px; }
+
+/* Flexbox Utilities */
+.flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.flex-space-between {
+  display: flex;
+  justify-content: space-between;
+}
+
+.flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Visibility Utilities */
+.hidden { display: none !important; }
+.visible { display: block !important; }
+
+/* Breakpoints */
+@media (max-width: 768px) {
+    body {
+      font-size: 14px;
+    }
+  }
+  
+  /* Navbar Container */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #f9f9f9; /* Default light mode background */
+    border-bottom: 1px solid #ddd;
+    transition: background-color 0.3s, color 0.3s; /* Smooth transitions */
+  }
+  
+  /* Dark Mode Styles for Navbar */
+  body.dark-mode .navbar {
+    background-color: #1b1a1a; /* Dark mode background */
+    border-bottom: 1px solid #444;
+    color: #e0e0e0; /* Text color in dark mode */
+  }
+  
+  /* Navbar Sections */
+  .navbar-left,
+  .navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Space between items */
+  }
+  
+  /* Navbar Links (Shared) */
+  .navbar a {
+    color: #333; /* Default text color */
+    font-weight: bold;
+    padding: 8px 12px;
+    border-radius: 5px;
+    transition: background-color 0.3s, color 0.3s;
+  }
+  
+  body.dark-mode .navbar a {
+    background-color: #ffffff; /* Text color in dark mode */
+  }
+  
+  .navbar a:hover {
+    background-color: #007bff; /* Hover background */
+    color: white; /* Hover text color */
+  }
+  
+  /* Logout Button */
+  .logout-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .logout-button:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Toggle Dark Mode Button */
+  .toggle-dark-mode {
+    padding: 8px 12px;
+    font-size: 14px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #444; /* Default background */
+    color: white;
+    transition: background-color 0.3s;
+  }
+  /* Dark Mode for Global Elements */
+body.dark-mode {
+    background-color: #121212;
+    color: #e0e0e0;
+    transition: background-color 0.3s, color 0.3s; /* Smooth transitions */
+  }
+  
+  body.dark-mode input,
+  body.dark-mode textarea {
+    background-color: #2c2c2c;
+    color: #e0e0e0;
+    border: 1px solid #444;
+  }
+  
+  body.dark-mode input::placeholder {
+    color: #302e2e;
+  }
+  
+  body.dark-mode .login-container {
+    background-color: #1e1e1e;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.6);
+    color: #e0e0e0;
+  }
+  
+  body.dark-mode .toggle-dark-mode {
+    background-color: #555; /* Darker background in dark mode */
+  }
+  
+  .toggle-dark-mode:hover {
+    background-color: #666;
+  }
+  
+  /* Responsive Styles for Navbar */
+  @media (max-width: 768px) {
+    .navbar {
+      flex-wrap: wrap; /* Allow items to wrap on small screens */
+      padding: 10px;
+    }
+  
+    .navbar-left,
+    .navbar-right {
+      justify-content: center; /* Center items in smaller screens */
+      width: 100%; /* Full width for both sections */
+      text-align: center;
+    }
+  
+    .navbar-right {
+      margin-top: 10px;
+    }
+  }
+  

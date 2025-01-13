@@ -12,92 +12,72 @@ import { Router } from '@angular/router';
 })
 export class CreateGolfBagComponent implements OnInit {
   golfBagForm: FormGroup;
-  users: User[] = []; // List of users
-  golfBags: GolfBag[] = []; // List of golf bags
-  selectedBagId: string | null = null; // ID of the selected golf bag
-  loading = false;
+  profileId: string | null = null; // ID of the current user's profile
 
   constructor(private fb: FormBuilder, private supabaseService: SupabaseService) {
     // Initialize the form group with validation rules
     this.golfBagForm = this.fb.group({
       name: ['', Validators.required],
-      userId: ['', Validators.required],
     });
   }
 
 
-  ngOnInit(): void {
-    this.loadUsers();
-    this.loadGolfBags();
-  }
-
-  async loadUsers(): Promise<void> {
-    this.loading = true;
-    const users = await this.supabaseService.getUsers();
-    if (users) {
-      this.users = users; // Assign fetched users
+  async ngOnInit(): Promise<void> {
+    // Fetch the current user's profile ID
+    const profile = await this.supabaseService.getProfile();
+    if (profile) {
+      this.profileId = profile.id;
     } else {
-      console.warn('No users found.');
-    }
-
-  }
-
-  async loadGolfBags(): Promise<void> {
-    this.loading = true;
-    try {
-      const { data, error } = await this.supabaseService.getGolfBags();
-      if (error) {
-        console.error('Error fetching golf bags:', error);
-      } else {
-        this.golfBags = data || [];
-        console.log('Golf bags loaded successfully:', this.golfBags);
-      }
-    } catch (error) {
-      console.error('Unexpected error fetching golf bags:', error);
-    } finally {
-      this.loading = false;
+      console.error('Profile not found');
     }
   }
+
+
 
   async onSubmit(): Promise<void> {
+    console.log('Submitting Create Golf Bag Form...');
+    
+    // Validate the form
     if (this.golfBagForm.valid) {
-      const { name, userId } = this.golfBagForm.value;
+      // Get the authenticated user's profile
+      const user = await this.supabaseService.getCurrentUser();
+      if (!user || !user.id) {
+        console.error('No authenticated user found');
+        return; // Exit early if no user is authenticated
+      }
+  
+      const user_id = user.id; // The authenticated user's ID
+      const { name } = this.golfBagForm.value; // Get the name from the form
+  
       try {
+        // Call the Supabase service to create the golf bag
         const { data, error } = await this.supabaseService.createGolfBag({
-          name,
-          user_id: userId,
+          user_id, // Include the authenticated user's ID
+          name,    // Include the golf bag name
         });
+  
+        // Handle response
         if (error) {
-          console.error('Error creating golf bag:', error);
+          console.error('Error creating golf bag:', error.message);
         } else if (data && data.length > 0) {
           alert('Golf Bag created successfully!');
-          this.golfBags.push(data[0]); // Add the new bag to the list
           this.golfBagForm.reset(); // Reset the form after successful submission
+          console.log('Created Golf Bag:', data[0]);
         } else {
           console.warn('No data returned from Supabase for the created golf bag.');
         }
       } catch (error) {
         console.error('Unexpected error while creating golf bag:', error);
       }
-    }
-  }
-  selectBag(event: Event): void {
-    const target = event.target as HTMLSelectElement;
-    const bagId = target?.value;
-
-    if (bagId) {
-      this.selectedBagId = bagId;
-      console.log('Selected Bag ID:', this.selectedBagId);
     } else {
-      console.warn('No bag selected.');
+      console.warn('Form is invalid. Please fill out all required fields.');
     }
   }
+  
+
   trackByUserId(index: number, user: User): number {
     return user.id; // Return the unique ID of the user
   }
   
-  trackByBagId(index: string, bag: GolfBag): string {
-    return bag.GolfBag_id; // Unique identifier for golf bags
-  }
 
 }
