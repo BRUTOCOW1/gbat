@@ -10,65 +10,30 @@ import {BlogComponent} from './blog/blog.component';
 import { RegisterComponent } from './register/register.component';
 import { ProfileComponent } from './profile/profile.component';
 import { CreateGolfBagComponent } from './create-golf-bag/create-golf-bag.component';
+import { CreateGolfClubComponent } from './create-golf-club/create-golf-club.component';
+
 export const routes: Routes = [
     
     // Individual Components
-    { 
-        path: 'golf-component', 
-        component: GolfComponent,
-    },
-    { 
-        path: 'golf-shot-component', 
-        component: GolfShotComponent,
-    },
-    { 
-        path: 'blog-component', 
-        component: BlogComponent 
-    },
-    { 
-        path: 'round-component', 
-        component: RoundComponent,
-    },
-    { 
-        path: 'golf-bag-component', 
-        component: GolfBagComponent,
-    },
-    { 
-        path: 'new-bag', 
-        component: CreateGolfBagComponent,
-    },
-    {
-        path: 'golf-club-component', 
-        component: GolfClubComponent,
-    },
+    { path: 'golf-component', component: GolfComponent,},
+    { path: 'golf-shot-component', component: GolfShotComponent,},
+    { path: 'blog-component', component: BlogComponent },
+    { path: 'round-component', component: RoundComponent,},
+    { path: 'golf-bag-component', component: GolfBagComponent,},
+    { path: 'new-bag', component: CreateGolfBagComponent,},
+    { path: 'new-club', component: CreateGolfClubComponent,},
+    {path: 'golf-club-component', component: GolfClubComponent,},
     { path: 'dashboard', component: GolfComponent, canActivate: [AuthGuard] },
     { path: 'login', component: LoginComponent },
     { path: 'register', component: RegisterComponent },
     { path: 'profile', component: ProfileComponent },
 
-    // Pathways
-    { 
-        path: 'blog-component/golf-component', 
-        redirectTo: 'golf-component'
-    },
-    { 
-        path: 'golf-shot-component/golf-component', 
-        redirectTo: 'golf-component'
-    },
-    { 
-        path: 'golf-component/golf-shot-component', 
-        redirectTo: 'golf-shot-component'
-    },
-    { 
-        path: 'golf-component/round-component', 
-        redirectTo: 'round-component'
-    },
-    { 
-        path: 'golf-component/blog-component', 
-        redirectTo: 'blog-component'
-    },
-    { 
-        path: '*/login-component', 
-        redirectTo: 'login-component'
-    }
+    { path: 'blog-component/golf-component', redirectTo: 'golf-component'},
+    { path: 'golf-shot-component/golf-component', redirectTo: 'golf-component'},
+    { path: 'golf-component/golf-shot-component', redirectTo: 'golf-shot-component'},
+    { path: 'golf-component/round-component', redirectTo: 'round-component'},
+    { path: 'golf-component/blog-component', redirectTo: 'blog-component'},
+    { path: '*/login-component', redirectTo: 'login-component'},
+
+    { path: 'golf-bag/:id', component: GolfBagComponent}
 ];

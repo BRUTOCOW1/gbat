@@ -25,6 +25,7 @@ export class LoginComponent implements OnInit {
     });
   }
 
+  // Ensure ngOnInit is implemented as required by OnInit interface
   ngOnInit(): void {
     this.loadDarkModePreference(); // Load dark mode state on component initialization
   }
@@ -36,12 +37,15 @@ export class LoginComponent implements OnInit {
       const { email, password } = this.loginForm.value;
 
       try {
-        const { error } = await this.supabaseService.signIn(email, password);
+        const { user, session, error } = await this.supabaseService.signIn(email, password);
+
         if (error) {
-          this.errorMessage = error.message;
-        } else {
-          console.log('Login successful');
+          this.errorMessage = error.message || 'Login failed. Please check your credentials.';
+        } else if (user) {
+          console.log('Login successful:', user);
           await this.router.navigate(['/dashboard']);
+        } else {
+          this.errorMessage = 'Unexpected error occurred. Please try again.';
         }
       } catch (err) {
         console.error('An error occurred:', err);
@@ -55,14 +59,12 @@ export class LoginComponent implements OnInit {
   toggleDarkMode(): void {
     this.isDarkMode = !this.isDarkMode;
 
-    // Add or remove the 'dark-mode' class on <body>
     if (this.isDarkMode) {
       this.renderer.addClass(document.body, 'dark-mode');
     } else {
       this.renderer.removeClass(document.body, 'dark-mode');
     }
 
-    // Save the preference to localStorage
     localStorage.setItem('darkMode', JSON.stringify(this.isDarkMode));
   }
 
@@ -70,7 +72,6 @@ export class LoginComponent implements OnInit {
     const darkModePref = localStorage.getItem('darkMode');
     this.isDarkMode = darkModePref ? JSON.parse(darkModePref) : false;
 
-    // Apply the 'dark-mode' class based on the preference
     if (this.isDarkMode) {
       this.renderer.addClass(document.body, 'dark-mode');
     } else {

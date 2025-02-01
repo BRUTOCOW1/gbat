@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { BehaviorSubject } from 'rxjs';
 import { GolfBag } from './models/golf-bag.model';
+import { GolfClub } from './models/golf-club.model';
 import { User } from './models/user.model';
 @Injectable({
   providedIn: 'root',
@@ -99,6 +100,61 @@ async getUsers(): Promise<User[] | null> {
   }
 }
 
+async createGolfClub(golfClub: GolfClub): Promise<GolfClub> {
+  // Validate golf_bag_id before sending the request
+  // if (!golfClub.golf_bag_id || golfClub.golf_bag_id.trim() === '') {
+  //   throw new Error('Invalid Golf Bag ID. It cannot be empty.');
+  // }
+  // console.log("sup")
+
+  const { data, error } = await this.supabase
+    .from('golfclub')
+    .insert(golfClub)
+    .select("*");
+
+  if (error) {
+    console.error('Error creating golf club:', error.message);
+    throw error;
+  }
+
+  if (!data || data.length === 0) {
+    throw new Error('No data returned from Supabase for the created golf club.');
+  }
+
+  return data[0]; // Return the newly created golf club
+}
+
+
+
+async updateGolfBagClubIds(bagId: string, clubIds: string[]): Promise<any> {
+  const { data, error } = await this.supabase
+    .from('golf_bags')
+    .update({ golf_club_ids: clubIds })
+    .eq('id', bagId);
+
+  if (error) {
+    console.error('Error updating golf bag:', error.message);
+    throw error;
+  }
+
+  return data;
+}
+
+async getGolfBagById(bagId: string): Promise<any> {
+  const { data, error } = await this.supabase
+    .from('golf_bags')
+    .select('*')
+    .eq('id', bagId)
+    .single();
+
+  if (error) {
+    console.error('Error fetching golf bag:', error.message);
+    throw error;
+  }
+
+  return data;
+}
+
 
 async createGolfBag(bag: { user_id: string; name: string }): Promise<any> {
   return await this.supabase
@@ -166,6 +222,12 @@ async getCurrentUser(): Promise<any> {
       .select('*')
       .eq('user_id', userId); // Filter by user_id
   }
+
+  async getAllClubs(){
+    console.log("this is actually occuring");
+    return await this.supabase
+      .from('golfclub').select('*')
+  }
   
   async getClubsByBag(golfBagId: string) {
     return await this.supabase
@@ -189,5 +251,18 @@ async getCurrentUser(): Promise<any> {
     return await this.supabase.from('golfbag').select('*');
   }
   
+  async searchClubs(maker: string, category: string) {
+    let query = this.supabase.from('golfclub').select('*');
+
+    if (maker) {
+      query = query.ilike('maker', `%${maker}%`); // Case-insensitive search
+    }
+
+    if (category) {
+      query = query.eq('category', category);
+    }
+
+    return await query;
+  }
   
 }

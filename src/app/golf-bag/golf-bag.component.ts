@@ -4,6 +4,7 @@ import { SupabaseService } from '../supabase.service';
 import { GolfBag } from '../models/golf-bag.model'; // Import the GolfBag interface
 import { User } from '../models/user.model';
 import { Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 @Component({
   selector: 'app-golf-bag',
   templateUrl: './golf-bag.component.html',
@@ -16,8 +17,9 @@ export class GolfBagComponent implements OnInit {
   selectedBagId: string | null = null; // ID of the selected golf bag
   loading = false;
   userId: string | null = null;
+  golf_bagId: string | null = null;
 
-  constructor(private fb: FormBuilder, private supabaseService: SupabaseService, private router: Router) {
+  constructor(private fb: FormBuilder, private supabaseService: SupabaseService, private router: Router, private route: ActivatedRoute) {
     // Initialize the form group with validation rules
     this.golfBagForm = this.fb.group({
       name: ['', Validators.required],
@@ -30,7 +32,17 @@ export class GolfBagComponent implements OnInit {
     const user = await this.supabaseService.getCurrentUser();
     if (user) {
       this.userId = user.id;
-      this.loadGolfBags();
+
+      this.golf_bagId = this.route.snapshot.paramMap.get('id')
+
+      if (this.golf_bagId) {
+        console.log("boop")
+      } else {
+        this.loadGolfBags();
+
+      }
+      
+      
     } else {
       console.warn('No user is authenticated.');
     }
@@ -69,6 +81,8 @@ export class GolfBagComponent implements OnInit {
   selectBag(bagId: string): void {
     this.selectedBagId = bagId;
     console.log('Selected Golf Bag ID:', this.selectedBagId);
+    this.router.navigate(['/golf-club-component']);
+
   }
   
 

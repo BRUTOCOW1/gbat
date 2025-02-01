@@ -1,73 +1,114 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { SupabaseService } from '../supabase.service';
-import { GolfClub } from '../models/golf-club.model';
+import { Router } from '@angular/router';
+
+interface GolfClub {
+  id: string;
+  maker: string;
+  set: string;
+  number: string;
+  loft: number;
+  lie_angle: number;
+  club_offset: number;
+  length: number;
+  category: string;
+}
+
 @Component({
-  selector: 'app-golf-clubs',
+  selector: 'app-golf-club',
   templateUrl: './golf-club.component.html',
   styleUrls: ['./golf-club.component.css'],
 })
 export class GolfClubComponent implements OnInit {
-  @Input() golfBagId!: string; // The GolfBag ID to manage clubs
-  clubs: GolfClub[] = [];
-  newClub = { name: '', first: '', last: '', loft: ''}; // For adding a new club
-  loading = false;
+  userId: string | null = null;
+  selectedClub: GolfClub | null = null;
+  golfClubs: GolfClub[] = [];
+  groupedGolfClubs: { [maker: string]: { [set: string]: GolfClub[] } } = {};
+  expandedMakers: { [maker: string]: boolean } = {};
+  expandedSets: { [maker: string]: { [set: string]: boolean } } = {};
 
-  constructor(private supabaseService: SupabaseService) {}
+  searchMaker: string = '';
+  searchCategory: string = '';
 
-  ngOnInit() {
-    this.loadClubs();
+  constructor(private supabaseService: SupabaseService, private router: Router) {}
+
+  async ngOnInit(): Promise<void> {
+    try {
+      const user = await this.supabaseService.getCurrentUser();
+      if (user) {
+        this.userId = user.id;
+      }
+
+      if (!this.userId) {
+        return;
+      }
+
+      await this.loadGolfClubs();
+    } catch (error) {
+      console.error('Error fetching golf clubs:', error);
+    }
   }
 
-  async loadClubs() {
-    this.loading = true;
-    try {
-      const { data, error } = await this.supabaseService.getClubsByBag(this.golfBagId);
-      if (error) {
-        console.error('Error fetching clubs:', error);
-      } else {
-        this.clubs = data || [];
-      }
-    } catch (error) {
-      console.error('Unexpected error:', error);
-    } finally {
-      this.loading = false;
+  async loadGolfClubs(): Promise<void> {
+    const { data, error } = await this.supabaseService.getAllClubs();
+    if (!error) {
+      this.golfClubs = data || [];
+      this.groupGolfClubs();
     }
   }
 
-
-  async addClub() {
-    const { name, first, last, loft } = this.newClub;
-    if (!name || !first || !last || !loft) {
-      alert('Please fill in all fields for the new club.');
-      return;
-    }
-    try {
-      const { data, error } = await this.supabaseService.addClubToBag({
-        golf_bag_id: this.golfBagId,
-        first,
-        last,
-        loft,
-      });
-      if (error) {
-        console.error('Error adding club:', error);
-      } else {
-        this.clubs.push(data[0]); // Add the new club to the list
-        this.newClub = { name: '', first: '', last: '', loft: '' }; // Reset form
-      }
-    } catch (error) {
-      console.error('Unexpected error:', error);
+  async searchClubs(): Promise<void> {
+    const { data, error } = await this.supabaseService.searchClubs(this.searchMaker, this.searchCategory);
+    if (!error) {
+      this.golfClubs = data || [];
+      this.groupGolfClubs();
     }
   }
-  async removeClub(id: string) {
-    try {
-      const { error } = await this.supabaseService.removeClub(id);
-      if (error) {
-        console.error('Error removing club:', error);
-      } else {
-        this.clubs = this.clubs.filter((club) => club.id !== id); // Update the local list
+
+  groupGolfClubs(): void {
+    this.groupedGolfClubs = {};
+
+    this.golfClubs.forEach((club) => {
+      if (!this.groupedGolfClubs[club.maker]) {
+        this.groupedGolfClubs[club.maker] = {};
+        this.expandedMakers[club.maker] = false;
       }
-    } catch (error) {
-      console.error('Unexpected error:', error);
-    }
+
+      if (!this.groupedGolfClubs[club.maker][club.set]) {
+        this.groupedGolfClubs[club.maker][club.set] = [];
+        this.expandedSets[club.maker] = { ...this.expandedSets[club.maker], [club.set]: false };
+      }
+
+      this.groupedGolfClubs[club.maker][club.set].push(club);
+    });
+  }
+
+  getMakers(): string[] {
+    return Object.keys(this.groupedGolfClubs);
+  }
+
+  getSets(maker: string): string[] {
+    return Object.keys(this.groupedGolfClubs[maker] || {});
+  }
+
+  toggleMaker(maker: string): void {
+    this.expandedMakers[maker] = !this.expandedMakers[maker];
+  }
+
+  toggleSet(maker: string, set: string): void {
+    this.expandedSets[maker][set] = !this.expandedSets[maker][set];
+  }
+
+  selectClub(club: GolfClub): void {
+    this.selectedClub = club;
+  }
+
+  closePanel(event: Event): void {
+    event.stopPropagation();
+    this.selectedClub = null;
+  }
+
+  redirectToCreateClub(): void {
+    this.router.navigate(['/new-club']);
   }
 }

@@ -1,41 +1,66 @@
 <main class="main">
-    <div *ngIf="loading">Loading clubs...</div>
-  
-    <!-- List Existing Clubs -->
-    <ul class="club-list">
-      <li *ngFor="let club of clubs">
-        {{ club.name }} ({{ club.first }})
-        <button (click)="removeClub(club.id)" class="btn btn-danger">Remove</button>
-      </li>
-    </ul>
-  
-    <!-- Add New Club -->
-    <div class="form-group">
-      <input
-        type="text"
-        [(ngModel)]="newClub.name"
-        class="form-control"
-        placeholder="Club Name"
-      />
-      <input
-      type="text"
-      [(ngModel)]="newClub.first"
-      class="form-control"
-      placeholder="First Name"
-    />
+  <!-- Search Form -->
+  <div class="search-container">
     <input
       type="text"
-      [(ngModel)]="newClub.last"
-      class="form-control"
-      placeholder="Last Name"
+      placeholder="Search by Maker (e.g., Mizuno, Callaway)"
+      [(ngModel)]="searchMaker"
+      (input)="searchClubs()"
     />
-    <input
-      type="text"
-      [(ngModel)]="newClub.loft"
-      class="form-control"
-      placeholder="Loft (e.g., 10.5°)"
-    />
-      <button (click)="addClub()" class="btn btn-primary">Add Club</button>
+    <select [(ngModel)]="searchCategory" (change)="searchClubs()">
+      <option value="">All Categories</option>
+      <option value="DRIVER">Driver</option>
+      <option value="IRON">Iron</option>
+      <option value="WEDGE">Wedge</option>
+      <option value="PUTTER">Putter</option>
+    </select>
+  </div>
+
+  <!-- Collapsible List of Golf Clubs -->
+  <div class="golf-club-list-container" *ngIf="getMakers().length > 0; else noGolfClubs">
+    <h2>Golf Clubs</h2>
+
+    <div *ngFor="let maker of getMakers()" class="maker-section">
+      <h3 (click)="toggleMaker(maker)">
+        {{ maker }} <span [class.expanded]="expandedMakers[maker]">▼</span>
+      </h3>
+
+      <div *ngIf="expandedMakers[maker]">
+        <div *ngFor="let set of getSets(maker)" class="set-section">
+          <h4 (click)="toggleSet(maker, set)">
+            {{ set }} <span [class.expanded]="expandedSets[maker][set]">▶</span>
+          </h4>
+
+          <div class="club-buttons" *ngIf="expandedSets[maker][set]">
+            <button
+              *ngFor="let club of groupedGolfClubs[maker][set]"
+              class="club-button"
+              (click)="selectClub(club)"
+            >
+              {{ club.number }}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
-  </main>
-  
+  </div>
+
+  <!-- No Golf Clubs Message -->
+  <ng-template #noGolfClubs>
+    <p>No golf clubs found. Try a different search or create one.</p>
+  </ng-template>
+
+  <!-- Slide-in Club Details Panel -->
+  <div class="club-details-panel" [class.open]="selectedClub" (click)="closePanel($event)">
+    <div class="club-details-content" *ngIf="selectedClub">
+      <button class="close-btn" (click)="closePanel($event)">✖</button>
+      <h3>{{ selectedClub.maker }}</h3>
+      <p><strong>Set:</strong> {{ selectedClub.set }}</p>
+      <p><strong>Number:</strong> {{ selectedClub.number }}</p>
+      <p><strong>Loft:</strong> {{ selectedClub.loft }}°</p>
+      <p><strong>Length:</strong> {{ selectedClub.length }}"</p>
+      <p><strong>Offset:</strong> {{ selectedClub.club_offset }}"</p>
+      <p><strong>Lie Angle:</strong> {{ selectedClub.lie_angle }}°</p>
+    </div>
+  </div>
+</main>

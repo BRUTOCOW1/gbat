@@ -1,18 +1,23 @@
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Component } from '@angular/core';
+import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { SupabaseService } from '../supabase.service';
 
 @Component({
   selector: 'app-register',
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css'],
 })
-export class RegisterComponent implements OnInit {
+export class RegisterComponent {
   registerForm: FormGroup;
   successMessage: string | null = null;
   errorMessage: string | null = null;
 
-  constructor(private fb: FormBuilder, private router: Router) {
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private supabaseService: SupabaseService
+  ) {
     this.registerForm = this.fb.group({
       username: ['', [Validators.required, Validators.minLength(3)]],
       email: ['', [Validators.required, Validators.email]],
@@ -20,31 +25,44 @@ export class RegisterComponent implements OnInit {
     });
   }
 
-  ngOnInit(): void {}
-
   async onSubmit(): Promise<void> {
     if (this.registerForm.valid) {
       const { username, email, password } = this.registerForm.value;
-
+  
       try {
-        // Simulate a registration service (replace with real service call)
-        const response = await this.simulateRegistration({
-          username,
-          email,
-          password,
-        });
-
-        if (response.success) {
-          this.successMessage = 'Registration successful! Redirecting...';
-          this.errorMessage = null;
-
-          // Simulate a delay and redirect to the login page
-          setTimeout(() => {
-            this.router.navigate(['/login']);
-          }, 2000);
+        const { data, error } = await this.supabaseService.createUser(email, password);
+  
+        if (error) {
+          this.successMessage = null;
+          this.errorMessage = error.message || 'An error occurred during registration.';
+        } else if (data && data.user) {
+          // Only proceed if data.user is not null
+          const profile = {
+            id: data.user.id, // Access safely after null check
+            name: username,
+            email: email,
+            height: 0,
+            weight: 0,
+            sex: 'Male',
+          };
+  
+          const profileResponse = await this.supabaseService.createProfile(profile);
+  
+          if (profileResponse.error) {
+            console.error('Error creating profile:', profileResponse.error.message);
+            this.errorMessage = 'Registration successful, but profile creation failed.';
+          } else {
+            this.successMessage = 'Registration successful! Redirecting...';
+            this.errorMessage = null;
+  
+            // Redirect to the login page after a delay
+            setTimeout(() => {
+              this.router.navigate(['/login']);
+            }, 2000);
+          }
         } else {
           this.successMessage = null;
-          this.errorMessage = response.message || 'An error occurred during registration.';
+          this.errorMessage = 'Unexpected error: User data is null.';
         }
       } catch (error) {
         this.successMessage = null;
@@ -53,17 +71,5 @@ export class RegisterComponent implements OnInit {
       }
     }
   }
-
-  // Simulate a backend registration service
-  private simulateRegistration(user: { username: string; email: string; password: string }): Promise<{ success: boolean; message?: string }> {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        if (user.email === 'existing@example.com') {
-          resolve({ success: false, message: 'Email already in use.' });
-        } else {
-          resolve({ success: true });
-        }
-      }, 1000); // Simulate 1-second backend delay
-    });
-  }
+  
 }
