@@ -142,3 +142,19 @@ span.expanded {
 .club-button:active {
   background: #777;
 }
+
+
+.club-button {
+  background-color: #f0f0f0; /* default background */
+  color: black;
+  border: 1px solid #ccc;
+  padding: 8px 16px;
+  margin: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.club-button.selected {
+  background-color: #007bff; /* new color for selected buttons */
+  color: white;
+}

@@ -35,15 +35,25 @@
             <button
               *ngFor="let club of groupedGolfClubs[maker][set]"
               class="club-button"
+              [ngClass]="{'selected': isClubSelected(club)}"
               (click)="selectClub(club)"
             >
               {{ club.number }}
             </button>
           </div>
+          
         </div>
       </div>
     </div>
+    <button
+    class="club-button"
+    (click)="addClubsToBag()"
+  >
+    {{ "Submit!" }}
+  </button>
   </div>
+
+
 
   <!-- No Golf Clubs Message -->
   <ng-template #noGolfClubs>

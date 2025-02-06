@@ -75,7 +75,7 @@ export class CreateGolfBagComponent implements OnInit {
   }
   
 
-  trackByUserId(index: number, user: User): number {
+  trackByUserId(index: number, user: User): string {
     return user.id; // Return the unique ID of the user
   }
   

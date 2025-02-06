@@ -1,9 +1,11 @@
+
 import { Injectable } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { BehaviorSubject } from 'rxjs';
 import { GolfBag } from './models/golf-bag.model';
 import { GolfClub } from './models/golf-club.model';
 import { User } from './models/user.model';
+
 @Injectable({
   providedIn: 'root',
 })
@@ -11,7 +13,7 @@ export class SupabaseService {
   private supabase: SupabaseClient;
   private authStateSubject = new BehaviorSubject<boolean>(false);
   authState$ = this.authStateSubject.asObservable();
-  
+
   constructor() {
     this.supabase = createClient(
       'https://mgpgbijsyiwkappxedfu.supabase.co', // Replace with your Supabase URL
@@ -19,192 +21,34 @@ export class SupabaseService {
     );
     this.initializeAuthListener();
   }
+
+
+  // ==================== AUTH METHODS ====================
+
   async createUser(email: string, password: string) {
     const result = await this.supabase.auth.signUp({ email, password });
     console.log('Supabase auth.signUp response:', result);
     return result;
   }
-  
-  // Create a new user (Sign Up)
-  // async createUser(email: string, password: string) {
-  //   const { data, error } = await this.supabase.auth.signUp({
-  //     email,
-  //     password,
-  //   });
 
-  //   return { user: data.user, session: data.session, error };
-  // }
+  /** Sign in an existing user */
   async signIn(email: string, password: string) {
-    const { data, error } = await this.supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    return { user: data.user, session: data.session, error };
+    const { data, error } = await this.supabase.auth.signInWithPassword({ email, password });
+    if (error) throw new Error(`Sign-in failed: ${error.message}`);
+    return  { user: data.user, session: data.session, error };;
   }
 
-  async getUser() {
+  /** Get the currently authenticated user */
+  async getUser(): Promise<User | null> {
     const { data, error } = await this.supabase.auth.getUser();
     if (error) {
       console.error('Error fetching user:', error.message);
-      return null; // Handle errors gracefully
-    }
-    return data.user; // Return the user object if available
-  }
-  
-
-// Get the current session
-async getSession() {
-  const { data, error } = await this.supabase.auth.getSession();
-  if (error) {
-    console.error('Error fetching session:', error);
-    return null;
-  }
-  return data.session;
-}
-
-// Listen for auth state changes
-private initializeAuthListener() {
-  this.supabase.auth.onAuthStateChange((event, session) => {
-    console.log('Auth state changed:', event, session);
-
-    // Update the auth state
-    this.authStateSubject.next(!!session);
-  });
-}
-
-// Sign out the current user
-async signOut() {
-  const { error } = await this.supabase.auth.signOut();
-  if (error) {
-    console.error('Error signing out:', error);
-  } else {
-    this.authStateSubject.next(false); // Update the state to logged out
-  }
-}
-async getUsers(): Promise<User[] | null> {
-  try {
-    const response = await this.supabase.from('users_view').select('*');
-    
-    // Check for errors in the response
-    if (response.error) {
-      console.error('Error fetching users:', response.error.message);
       return null;
     }
-
-    // Access the `data` property, which contains the rows
-    console.log('Users fetched successfully:', response.data);
-    return response.data; // `response.data` is the array of users
-  } catch (err) {
-    console.error('Unexpected error:', err);
-    return null;
-  }
-}
-
-async createGolfClub(golfClub: GolfClub): Promise<GolfClub> {
-  // Validate golf_bag_id before sending the request
-  // if (!golfClub.golf_bag_id || golfClub.golf_bag_id.trim() === '') {
-  //   throw new Error('Invalid Golf Bag ID. It cannot be empty.');
-  // }
-  // console.log("sup")
-
-  const { data, error } = await this.supabase
-    .from('golfclub')
-    .insert(golfClub)
-    .select("*");
-
-  if (error) {
-    console.error('Error creating golf club:', error.message);
-    throw error;
+    return data.user;
   }
 
-  if (!data || data.length === 0) {
-    throw new Error('No data returned from Supabase for the created golf club.');
-  }
-
-  return data[0]; // Return the newly created golf club
-}
-
-
-
-async updateGolfBagClubIds(bagId: string, clubIds: string[]): Promise<any> {
-  const { data, error } = await this.supabase
-    .from('golf_bags')
-    .update({ golf_club_ids: clubIds })
-    .eq('id', bagId);
-
-  if (error) {
-    console.error('Error updating golf bag:', error.message);
-    throw error;
-  }
-
-  return data;
-}
-
-async getGolfBagById(bagId: string): Promise<any> {
-  const { data, error } = await this.supabase
-    .from('golf_bags')
-    .select('*')
-    .eq('id', bagId)
-    .single();
-
-  if (error) {
-    console.error('Error fetching golf bag:', error.message);
-    throw error;
-  }
-
-  return data;
-}
-
-
-async createGolfBag(bag: { user_id: string; name: string }): Promise<any> {
-  return await this.supabase
-    .from('golfbag')
-    .insert(bag)
-    .select('*'); // Returns the inserted record
-}
-
-async getProfile(): Promise<any> {
-  const { data, error } = await this.supabase
-    .from('profile')
-    .select('id')
-    .single(); // Fetch the current user's profile
-  if (error) {
-    console.error('Error fetching profile:', error.message);
-    return null;
-  }
-  return data;
-}
-
-async createProfile(profile: {
-  id: string;
-  name: string;
-  email: string;
-  height: number;
-  weight: number;
-  sex: string;
-}): Promise<any> {
-  return await this.supabase
-    .from('profile')
-    .insert(profile)
-    .select('*'); // Return the inserted profile
-}
-
-async getProfileById(userId: string): Promise<any> {
-  const { data, error } = await this.supabase
-    .from('profile')
-    .select('*')
-    .eq('id', userId)
-    .single();
-
-  if (error) {
-    console.error('Error fetching profile:', error.message);
-    return null;
-  }
-
-  return data;
-}
-
-async getCurrentUser(): Promise<any> {
+  async getCurrentUser(): Promise<any> {
   const { data, error } = await this.supabase.auth.getUser();
   if (error) {
     console.error('Error fetching current user:', error.message);
@@ -214,55 +58,152 @@ async getCurrentUser(): Promise<any> {
   return data?.user;
 }
 
-
-  // Fetch golf bags by user (optional if needed for displaying a list)
-  async getGolfBagsByUser(userId: string): Promise<{ data: GolfBag[] | null; error: any }> {
-    return await this.supabase
-      .from('golfbag')
-      .select('*')
-      .eq('user_id', userId); // Filter by user_id
+  /** Get the current authentication session */
+  async getSession() {
+    const { data, error } = await this.supabase.auth.getSession();
+    if (error) {
+      console.error('Error fetching session:', error.message);
+      return null;
+    }
+    return data.session;
   }
 
-  async getAllClubs(){
-    console.log("this is actually occuring");
-    return await this.supabase
-      .from('golfclub').select('*')
+  /** Sign out the current user */
+  async signOut() {
+    const { error } = await this.supabase.auth.signOut();
+    if (error) console.error('Error signing out:', error.message);
+    this.authStateSubject.next(false);
   }
-  
-  async getClubsByBag(golfBagId: string) {
-    return await this.supabase
-      .from('golfclub')
-      .select('*')
-      .eq('golfbag_id', golfBagId);
+
+  /** Listen for authentication state changes */
+  private initializeAuthListener() {
+    this.supabase.auth.onAuthStateChange((_event, session) => {
+      this.authStateSubject.next(!!session);
+    });
   }
-  async addClubToBag(club: { 
-    golf_bag_id: string;
-    first: string;
-    last: string;
-    loft: string;
-  }) {
-    return await this.supabase.from('golfclub').insert(club).select('*');
+
+  // ==================== USER METHODS ====================
+
+  /** Get all users from the users view */
+  async getUsers(): Promise<User[] | null> {
+    const { data, error } = await this.supabase.from('users_view').select('*');
+    if (error) {
+      console.error('Error fetching users:', error.message);
+      return null;
+    }
+    return data;
   }
-  
-  async removeClub(clubId: string) {
-    return await this.supabase.from('golfclub').delete().eq('golfclub_id', clubId);
+
+  // ==================== PROFILE METHODS ====================
+
+  /** Get current user's profile */
+  async getProfile(): Promise<any> {
+    const { data, error } = await this.supabase.from('profile').select('*').single();
+    if (error) {
+      console.error('Error fetching profile:', error.message);
+      return null;
+    }
+    return data;
   }
+
+  /** Create a user profile */
+  async createProfile(profile: { id: string; name: string; email: string; height: number; weight: number; sex: string }) {
+    return await this.supabase.from('profile').insert(profile).select('*');
+  }
+
+  /** Get profile by user ID */
+  async getProfileById(userId: string) {
+    const { data, error } = await this.supabase.from('profile').select('*').eq('id', userId).single();
+    if (error) {
+      console.error('Error fetching profile:', error.message);
+      return null;
+    }
+    return data;
+  }
+
+  // ==================== GOLF BAG METHODS ====================
+
+  /** Create a new golf bag */
+  async createGolfBag(bag: { user_id: string; name: string }) {
+    return await this.supabase.from('golfbag').insert(bag).select('*');
+  }
+
+  /** Get all golf bags */
   async getGolfBags() {
     return await this.supabase.from('golfbag').select('*');
   }
-  
-  async searchClubs(maker: string, category: string) {
+
+  /** Get golf bags by user ID */
+  async getGolfBagsByUser(userId: string): Promise<{ data: GolfBag[] | null; error: any }> {
+    return await this.supabase.from('golfbag').select('*').eq('user_id', userId);
+  }
+
+  /** Get a golf bag by its ID */
+  async getGolfBagById(bagId: string) {
+    const { data, error } = await this.supabase.from('golf_bags').select('*').eq('id', bagId).single();
+    if (error) {
+      console.error('Error fetching golf bag:', error.message);
+      throw error;
+    }
+    return data;
+  }
+
+  /** Update a golf bag's club IDs */
+  async updateGolfBagClubIds(bagId: string, clubIds: string[]) {
+    const { data, error } = await this.supabase.from('golf_bags').update({ golf_club_ids: clubIds }).eq('id', bagId);
+    if (error) {
+      console.error('Error updating golf bag:', error.message);
+      throw error;
+    }
+    return data;
+  }
+
+  // ==================== GOLF CLUB METHODS ====================
+
+  /** Get all golf clubs */
+  async getAllClubs() {
+    return await this.supabase.from('golfclub').select('*');
+  }
+
+  /** Get clubs by golf bag ID */
+  async getClubsByBag(golfBagId: string) {
+    return await this.supabase.from('golfclub').select('*').eq('golfbag_id', golfBagId);
+  }
+
+  /** Add a club to a bag */
+  async addClubToBag(club: { golf_bag_id: string; first: string; last: string; loft: string }) {
+    return await this.supabase.from('golfclub').insert(club).select('*');
+  }
+
+  /** Remove a club from a bag */
+  async removeClub(clubId: string) {
+    return await this.supabase.from('golfclub').delete().eq('golfclub_id', clubId);
+  }
+
+  /** Search for golf clubs by maker and/or category */
+  async searchClubs(maker?: string, category?: string) {
     let query = this.supabase.from('golfclub').select('*');
 
-    if (maker) {
-      query = query.ilike('maker', `%${maker}%`); // Case-insensitive search
-    }
-
-    if (category) {
-      query = query.eq('category', category);
-    }
+    if (maker) query = query.ilike('maker', `%${maker}%`);
+    if (category) query = query.eq('category', category);
 
     return await query;
   }
-  
+
+  // ==================== GOLFER-CLUB RELATIONSHIPS ====================
+
+  /** Assign a club to a golfer */
+  async createGolferClub(golferClub: { golfer_id: string; club_id: string; cur_bag_id: string }) {
+    return await this.supabase.from('golfer_club').insert(golferClub).select('*');
+  }
+
+  /** Get clubs assigned to a user in a specific bag */
+  async getClubsByBagId(bagId: string, userId: string) {
+    return await this.supabase.from('golfer_club').select('club_id').eq('golfer_id', userId).eq('cur_bag_id', bagId);
+  }
+
+  /** Get club details from a list of club IDs */
+  async getClubsFromIds(clubIds: string[]) {
+    return await this.supabase.from('golfclub').select('*').in('id', clubIds);
+  }
 }

@@ -40,7 +40,7 @@ export class LoginComponent implements OnInit {
         const { user, session, error } = await this.supabaseService.signIn(email, password);
 
         if (error) {
-          this.errorMessage = error.message || 'Login failed. Please check your credentials.';
+          this.errorMessage = error || 'Login failed. Please check your credentials.';
         } else if (user) {
           console.log('Login successful:', user);
           await this.router.navigate(['/dashboard']);

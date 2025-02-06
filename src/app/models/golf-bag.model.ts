@@ -1,5 +1,5 @@
 export interface GolfBag {
-    GolfBag_id: string;
+    golfbag_id: string;
     name: string;
     user_id: number;
   }

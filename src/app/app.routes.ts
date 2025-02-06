@@ -10,7 +10,6 @@ import {BlogComponent} from './blog/blog.component';
 import { RegisterComponent } from './register/register.component';
 import { ProfileComponent } from './profile/profile.component';
 import { CreateGolfBagComponent } from './create-golf-bag/create-golf-bag.component';
-import { CreateGolfClubComponent } from './create-golf-club/create-golf-club.component';
 
 export const routes: Routes = [
     
@@ -21,7 +20,6 @@ export const routes: Routes = [
     { path: 'round-component', component: RoundComponent,},
     { path: 'golf-bag-component', component: GolfBagComponent,},
     { path: 'new-bag', component: CreateGolfBagComponent,},
-    { path: 'new-club', component: CreateGolfClubComponent,},
     {path: 'golf-club-component', component: GolfClubComponent,},
     { path: 'dashboard', component: GolfComponent, canActivate: [AuthGuard] },
     { path: 'login', component: LoginComponent },

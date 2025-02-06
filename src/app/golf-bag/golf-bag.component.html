@@ -1,31 +1,57 @@
-<main class="main">
-  <!-- Create Golf Bag Button -->
-  <div class="create-golf-bag-container">
-    <button
-      class="btn btn-primary create-golf-bag-button"
-      (click)="redirectToCreateBag()"
-    >
-      Create Golf Bag
-    </button>
+<div class="golf-bag-list">
+  <div 
+    *ngFor="let bag of golfBags" 
+    class="golf-bag-card"
+    (click)="selectBag(bag?.golfbag_id!)"
+  >
+    <h3 class="bag-title">{{ bag?.name }}</h3>
+
+    <!-- Clubs Section -->
+    <div *ngIf="bag?.golfbag_id === selectedBagId" class="club-sections">
+      <div class="club-category" *ngIf="getClubsByType(bag.golfbag_id, 'DRIVER').length">
+        <h4>Driver</h4>
+        <ul>
+          <li *ngFor="let club of getClubsByType(bag.golfbag_id, 'DRIVER')">
+            {{ club.maker }} - {{ club.set }} ({{ club.number }})
+          </li>
+        </ul>
+      </div>
+
+      <div class="club-category" *ngIf="getClubsByType(bag.golfbag_id, 'WOOD').length">
+        <h4>Woods</h4>
+        <ul>
+          <li *ngFor="let club of getClubsByType(bag.golfbag_id, 'WOOD')">
+            {{ club.maker }} - {{ club.set }} ({{ club.number }})
+          </li>
+        </ul>
+      </div>
+
+      <div class="club-category" *ngIf="getClubsByType(bag.golfbag_id, 'IRON').length">
+        <h4>Irons</h4>
+        <ul>
+          <li *ngFor="let club of getClubsByType(bag.golfbag_id, 'IRON')">
+            {{ club.maker }} - {{ club.set }} ({{ club.number }})
+          </li>
+        </ul>
+      </div>
+
+      <div class="club-category" *ngIf="getClubsByType(bag.golfbag_id, 'WEDGE').length">
+        <h4>Wedges</h4>
+        <ul>
+          <li *ngFor="let club of getClubsByType(bag.golfbag_id, 'WEDGE')">
+            {{ club.maker }} - {{ club.set }} ({{ club.number }})
+          </li>
+        </ul>
+      </div>
+
+      <div class="club-category" *ngIf="getClubsByType(bag.golfbag_id, 'PUTTER').length">
+        <h4>Putter</h4>
+        <ul>
+          <li *ngFor="let club of getClubsByType(bag.golfbag_id, 'PUTTER')">
+            {{ club.maker }} - {{ club.set }} ({{ club.number }})
+          </li>
+        </ul>
+      </div>
+    </div>
   </div>
-
-  <!-- List of Golf Bags -->
-  <div class="golf-bag-list-container" *ngIf="golfBags.length > 0; else noGolfBags">
-    <h2>Your Golf Bags</h2>
-    <ul class="golf-bag-list">
-      <li
-        *ngFor="let bag of golfBags"
-        (click)="selectBag(bag.GolfBag_id)"
-        [class.selected]="bag.GolfBag_id === selectedBagId"
-      >
-        {{ bag.name }}
-      </li>
-    </ul>
-  </div>
-
-  <!-- No Golf Bags Message -->
-  <ng-template #noGolfBags>
-    <p>No golf bags available. Create one to get started.</p>
-  </ng-template>
-
-</main>
+</div>

@@ -16,7 +16,6 @@ import { GolfClubComponent } from './golf-club/golf-club.component';
 import { RegisterComponent } from './register/register.component';
 import { NavbarComponent } from './shared/navbar/navbar.component';
 import { CreateGolfBagComponent } from './create-golf-bag/create-golf-bag.component';
-import { CreateGolfClubComponent } from './create-golf-club/create-golf-club.component';
 import { HttpClientModule } from '@angular/common/http'; // Import HttpClientModule
 
 @NgModule({
@@ -32,7 +31,6 @@ import { HttpClientModule } from '@angular/common/http'; // Import HttpClientMod
     RegisterComponent,
     NavbarComponent,
     CreateGolfBagComponent,
-    CreateGolfClubComponent,
     ProfileComponent
 
   ],
