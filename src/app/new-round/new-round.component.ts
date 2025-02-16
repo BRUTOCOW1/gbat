@@ -28,7 +28,7 @@ export class NewRoundComponent implements OnInit {
   }
 
   async ngOnInit() {
-    const user = await this.supabaseService.getCurrentUser();
+    const user = await this.supabaseService.getUser();
     if (user) {
       this.userId = user.id;
       await this.loadGolfBags();

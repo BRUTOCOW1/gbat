@@ -1,7 +1,5 @@
-<nav class="navbar">
+<!-- <nav class="navbar">
   <div class="navbar-left">
-    <a routerLink="/" class="logo">GBAT</a>
-    <a routerLink="golf-component" routerLinkActive="active">Golf Component</a>
     <a routerLink="blog-component" routerLinkActive="active">Blog Component</a>
   </div>
   <div class="navbar-right">
@@ -16,5 +14,28 @@
     <button class="toggle-dark-mode" (click)="toggleDarkMode()">
       {{ isDarkMode ? 'Light Mode' : 'Dark Mode' }}
     </button>
+  </div>
+</nav> -->
+
+<!-- navbar.component.html -->
+<nav class="top-nav">
+    <div class="navbar-left">
+      <a routerLink="blog-component" routerLinkActive="active">Blog Component</a>
+    </div>
+    <div class="navbar-right">
+      <ng-container *ngIf="isLoggedIn">
+        <a routerLink="/profile">Profile</a>
+        <button (click)="logout()" class="logout-button">Logout</button>
+      </ng-container>
+      <ng-container *ngIf="!isLoggedIn">
+        <a routerLink="/login">Login</a>
+        <a routerLink="/register">Register</a>
+      </ng-container>  
+    <div class="toggle-dark-mode">
+      <button class="btn-accent" (click)="toggleDarkMode()">
+        <span *ngIf="!isDarkMode">🌙</span>
+        <span *ngIf="isDarkMode">☀️</span>
+      </button>
+    </div>
   </div>
 </nav>

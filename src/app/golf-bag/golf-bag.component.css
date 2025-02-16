@@ -148,3 +148,125 @@ h2 {
     background: #004099;
   }
 }
+
+/* Container for the entire page */
+.golf-bags-container {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 1rem;
+  text-align: center;
+}
+
+/* Title styling */
+.bags-title {
+  margin-bottom: 1rem;
+  font-size: 2rem;
+  color: var(--accent-color, #FFD700);
+}
+
+/* Actions row (e.g., "Create New Bag" button) */
+.bags-actions {
+  margin-bottom: 2rem;
+}
+
+/* Responsive grid for the bag cards */
+.bag-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  text-align: left; /* So text in the cards is left-aligned */
+}
+
+/* Individual Bag Card */
+.bag-card {
+  background-color: var(--card-bg-light, #2c2c2c);
+  color: var(--text-color-light, #fff);
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+}
+
+.bag-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+}
+
+/* Highlight the selected bag card */
+.bag-card.selected {
+  border: 2px solid var(--accent-color, #FFD700);
+}
+
+/* Bag name styling */
+.bag-name {
+  margin-top: 0;
+  font-size: 1.25rem;
+  color: var(--secondary-color, #3B6E23);
+}
+
+/* "Add Clubs" button displayed in selected bag */
+.add-clubs-btn {
+  margin: 0.5rem 0 1rem;
+}
+
+/* The list of clubs in a bag */
+.club-list {
+  border-top: 1px solid rgba(255,255,255,0.2);
+  margin-top: 1rem;
+  padding-top: 1rem;
+}
+
+.club-list h4 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+  color: var(--accent-color, #FFD700);
+}
+
+.club-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.club-list li {
+  margin-bottom: 0.75rem;
+}
+
+/* Club header row for each club */
+.club-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255,255,255,0.05);
+  padding: 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.club-header:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+/* The arrow that rotates when expanded */
+.arrow {
+  margin-left: 0.5rem;
+  transition: transform 0.2s;
+}
+.arrow.open {
+  transform: rotate(90deg);
+}
+
+/* Dropdown container for extra club details */
+.club-dropdown {
+  margin: 0.25rem 0 0 0.5rem;
+  padding: 0.5rem;
+  background: rgba(255,255,255,0.02);
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+.club-dropdown p {
+  margin: 0.25rem 0;
+}
+

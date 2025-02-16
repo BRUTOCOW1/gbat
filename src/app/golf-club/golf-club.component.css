@@ -1,160 +1,121 @@
-.main {
-  padding: 2rem;
-  max-width: 600px;
-  margin: auto;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+.golf-clubs-list {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 1rem;
 }
 
-.search-container {
+.filter-controls {
   display: flex;
-  gap: 10px;
+  align-items: center;
+  gap: 1rem;
   margin-bottom: 1rem;
 }
 
-.search-container input,
-.search-container select {
-  flex: 1;
-  padding: 8px;
-  font-size: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+.bulk-add {
+  text-align: right;
+  margin-bottom: 1rem;
 }
 
-
-.create-golf-club-button:hover {
-  background-color: #0056b3;
+/* Maker Level */
+.maker-level {
+  margin-bottom: 1rem;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.02);
+  border-radius: 6px;
+  padding: 0.75rem;
 }
 
-.golf-club-list-container h2 {
-  color: rgb(80, 75, 75);
-
-  text-align: center;
-}
-
-.golf-club-list {
-  list-style: none;
-  color: rgb(53, 50, 50);
-  padding: 0;
-}
-
-.golf-club-list li {
-  padding: 10px;
-  border-bottom: 1px solid #ddd;
+.maker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   cursor: pointer;
-  transition: background-color 0.2s;
-  color:rgb(51, 47, 47);
-
+  margin-bottom: 0.5rem;
 }
-
-.golf-club-list li:hover {
-  background-color: #f5f5f5;
+.maker-header h3 {
+  font-size: 1.2rem;
+  margin: 0;
+  color: var(--primary-color, #2A4A16);
 }
-
-/* Slide-in Panel */
-.club-details-panel {
-  position: fixed;
-  top: 0;
-  right: -320px; /* Hidden off-screen */
-  width: 300px;
-  height: 100%;
-  background: #222;
-  color: #fff;
-  box-shadow: -2px 0 6px rgba(0, 0, 0, 0.3);
-  transition: right 0.3s ease-in-out;
-  padding: 20px;
-  overflow-y: auto;
-}
-
-.club-details-panel.open {
-  right: 0; /* Slide in */
-}
-
-.club-details-content {
-  position: relative;
-}
-
-.close-btn {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  color: #fff;
-  cursor: pointer;
-}
-.maker-section h3, .set-section h4 {
-  cursor: pointer;
-  padding: 10px;
-  background: #ddd;
-  border-radius: 5px;
-  color:rgb(51, 47, 47);
-
-}
-
-.maker-section h3:hover, .set-section h4:hover {
-  background: #bbb;
-  color:rgb(51, 47, 47);
-}
-
-span.expanded {
-  float: right;
+.arrow {
   transition: transform 0.2s;
 }
-
-.expanded {
+.arrow.open {
   transform: rotate(90deg);
 }
 
-
-.club-buttons {
+/* Set Level */
+.set-item {
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.05);
+}
+.set-header {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
-  padding: 10px;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  margin-bottom: 0.25rem;
+}
+.set-header h4 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--secondary-color, #3B6E23);
 }
 
-.club-button {
-  padding: 3px 4px;
-  border: none;
-  border-radius: 50%; /* Circular shape */
-  background: #333; /* Dark grey */
-  color: white;
-  font-size: 1rem;
-  text-align: center;
+/* Category Level */
+.category-item {
+  margin-left: 1rem;
+  padding: 0.5rem;
+  background: rgba(255,255,255,0.08);
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+}
+.category-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
-  min-width: 50px; /* Ensures consistent size */
-  min-height: 50px;
+  margin-bottom: 0.25rem;
+}
+.category-header h5 {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--accent-color, #C2A935);
+}
+
+/* Club List */
+.club-list {
+  list-style: none;
+  margin: 0.5rem 0 0 1.5rem;
+  padding: 0;
+}
+.club-item {
+  margin-bottom: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.95rem;
+}
+.club-row {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 0.5rem;
+}
+.club-row strong {
+  color: var(--secondary-color, #3B6E23);
+}
+.club-details {
+  margin-left: 1.8rem;
+  color: #ccc; /* or #333 in light mode */
+  font-size: 0.9rem;
 }
 
-.club-button:hover {
-  background: #555;
-  transform: scale(1.1);
-}
-
-.club-button:active {
-  background: #777;
-}
-
-
-.club-button {
-  background-color: #f0f0f0; /* default background */
-  color: black;
-  border: 1px solid #ccc;
-  padding: 8px 16px;
-  margin: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.club-button.selected {
-  background-color: #007bff; /* new color for selected buttons */
-  color: white;
+/* Dark mode overrides (if you have body.dark-mode) */
+body.dark-mode .maker-level,
+body.dark-mode .set-item,
+body.dark-mode .category-item {
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.02);
 }

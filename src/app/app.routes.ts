@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import {GolfComponent} from './golf/golf.component';
 import {GolfShotComponent} from './golf-shot/golf-shot.component';
 import {GolfBagComponent} from './golf-bag/golf-bag.component';
 import {GolfClubComponent} from './golf-club/golf-club.component';
@@ -19,10 +18,9 @@ export const routes: Routes = [
     // ✅ Alphabetized Components
     { path: 'blog-component', component: BlogComponent },
     { path: 'dashboard', component: GolfRoundComponent, canActivate: [AuthGuard] },
-    { path: 'golf-bag-component', component: GolfBagComponent },
+    { path: 'golf-bags', component: GolfBagComponent },
     { path: 'golf-bag/:id', component: GolfBagComponent },
-    { path: 'golf-club-component', component: GolfClubComponent },
-    { path: 'golf-component', component: GolfComponent },
+    { path: 'golf-clubs', component: GolfClubComponent },
     { path: 'golf-courses', component: GolfCourseComponent }, // ✅ Added
     { path: 'golf-hole/:holeNumber', component: GolfHoleComponent },
     { path: 'golf-shot/:holeNumber', component: GolfShotComponent },

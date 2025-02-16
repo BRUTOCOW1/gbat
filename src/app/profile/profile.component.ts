@@ -16,7 +16,7 @@ export class ProfileComponent implements OnInit {
   constructor(private supabaseService: SupabaseService, private router: Router) {}
 
   async ngOnInit(): Promise<void> {
-    this.user = await this.supabaseService.getCurrentUser();
+    this.user = await this.supabaseService.getUser();
     if (this.user) {
       await this.loadProfile();
     }

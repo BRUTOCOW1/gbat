@@ -13,7 +13,8 @@ import { Router } from '@angular/router';
 export class CreateGolfBagComponent implements OnInit {
   golfBagForm: FormGroup;
   profileId: string | null = null; // ID of the current user's profile
-
+  userId: string | null = null;
+  
   constructor(private fb: FormBuilder, private supabaseService: SupabaseService, private router: Router) {
     // Initialize the form group with validation rules
     this.golfBagForm = this.fb.group({
@@ -24,7 +25,15 @@ export class CreateGolfBagComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     // Fetch the current user's profile ID
-    const profile = await this.supabaseService.getProfile();
+    const user = await this.supabaseService.getUser();
+    if (!user) {
+      console.warn('No user is authenticated.');
+      this.router.navigate(['/login']);
+      return;
+    }
+    this.userId = user.id;
+
+    const profile = await this.supabaseService.getProfileById(this.userId);
     if (profile) {
       this.profileId = profile.id;
     } else {
@@ -38,7 +47,7 @@ export class CreateGolfBagComponent implements OnInit {
     console.log('Submitting Create Golf Bag Form...');
     
     if (this.golfBagForm.valid) {
-      const user = await this.supabaseService.getCurrentUser();
+      const user = await this.supabaseService.getUser();
       if (!user || !user.id) {
         console.error('No authenticated user found');
         return;

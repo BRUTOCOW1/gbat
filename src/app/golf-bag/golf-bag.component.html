@@ -1,37 +1,54 @@
-
-<div class="golf-bag-container">
-  <h2>Your Golf Bags</h2>
-
-  <!-- If no golf bags exist, show the create bag button -->
-  <div *ngIf="golfBags.length === 0" class="no-bags">
-    <p>You don’t have a golf bag yet.</p>
-    <button class="btn-primary" (click)="navigateTocreateBag()">Create New Golf Bag</button>
+<div class="golf-bags-container">
+  <h2 class="bags-title">Your Golf Bags</h2>
+  
+  <!-- "Create New Bag" button -->
+  <div class="bags-actions">
+    <button class="btn btn-primary" (click)="navigateTocreateBag()">Create New Golf Bag</button>
   </div>
 
-  <!-- Display existing bags -->
-  <div class="golf-bag-list">
+  <!-- Grid of Bag Cards -->
+  <div class="bag-list">
     <div 
-      *ngFor="let bag of golfBags" 
-      class="golf-bag-card"
-      (click)="selectBag(bag?.golfbag_id!, $event)"
+      class="bag-card card"
+      *ngFor="let bag of golfBags"
+      (click)="selectBag(bag.golfbag_id, $event)"
+      [class.selected]="bag.golfbag_id === selectedBagId"
     >
-      <h3 class="bag-title">{{ bag?.name }}</h3>
+      <h3 class="bag-name">{{ bag.name }}</h3>
 
-      <!-- ✅ Show "Add Clubs" button when a bag is selected -->
+      <!-- Show "Add Clubs" button only if this bag is selected -->
       <button 
-        *ngIf="bag?.golfbag_id === selectedBagId" 
-        class="btn-secondary" 
+        *ngIf="bag.golfbag_id === selectedBagId"
+        class="btn btn-secondary add-clubs-btn"
         (click)="navigateToAddClubs(bag.golfbag_id, $event)"
       >
         Add Clubs
       </button>
 
-      <!-- ✅ Show Clubs in Selected Bag -->
-      <div *ngIf="bag?.golfbag_id === selectedBagId" class="club-sections">
+      <!-- Expandable Clubs List -->
+      <div class="club-list" *ngIf="bag.golfbag_id === selectedBagId">
         <h4>Clubs in this Bag:</h4>
-        <ul class="golf-club-list">
+        <ul>
           <li *ngFor="let club of clubsByBag[bag.golfbag_id]">
-            <strong>{{ club.maker }} {{ club.number }}</strong> - {{ club.category }}
+            
+            <!-- Club Header Row -->
+            <div 
+              class="club-header"
+              (click)="toggleClubDetails(club.id, $event)"
+            >
+              <strong>{{ club.maker }} {{club.set}} {{ club.number }} {{ club.category }} </strong>
+              <span class="arrow" [class.open]="clubExpanded[club.id]">▼</span>
+            </div>
+
+            <!-- Dropdown with Additional Club Details -->
+            <div class="club-dropdown" *ngIf="clubExpanded[club.id]">
+              <p><strong>Loft:</strong> {{ club.loft }}°</p>
+              <p><strong>Length:</strong> {{ club.length }}"</p>
+              <p><strong>Offset:</strong> {{ club.club_offset }}"</p>
+              <p><strong>Lie Angle:</strong> {{ club.lie_angle }}°</p>
+              <!-- Add more fields if needed -->
+            </div>
+
           </li>
         </ul>
       </div>

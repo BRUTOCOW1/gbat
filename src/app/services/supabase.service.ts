@@ -6,466 +6,468 @@ import { GolfBag } from '../models/golf-bag.model';
 import { GolfShot } from '../models/golf-shot.model';
 import { GolfClub } from '../models/golf-club.model';
 import { User } from '../models/user.model';
-
+import { GolfCourse, GolfHole } from '../models/golf-course.model';
+import { Observable } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { map, catchError } from 'rxjs/operators';
 @Injectable({
   providedIn: 'root',
 })
+
 export class SupabaseService {
+  private apiUrl = 'https://mgpgbijsyiwkappxedfu.supabase.co';
+  private apiKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ncGdiaWpzeWl3a2FwcHhlZGZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzYyMDY4NDQsImV4cCI6MjA1MTc4Mjg0NH0.IkpfzHy9xE00p7GjbSyhg30H_5hZ7_4zHFJoXhBTdmY' // Replace with your Supabase Anon Key
+
   private supabase: SupabaseClient;
   private authStateSubject = new BehaviorSubject<boolean>(false);
   authState$ = this.authStateSubject.asObservable();
 
-  constructor() {
+  constructor(private http: HttpClient) {
+    // TODO: Move these to environment variables
     this.supabase = createClient(
-      'https://mgpgbijsyiwkappxedfu.supabase.co', // Replace with your Supabase URL
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ncGdiaWpzeWl3a2FwcHhlZGZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzYyMDY4NDQsImV4cCI6MjA1MTc4Mjg0NH0.IkpfzHy9xE00p7GjbSyhg30H_5hZ7_4zHFJoXhBTdmY' // Replace with your Supabase Anon Key
+      this.apiUrl, 
+      this.apiKey
     );
     this.initializeAuthListener();
   }
 
+  /**
+   * Helper method to handle and log errors consistently.
+   */
+  private handleError(methodName: string, error: any): void {
+    console.error(`SupabaseService -> ${methodName}() Error:`, error.message || error);
+  }
 
   // ==================== AUTH METHODS ====================
 
   async createUser(email: string, password: string) {
-    const result = await this.supabase.auth.signUp({ email, password });
-    console.log('Supabase auth.signUp response:', result);
-    return result;
+    try {
+      const result = await this.supabase.auth.signUp({ email, password });
+      return result;
+    } catch (error: any) {
+      this.handleError('createUser', error);
+      throw error;
+    }
   }
 
-  /** Sign in an existing user */
-  async signIn(email: string, password: string) {
-    const { data, error } = await this.supabase.auth.signInWithPassword({ email, password });
-    if (error) throw new Error(`Sign-in failed: ${error.message}`);
-    return  { user: data.user, session: data.session, error };;
+  async signIn(email: string, password: string): Promise<{ user: User | null; session: any; error: any }> {
+    try {
+      const { data, error } = await this.supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      return { user: data.user as User, session: data.session, error: null };
+    } catch (error: any) {
+      this.handleError('signIn', error);
+      return { user: null, session: null, error };
+    }
   }
 
-  /** Get the currently authenticated user */
+  async signOut(): Promise<void> {
+    try {
+      const { error } = await this.supabase.auth.signOut();
+      if (error) throw error;
+      this.authStateSubject.next(false);
+    } catch (error: any) {
+      this.handleError('signOut', error);
+    }
+  }
+
   async getUser(): Promise<User | null> {
-    const { data, error } = await this.supabase.auth.getUser();
-    if (error) {
-      console.error('Error fetching user:', error.message);
+    try {
+      const { data, error } = await this.supabase.auth.getUser();
+      if (error) throw error;
+      return data.user as User;
+    } catch (error: any) {
+      this.handleError('getUser', error);
       return null;
     }
-    return data.user;
   }
 
-  async getCurrentUser(): Promise<any> {
-  const { data, error } = await this.supabase.auth.getUser();
-  if (error) {
-    console.error('Error fetching current user:', error.message);
-    return null;
-  }
-
-  return data?.user;
-}
-
-  /** Get the current authentication session */
-  async getSession() {
-    const { data, error } = await this.supabase.auth.getSession();
-    if (error) {
-      console.error('Error fetching session:', error.message);
+  async getSession(): Promise<any> {
+    try {
+      const { data, error } = await this.supabase.auth.getSession();
+      if (error) throw error;
+      return data.session;
+    } catch (error: any) {
+      this.handleError('getSession', error);
       return null;
     }
-    return data.session;
   }
 
-  /** Sign out the current user */
-  async signOut() {
-    const { error } = await this.supabase.auth.signOut();
-    if (error) console.error('Error signing out:', error.message);
-    this.authStateSubject.next(false);
-  }
-
-  /** Listen for authentication state changes */
-  private initializeAuthListener() {
+  private initializeAuthListener(): void {
     this.supabase.auth.onAuthStateChange((_event, session) => {
       this.authStateSubject.next(!!session);
     });
   }
 
-  // ==================== USER METHODS ====================
-
-  /** Get all users from the users view */
-  async getUsers(): Promise<User[] | null> {
-    const { data, error } = await this.supabase.from('users_view').select('*');
-    if (error) {
-      console.error('Error fetching users:', error.message);
-      return null;
-    }
-    return data;
-  }
-
   // ==================== PROFILE METHODS ====================
 
-  /** Get current user's profile */
-  async getProfile(): Promise<any> {
-    const { data, error } = await this.supabase.from('profile').select('*').single();
-    if (error) {
-      console.error('Error fetching profile:', error.message);
-      return null;
-    }
-    return data;
-  }
-
-  /** Create a user profile */
   async createProfile(profile: { id: string; name: string; email: string; height: number; weight: number; sex: string }) {
-    return await this.supabase.from('profile').insert(profile).select('*');
+    try {
+      return await this.supabase.from('profile').insert(profile).select('*');
+    } catch (error: any) {
+      this.handleError('createProfile', error);
+      return { data: null, error };
+    }
   }
 
-  /** Get profile by user ID */
-  async getProfileById(userId: string) {
-    const { data, error } = await this.supabase.from('profile').select('*').eq('id', userId).single();
-    if (error) {
-      console.error('Error fetching profile:', error.message);
+  async getProfileById(userId: string): Promise<any> {
+    try {
+      const { data, error } = await this.supabase
+        .from('profile')
+        .select('*')
+        .eq('id', userId)
+        .single();
+      if (error) throw error;
+      return data;
+    } catch (error: any) {
+      this.handleError('getProfileById', error);
       return null;
     }
-    return data;
   }
 
   // ==================== GOLF BAG METHODS ====================
 
-  /** Create a new golf bag */
   async createGolfBag(bag: { user_id: string; name: string }) {
-    return await this.supabase.from('golfbag').insert(bag).select('*');
+    try {
+      return await this.supabase.from('golfbag').insert(bag).select('*');
+    } catch (error: any) {
+      this.handleError('createGolfBag', error);
+      return { data: null, error };
+    }
   }
 
-  /** Get all golf bags */
-  async getGolfBags() {
-    return await this.supabase.from('golfbag').select('*');
-  }
-
-  /** Get golf bags by user ID */
   async getGolfBagsByUser(userId: string): Promise<{ data: GolfBag[] | null; error: any }> {
-    return await this.supabase.from('golfbag').select('*').eq('user_id', userId);
-  }
-
-  /** Get a golf bag by its ID */
-  async getGolfBagById(bagId: string) {
-    const { data, error } = await this.supabase.from('golf_bags').select('*').eq('id', bagId).single();
-    if (error) {
-      console.error('Error fetching golf bag:', error.message);
-      throw error;
+    try {
+      const { data, error } = await this.supabase
+        .from('golfbag')
+        .select('*')
+        .eq('user_id', userId);
+      return { data, error };
+    } catch (error: any) {
+      this.handleError('getGolfBagsByUser', error);
+      return { data: null, error };
     }
-    return data;
-  }
-
-  /** Update a golf bag's club IDs */
-  async updateGolfBagClubIds(bagId: string, clubIds: string[]) {
-    const { data, error } = await this.supabase.from('golf_bags').update({ golf_club_ids: clubIds }).eq('id', bagId);
-    if (error) {
-      console.error('Error updating golf bag:', error.message);
-      throw error;
-    }
-    return data;
   }
 
   // ==================== GOLF CLUB METHODS ====================
 
-  /** Get all golf clubs */
-  async getAllClubs() {
-    return await this.supabase.from('golfclub').select('*');
+  async getAllClubs(): Promise<{ data: GolfClub[] | null; error: any }> {
+    try {
+      const { data, error } = await this.supabase.from('golfclub').select('*');
+      return { data, error };
+    } catch (error: any) {
+      this.handleError('getAllClubs', error);
+      return { data: null, error };
+    }
   }
+  // Fetch golf clubs for the authenticated user
+  getGolfClubs(): Observable<GolfClub[]> {
+    const headers = {
+      'Content-Type': 'application/json',
+      'apikey': this.apiKey,
+      'Authorization': `Bearer ${this.apiKey}`,
+      'Access-Control-Allow-Origin': '*',  // 👈 Add this
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',  // 👈 Ensure OPTIONS is allowed
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization', 
+    };
 
-  /** Get clubs by golf bag ID */
-  async getClubsByBag(golfBagId: string) {
-    return await this.supabase.from('golfclub').select('*').eq('golfbag_id', golfBagId);
+    this.apiUrl += '/rest/v1/golfclub';
+
+  
+    return this.http.get<GolfClub[]>(`${this.apiUrl}?select=*`, { headers }).pipe(      map((response) => response || []),
+      catchError((error) => {
+        console.error('CORS Error:', error);
+        throw error;
+      })
+    );
   }
-
-  /** Add a club to a bag */
-  async addClubToBag(club: { golf_bag_id: string; first: string; last: string; loft: string }) {
-    return await this.supabase.from('golfclub').insert(club).select('*');
-  }
-
-  /** Remove a club from a bag */
-  async removeClub(clubId: string) {
-    return await this.supabase.from('golfclub').delete().eq('golfclub_id', clubId);
-  }
-
-  /** Search for golf clubs by maker and/or category */
-  async searchClubs(maker?: string, category?: string) {
-    let query = this.supabase.from('golfclub').select('*');
-
-    if (maker) query = query.ilike('maker', `%${maker}%`);
-    if (category) query = query.eq('category', category);
-
-    return await query;
+  
+  async searchClubs(maker?: string, category?: string): Promise<{ data: GolfClub[] | null; error: any }> {
+    try {
+      let query = this.supabase.from('golfclub').select('*');
+      if (maker) query = query.ilike('maker', `%${maker}%`);
+      if (category) query = query.eq('category', category);
+      const { data, error } = await query;
+      return { data, error };
+    } catch (error: any) {
+      this.handleError('searchClubs', error);
+      return { data: null, error };
+    }
   }
 
   // ==================== GOLFER-CLUB RELATIONSHIPS ====================
 
-/** Get a golfer's club by user ID and club ID */
-async getGolferClub(golferId: string, clubId: string) {
-  return await this.supabase
-    .from('golfer_club')
-    .select('*')
-    .eq('golfer_id', golferId)
-    .eq('club_id', clubId);
-}
+  async createGolferClub(golferClub: { golfer_id: string; club_id: string; cur_bag_id: string }) {
+    try {
+      return await this.supabase.from('golfer_club').insert(golferClub).select('*');
+    } catch (error: any) {
+      this.handleError('createGolferClub', error);
+      return { data: null, error };
+    }
+  }
 
-/** Assign a club to a golfer */
-async createGolferClub(golferClub: { golfer_id: string; club_id: string; cur_bag_id: string }) {
-  return await this.supabase.from('golfer_club').insert(golferClub).select('*');
-}
-
-
-  /** Get clubs assigned to a user in a specific bag */
   async getClubsByBagId(bagId: string, userId: string) {
-    return await this.supabase.from('golfer_club').select('club_id').eq('golfer_id', userId).eq('cur_bag_id', bagId);
+    try {
+      return await this.supabase
+        .from('golfer_club')
+        .select('club_id')
+        .eq('golfer_id', userId)
+        .eq('cur_bag_id', bagId);
+    } catch (error: any) {
+      this.handleError('getClubsByBagId', error);
+      return { data: null, error };
+    }
   }
 
-  /** Get club details from a list of club IDs */
   async getClubsFromIds(clubIds: string[]) {
-    return await this.supabase.from('golfclub').select('*').in('id', clubIds);
-  }
-  /** Get golfer_club entry for a given golfer and club */
-async getGolferClubEntry(golferId: string, clubId: string) {
-  return await this.supabase
-    .from('golfer_club')
-    .select('*')
-    .eq('golfer_id', golferId)
-    .eq('club_id', clubId);
-}
-
-
- // ==================== GOLF COURSE RELATIONSHIPS ====================
-
-  // ==================== GOLF COURSE METHODS ====================
-
-  /** Search for golf courses by name */
-  async searchGolfCourses(query: string) {
-    const { data, error } = await this.supabase
-      .from('golf_courses')
-      .select('*')
-      .ilike('name', `%${query}%`);
-
-    if (error) {
-      console.error('Error searching for courses:', error.message);
-      return [];
+    try {
+      return await this.supabase.from('golfclub').select('*').in('id', clubIds);
+    } catch (error: any) {
+      this.handleError('getClubsFromIds', error);
+      return { data: null, error };
     }
-    return data;
-  }
-
-  /** Get a golf course by ID */
-  async getGolfCourseById(courseId: string) {
-    const { data, error } = await this.supabase
-      .from('golf_courses')
-      .select('*')
-      .eq('id', courseId)
-      .single();
-
-    if (error) {
-      console.error('Error fetching course:', error.message);
-      return null;
-    }
-    return data;
-  }
-
-  /** Get holes for a given golf course */
-  async getGolfHolesByCourseId(courseId: string) {
-    const { data, error } = await this.supabase
-      .from('golf_holes')
-      .select('*')
-      .eq('course_id', courseId)
-      .order('hole_number', { ascending: true });
-
-    if (error) {
-      console.error('Error fetching holes:', error.message);
-      return [];
-    }
-    return data;
-  }
-
-  async getGolfCourseNameById(courseId: string) {
-    const { data, error } = await this.supabase
-    .from('golf_courses')
-    .select('name')
-    .eq('id', courseId)
-
-  if (error) {
-    console.error('Error fetching Course Name:', error.message);
-    return [];
-  }
-  return data;
-  }
-
-
-    // ==================== GOLF ROUND METHODS ====================
-
-/** Get golf rounds by user ID */
-  async getGolfRoundsByUser(userId: string) {
-    return await this.supabase.from('golf_rounds').select('*').eq('user_id', userId);
-  }
-
-
-/** Get golf round by round ID */
-async getGolfRoundById(round_id: string) {
-  return await this.supabase.from('golf_rounds').select('*').eq('id', round_id);
-}
-
-/** Create a new golf round */
-  async createGolfRound(round: {
-    user_id: string;
-    date_played: string;
-    weather: string;
-    golf_bag_id: string;
-    course_id: string;
-  }) {
-    return await this.supabase.from('golf_rounds').insert(round).select('*');
-  }
-
-  /** Get all golf courses */
-  async getAllGolfCourses() {
-    return await this.supabase.from('golf_courses').select('*');
-  }
-
-
-    // ==================== GOLF SHOT METHODS ====================
-  async addGolfShot(shot: GolfShot) {
-    console.log(shot);
-    const { data, error } = await this.supabase
-      .from('golf_shot')
-      .insert([shot])
-      .select();
-
-    if (error) throw error;
-    return data;
-  }
-
-
-  async deleteShot(shot_id: string) {
-    const { error } = await this.supabase
-      .from('golf_shot')
-      .delete()
-      .eq('id', shot_id);
-
-    if (error) throw error;
-  }
-
-
-  async getShotsForHole(holeNumber: number, courseId: string) {
-    // Fetch hole ID from golf course and hole number
-    const response = await this.getGolfHoleId(courseId, holeNumber);
-
-    if (!response || response.error || !response.data || response.data.length === 0) {
-        console.error("Error fetching hole ID or no data returned:", response?.error);
-        return null; // Handle error properly
-    }
-
-    const hole_id = response.data[0].id; // Extract hole ID safely
-    console.log("Hole ID:", hole_id);
-
-    // Fetch shots using the correct hole ID
-    const { data, error } = await this.supabase
-        .from('golf_shot')
-        .select('*')
-        .eq('hole_id', hole_id)
-        .order('stroke_number', { ascending: true });
-
-    if (error) {
-        console.error("Error fetching shots:", error);
-        return null; // Handle error
-    }
-
-    console.log(data);
-
-    return data; // Return only the fetched shot data
-}
-
-async getShotsForPlayedHole(played_hole_id: string) {
-  // Fetch hole ID from golf course and hole number
-
-
-  // Fetch shots using the correct hole ID
-  const { data, error } = await this.supabase
-      .from('golf_shot')
-      .select('*')
-      .eq('hole_id', played_hole_id)
-      .order('stroke_number', { ascending: true });
-
-  if (error) {
-      console.error("Error fetching shots:", error);
-      return null; // Handle error
-  }
-
-  console.log(data);
-
-  return data; // Return only the fetched shot data
-}
-
-
-      // ==================== GOLF HOLE METHODS ====================
-  async getGolfHoleId(courseId: string, holeNumber: number) {
-    return await this.supabase.from('golf_holes').select('id').eq('course_id', courseId).eq('hole_number', holeNumber);
-   }
-
-  async getGolfHoleDetails(courseId: string, holeNumber: number) {
-    const response = await this.supabase
-      .from('golf_holes')
-      .select('*')
-      .eq('course_id', courseId)
-      .eq('hole_number', holeNumber)
-      .single(); // Fetch only one result
-  
-    return response; // Returns { data, error }
-  }
-  
-
-
-  /** Get `played_golf_hole` entry for a specific round & hole */
-  async getPlayedHole(roundId: string, holeId: string) {
-    return await this.supabase
-      .from('played_golf_hole')
-      .select('id')  // ✅ Select only the ID for accuracy
-      .eq('round_id', roundId)
-      .eq('hole_id', holeId);
-  }
-
-
-  /** Create a new `played_golf_hole` entry */
-  async createPlayedHole(entry: { round_id: string; hole_id: string; strokes: number }) {
-    return await this.supabase
-      .from('played_golf_hole')
-      .insert([entry])
-      .select('*');
   }
 
   async get_golferci_from_golfci(golf_ci: string) {
-    return await this.supabase.from('golfer_club').select('id').eq('club_id', golf_ci);
-  }
-
-  /** ✅ Increment strokes in played_golf_hole */
-  async incrementHoleStrokeCount(playedHoleId: string) {
-    const { error } = await this.supabase
-      .from('played_golf_hole')
-      .update({ strokes: this.supabase.rpc('increment_strokes', { row_id: playedHoleId }) })
-      .eq('id', playedHoleId);
-
-    if (error) {
-      console.error("Error updating hole strokes:", error);
+    try {
+      return await this.supabase.from('golfer_club').select('id').eq('club_id', golf_ci);
+    } catch (error: any) {
+      this.handleError('get_golferci_from_golfci', error);
+      return { data: null, error };
     }
   }
 
-  /** ✅ Increment total strokes in golf_rounds */
-  async incrementRoundStrokeCount(roundId: string) {
-    const { error } = await this.supabase
-      .from('golf_rounds')
-      .update({ total_strokes: this.supabase.rpc('increment_strokes', { row_id: roundId }) })
-      .eq('id', roundId);
+  // ==================== GOLF COURSE METHODS ====================
 
-    if (error) {
-      console.error("Error updating round strokes:", error);
+  async searchGolfCourses(query: string): Promise<GolfCourse[]> {
+    try {
+      const { data, error } = await this.supabase
+        .from('golf_courses')
+        .select('*')
+        .ilike('name', `%${query}%`);
+      if (error) throw error;
+      return data || [];
+    } catch (error: any) {
+      this.handleError('searchGolfCourses', error);
+      return [];
+    }
+  }
+
+  async getGolfCourseById(courseId: string): Promise<GolfCourse | null> {
+    try {
+      const { data, error } = await this.supabase
+        .from('golf_courses')
+        .select('*')
+        .eq('id', courseId)
+        .single();
+      if (error) throw error;
+      return data as GolfCourse;
+    } catch (error: any) {
+      this.handleError('getGolfCourseById', error);
+      return null;
+    }
+  }
+
+  async getGolfHolesByCourseId(courseId: string): Promise<GolfHole[]> {
+    try {
+      const { data, error } = await this.supabase
+        .from('golf_holes')
+        .select('*')
+        .eq('course_id', courseId)
+        .order('hole_number', { ascending: true });
+      if (error) throw error;
+      return data || [];
+    } catch (error: any) {
+      this.handleError('getGolfHolesByCourseId', error);
+      return [];
+    }
+  }
+
+  async getGolfCourseNameById(courseId: string) {
+    try {
+      const { data, error } = await this.supabase
+        .from('golf_courses')
+        .select('name')
+        .eq('id', courseId);
+      if (error) throw error;
+      return data;
+    } catch (error: any) {
+      this.handleError('getGolfCourseNameById', error);
+      return [];
+    }
+  }
+
+  async getAllGolfCourses() {
+    try {
+      return await this.supabase.from('golf_courses').select('*');
+    } catch (error: any) {
+      this.handleError('getAllGolfCourses', error);
+      return { data: null, error };
+    }
+  }
+
+  // ==================== GOLF ROUND METHODS ====================
+
+  async getGolfRoundsByUser(userId: string) {
+    try {
+      return await this.supabase.from('golf_rounds').select('*').eq('user_id', userId);
+    } catch (error: any) {
+      this.handleError('getGolfRoundsByUser', error);
+      return { data: null, error };
+    }
+  }
+
+  async getGolfRoundById(round_id: string) {
+    try {
+      return await this.supabase.from('golf_rounds').select('*').eq('id', round_id);
+    } catch (error: any) {
+      this.handleError('getGolfRoundById', error);
+      return { data: null, error };
+    }
+  }
+
+  async createGolfRound(round: {
+    user_id: string;
+    date_played: string;
+    golfbag_id: string;
+    course_id: string;
+    // optional fields
+    weather?: string;
+  }) {
+    try {
+      return await this.supabase.from('golf_rounds').insert(round).select('*');
+    } catch (error: any) {
+      this.handleError('createGolfRound', error);
+      return { data: null, error };
+    }
+  }
+
+  // ==================== GOLF HOLE / PLAYED GOLF HOLE ====================
+
+  async getGolfHoleDetails(courseId: string, holeNumber: number) {
+    try {
+      return await this.supabase
+        .from('golf_holes')
+        .select('*')
+        .eq('course_id', courseId)
+        .eq('hole_number', holeNumber)
+        .single();
+    } catch (error: any) {
+      this.handleError('getGolfHoleDetails', error);
+      return { data: null, error };
+    }
+  }
+
+  async getPlayedHole(roundId: string, holeId: string) {
+    try {
+      return await this.supabase
+        .from('played_golf_hole')
+        .select('id, strokes')
+        .eq('round_id', roundId)
+        .eq('hole_id', holeId);
+    } catch (error: any) {
+      this.handleError('getPlayedHole', error);
+      return { data: null, error };
+    }
+  }
+
+  async createPlayedHole(entry: { round_id: string; hole_id: string; strokes: number }) {
+    try {
+      return await this.supabase
+        .from('played_golf_hole')
+        .insert([entry])
+        .select('*');
+    } catch (error: any) {
+      this.handleError('createPlayedHole', error);
+      return { data: null, error };
     }
   }
 
   async updatePlayedHoleStrokes(playedHoleId: string, strokes: number) {
+    try {
       const { error } = await this.supabase
-          .from('played_golf_hole')
-          .update({ strokes: strokes })
-          .eq('id', playedHoleId);
-
-      if (error) {
-          console.error("Error updating strokes:", error);
-      }
+        .from('played_golf_hole')
+        .update({ strokes })
+        .eq('id', playedHoleId);
+      if (error) throw error;
+    } catch (error: any) {
+      this.handleError('updatePlayedHoleStrokes', error);
+    }
   }
 
+  // ==================== GOLF SHOT METHODS ====================
+
+  async addGolfShot(shot: GolfShot) {
+    console.log(shot);
+    try {
+      const { data, error } = await this.supabase
+        .from('golf_shot')
+        .insert([shot])
+        .select();
+      if (error) throw error;
+      return data;
+    } catch (error: any) {
+      this.handleError('addGolfShot', error);
+      return null;
+    }
+  }
+
+  async deleteShot(shot_id: string): Promise<void> {
+    try {
+      const { error } = await this.supabase.from('golf_shot').delete().eq('id', shot_id);
+      if (error) throw error;
+    } catch (error: any) {
+      this.handleError('deleteShot', error);
+    }
+  }
+
+  async getShotsForPlayedHole(played_hole_id: string) {
+    try {
+      const { data, error } = await this.supabase
+        .from('golf_shot')
+        .select('*')
+        .eq('hole_id', played_hole_id)
+        .order('stroke_number', { ascending: true });
+      if (error) throw error;
+      return data;
+    } catch (error: any) {
+      this.handleError('getShotsForPlayedHole', error);
+      return null;
+    }
+  }
+
+  // ==================== OPTIONAL: ADVANCED QUERIES (EXAMPLE) ====================
+
+  /**
+   * Example aggregator method that returns total strokes and total putts in a round.
+   * (Requires your DB to have a "shot_type = 'Putt'" or similar logic.)
+   */
+  async getRoundAggregate(roundId: string) {
+    try {
+      // Example: fetch all shots for the round, group them, etc.
+      // This might be done with a single SQL or Postgres function.
+      // For illustration, we'll do it in two queries:
+      const { data: holesData, error: holesError } = await this.supabase
+        .from('played_golf_hole')
+        .select('id')
+        .eq('round_id', roundId);
+      if (holesError) throw holesError;
+      if (!holesData || holesData.length === 0) return { totalStrokes: 0, totalPutts: 0 };
+
+      const holeIds = holesData.map((h) => h.id);
+      const { data: shotsData, error: shotsError } = await this.supabase
+        .from('golf_shot')
+        .select('*')
+        .in('hole_id', holeIds);
+      if (shotsError) throw shotsError;
+
+      const totalStrokes = shotsData.length;
+      const totalPutts = shotsData.filter((s) => s.shot_type === 'Putt').length;
+
+      return { totalStrokes, totalPutts };
+    } catch (error: any) {
+      this.handleError('getRoundAggregate', error);
+      return { totalStrokes: 0, totalPutts: 0 };
+    }
+  }
 }

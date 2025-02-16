@@ -1,197 +1,172 @@
 import { Component, OnInit } from '@angular/core';
-import { SupabaseService } from '../services/supabase.service';
 import { Router } from '@angular/router';
-import { GolfBag } from '../models/golf-bag.model';
-import { GolferClub } from '../models/golfer-club-model';
+import { SupabaseService } from '../services/supabase.service';
+import { GolfClub } from '../models/golf-club.model';
 
-interface GolfClub {
-  id: string;
+interface NestedClubs {
   maker: string;
-  set: string;
-  number: string;
-  loft: number;
-  lie_angle: number;
-  club_offset: number;
-  length: number;
-  category: string;
+  sets: {
+    [setName: string]: {
+      [category: string]: GolfClub[];
+    };
+  };
 }
 
 @Component({
   selector: 'app-golf-club',
   templateUrl: './golf-club.component.html',
-  styleUrls: ['./golf-club.component.css'],
+  styleUrls: ['./golf-club.component.css']
 })
 export class GolfClubComponent implements OnInit {
+  allClubs: GolfClub[] = [];
+  filteredClubs: GolfClub[] = [];
+  nestedClubs: NestedClubs[] = [];
 
-  userId: string | null = null;
-  currentBagId!: string;
+  // Collapsed expansions by default
+  makerOpen: { [maker: string]: boolean } = {};
+  setOpen: { [maker: string]: { [setName: string]: boolean } } = {};
+  categoryOpen: { [maker: string]: { [setName: string]: { [category: string]: boolean } } } = {};
 
-  selectedClubs: GolfClub[] = [];
-  selectedClub: GolfClub | null = null;
+  // Multi-selection
+  selectedClubIds: Set<string> = new Set();
 
-  golfClubs: GolfClub[] = [];
-  groupedGolfClubs: { [maker: string]: { [set: string]: GolfClub[] } } = {};
+  // Optional category filter
+  categoryFilter: string = '';
 
-  expandedMakers: { [maker: string]: boolean } = {};
-  expandedSets: { [maker: string]: { [set: string]: boolean } } = {};
+  // Current bag ID (passed from route or state)
+  currentBagId: string | null = null;
 
-  searchMaker: string = '';
-  searchCategory: string = '';
-
-  constructor(private supabaseService: SupabaseService, private router: Router) {}
-
-  async ngOnInit(): Promise<void> {
-    try {
-      const user = await this.supabaseService.getCurrentUser();
-      
-      // ✅ Get `bagId` from navigation state
-      this.currentBagId = history.state.bagId;
-      if (!this.currentBagId) {
-        console.error("No bag ID provided. Redirecting to golf bags...");
-        this.router.navigate(['/golf-bags']);
-        return;
-      }
-  
-      if (user) {
-        this.userId = user.id;
-      }
-  
-      if (!this.userId) {
-        return;
-      }
-  
-      await this.loadGolfClubs();
-    } catch (error) {
-      console.error('Error fetching golf clubs:', error);
+  constructor(
+    private supabaseService: SupabaseService,
+    private router: Router
+  ) {
+    // Optionally retrieve bagId from navigation state
+    const nav = this.router.getCurrentNavigation();
+    if (nav?.extras.state) {
+      this.currentBagId = nav.extras.state['bagId'] || null;
     }
   }
-  
 
-  async loadGolfClubs(): Promise<void> {
+  async ngOnInit() {
+    // 1) Load clubs from Supabase
     const { data, error } = await this.supabaseService.getAllClubs();
-    if (!error) {
-      this.golfClubs = data || [];
-      this.groupGolfClubs();
+    if (error) {
+      console.error('Error fetching golf clubs:', error);
+      return;
     }
-  }
-  
+    this.allClubs = data || [];
 
-  async searchClubs(): Promise<void> {
-    const { data, error } = await this.supabaseService.searchClubs(this.searchMaker, this.searchCategory);
-    if (!error) {
-      this.golfClubs = data || [];
-      this.groupGolfClubs();
-    }
+    // 2) Apply any initial filter (optional)
+    this.applyFilter();
   }
 
- 
+  applyFilter() {
+    if (this.categoryFilter) {
+      this.filteredClubs = this.allClubs.filter(
+        c => c.category?.toUpperCase() === this.categoryFilter.toUpperCase()
+      );
+    } else {
+      this.filteredClubs = [...this.allClubs];
+    }
+    this.groupClubs();
+  }
 
-  groupGolfClubs(): void {
-    this.groupedGolfClubs = {};
+  // Group clubs by maker -> set -> category
+  groupClubs() {
+    const grouped: { [maker: string]: { [setName: string]: { [category: string]: GolfClub[] } } } = {};
 
-    this.golfClubs.forEach((club) => {
-      if (!this.groupedGolfClubs[club.maker]) {
-        this.groupedGolfClubs[club.maker] = {};
-        this.expandedMakers[club.maker] = false;
+    this.filteredClubs.forEach(club => {
+      const maker = club.maker || 'Unknown Maker';
+      const setName = club.set || 'Default Set';
+      const category = club.category || 'Misc';
+
+      if (!grouped[maker]) {
+        grouped[maker] = {};
       }
-
-      if (!this.groupedGolfClubs[club.maker][club.set]) {
-        this.groupedGolfClubs[club.maker][club.set] = [];
-        this.expandedSets[club.maker] = { ...this.expandedSets[club.maker], [club.set]: false };
+      if (!grouped[maker][setName]) {
+        grouped[maker][setName] = {};
       }
-
-      this.groupedGolfClubs[club.maker][club.set].push(club);
+      if (!grouped[maker][setName][category]) {
+        grouped[maker][setName][category] = [];
+      }
+      grouped[maker][setName][category].push(club);
     });
+
+    // Convert to an array
+    this.nestedClubs = Object.keys(grouped).map(maker => ({
+      maker,
+      sets: grouped[maker]
+    }));
   }
 
-  getMakers(): string[] {
-    return Object.keys(this.groupedGolfClubs);
+  // Expand/collapse maker
+  toggleMaker(maker: string) {
+    this.makerOpen[maker] = !this.makerOpen[maker];
   }
 
-  getSets(maker: string): string[] {
-    return Object.keys(this.groupedGolfClubs[maker] || {});
+  // Expand/collapse set
+  toggleSet(maker: string, setName: string) {
+    if (!this.setOpen[maker]) {
+      this.setOpen[maker] = {};
+    }
+    this.setOpen[maker][setName] = !this.setOpen[maker][setName];
   }
 
-  toggleMaker(maker: string): void {
-    this.expandedMakers[maker] = !this.expandedMakers[maker];
+  // Expand/collapse category
+  toggleCategory(maker: string, setName: string, category: string) {
+    if (!this.categoryOpen[maker]) {
+      this.categoryOpen[maker] = {};
+    }
+    if (!this.categoryOpen[maker][setName]) {
+      this.categoryOpen[maker][setName] = {};
+    }
+    this.categoryOpen[maker][setName][category] = !this.categoryOpen[maker][setName][category];
   }
 
-  toggleSet(maker: string, set: string): void {
-    this.expandedSets[maker][set] = !this.expandedSets[maker][set];
+  // Toggle selection for a club
+  toggleClubSelection(clubId: string, event: Event) {
+    event.stopPropagation(); // Prevent toggling expansions
+    if (this.selectedClubIds.has(clubId)) {
+      this.selectedClubIds.delete(clubId);
+    } else {
+      this.selectedClubIds.add(clubId);
+    }
   }
 
+  // Bulk add selected clubs to the bag
+  async addSelectedClubsToBag() {
+    if (!this.currentBagId) {
+      alert('No bag selected. Please navigate with a bagId or create a bag first.');
+      return;
+    }
+    const user = await this.supabaseService.getUser();
+    if (!user) {
+      alert('Not logged in. Redirecting...');
+      this.router.navigate(['/login']);
+      return;
+    }
 
-
-  isClubSelected(club: GolfClub): boolean {
-    return this.selectedClubs.some(selected => selected.id === club.id);
-  }
-  
-
-
-  selectClub(golfclub: GolfClub): void {
-    this.toggleClub(golfclub);
-    this.selectedClub = golfclub;
-  }
-  
-  toggleClub(club: GolfClub): void {
-    // Loop through selectedClubs to see if club is already selected
-    for (let i = 0; i < this.selectedClubs.length; i++) {
-      if (club.id === this.selectedClubs[i].id) {
-        // If found, remove the club from the selection
-        this.selectedClubs.splice(i, 1);
-        return;
+    const results = [];
+    for (const clubId of this.selectedClubIds) {
+      try {
+        const { data, error } = await this.supabaseService.createGolferClub({
+          golfer_id: user.id,
+          club_id: clubId,
+          cur_bag_id: this.currentBagId
+        });
+        if (error) {
+          console.error(`Error adding club ${clubId}:`, error);
+          results.push({ clubId, success: false });
+        } else {
+          results.push({ clubId, success: true });
+        }
+      } catch (err) {
+        console.error(`Unexpected error for club ${clubId}:`, err);
+        results.push({ clubId, success: false });
       }
     }
-    // Otherwise, add the club to the selection
-    this.selectedClubs.push(club);
+    // Clear selection
+    this.selectedClubIds.clear();
+    alert('Selected clubs added to bag. Check console for any errors.');
   }
-  async addClubsToBag(): Promise<void> {
-    const user = await this.supabaseService.getCurrentUser();
-    if (!user || !user.id) {
-      console.error('No authenticated user found');
-      return; // Exit early if no user is authenticated
-    }
-    var golf_club:GolfClub;
-
-    const golfer_id = user.id; // The authenticated user's ID
-    for (var golf_club_idx = 0; golf_club_idx < this.selectedClubs?.length; golf_club_idx++) {
-      golf_club = this.selectedClubs[golf_club_idx];
-      const club_id = golf_club.id;
-      const cur_bag_id = this.currentBagId;
-
-      try { 
-        // Call the Supabase service to create the golf bag
-        const { data, error } = await this.supabaseService.createGolferClub({
-          golfer_id, // Include the authenticated user's ID
-          club_id,    // Include the golf bag name
-          cur_bag_id
-        });
-  
-        // Handle response
-        if (error) {
-          console.error('Error creating golf bag:', error.message);
-        } else if (data && data.length > 0) {
-          console.log('Created Golf Club:', data[0]);
-        } else {
-          console.warn('No data returned from Supabase for the created golf bag.');
-        }
-      } catch (error) {
-        console.error('Unexpected error while creating golf bag:', error);
-    }
-      
-      // var basement: GolferClub {
-      //   rounds: 0;
-
-      // }
-      // this.supabaseService.createGolferClub()
-
-    }
-      
-  }
-  
-  closePanel(event: Event): void {
-    event.stopPropagation();
-    this.selectedClub = null;
-  }
-
 }

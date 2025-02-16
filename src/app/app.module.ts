@@ -6,7 +6,6 @@ import { AppComponent } from './app.component';
 import { BlogComponent } from './blog/blog.component';
 import { RouterOutlet, RouterModule, RouterLink, RouterLinkActive} from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { GolfComponent } from './golf/golf.component';
 import { GolfShotComponent } from './golf-shot/golf-shot.component';
 import { LoginComponent } from './login/login.component';
 import { GolfHoleComponent } from './golf-hole/golf-hole.component';
@@ -26,7 +25,6 @@ import { HttpClientModule } from '@angular/common/http'; // Import HttpClientMod
   declarations: [
     AppComponent,
     BlogComponent,
-    GolfComponent,
     GolfShotComponent,
     GolfHoleComponent,
     GolfClubComponent,
