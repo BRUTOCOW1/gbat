@@ -1,0 +1,44 @@
+<div class="golf-round-container">
+  <h2>Golf Rounds</h2>
+
+  <!-- Start New Round Button -->
+  <div class="new-round">
+    <button class="start-round-btn" (click)="startNewRound()">Start New Round</button>
+  </div>
+
+  <!-- 🏌️‍♂️ Past Rounds List -->
+  <div class="round-list">
+    <div 
+      *ngFor="let round of rounds" 
+      class="round-card" 
+      (click)="selectRound(round)"
+    >
+      <h3>{{ round.date_played | date: 'mediumDate' }} - {{ round.course_name }}</h3>
+      
+      <!-- ✅ Show details for the selected round -->
+      <div *ngIf="selectedRound?.id === round.id" class="round-details">
+        <p><strong>Course:</strong> {{ round.course_name }}</p>
+        <p><strong>Total Strokes:</strong> {{ round.total_strokes }}</p>
+        <p><strong>Fairways Hit:</strong> {{ round.fairways_hit }}</p>
+        <p><strong>Putts:</strong> {{ round.putts }}</p>
+
+        <!-- 🌦️ Weather Section -->
+        <div *ngIf="weatherData" class="weather-widget">
+          <h3>🌦️ Weather Conditions</h3>
+          <p><strong>Max Temp:</strong> {{ weatherData.temperature_2m[0] }}°C</p>
+          <p><strong>Precipitation:</strong> {{ weatherData.precipitation[0] }} mm</p>
+          <p><strong>Wind Speed:</strong> {{ weatherData.windspeed_10m[0] }} km/h</p>
+        </div>
+        <div *ngIf="!weatherData">Loading weather data...</div>
+
+        <!-- Hole Selection Buttons -->
+        <h3>Select a Hole</h3>
+        <div class="hole-buttons">
+          <button *ngFor="let hole of holes" (click)="goToHole(hole)">
+            Hole {{ hole }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

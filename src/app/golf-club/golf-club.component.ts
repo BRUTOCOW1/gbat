@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { SupabaseService } from '../supabase.service';
+import { SupabaseService } from '../services/supabase.service';
 import { Router } from '@angular/router';
 import { GolfBag } from '../models/golf-bag.model';
 import { GolferClub } from '../models/golfer-club-model';
@@ -43,20 +43,29 @@ export class GolfClubComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     try {
       const user = await this.supabaseService.getCurrentUser();
+      
+      // ✅ Get `bagId` from navigation state
       this.currentBagId = history.state.bagId;
+      if (!this.currentBagId) {
+        console.error("No bag ID provided. Redirecting to golf bags...");
+        this.router.navigate(['/golf-bags']);
+        return;
+      }
+  
       if (user) {
         this.userId = user.id;
       }
-
+  
       if (!this.userId) {
         return;
       }
-
+  
       await this.loadGolfClubs();
     } catch (error) {
       console.error('Error fetching golf clubs:', error);
     }
   }
+  
 
   async loadGolfClubs(): Promise<void> {
     const { data, error } = await this.supabaseService.getAllClubs();

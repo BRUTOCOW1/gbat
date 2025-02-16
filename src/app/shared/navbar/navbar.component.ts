@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, Renderer2 } from '@angular/core';
-import { SupabaseService } from '../../supabase.service';
+import { SupabaseService } from '../../services/supabase.service';
 import { Subscription } from 'rxjs';
 
 @Component({

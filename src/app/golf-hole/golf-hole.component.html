@@ -1,0 +1,39 @@
+<!-- <div class="golf-hole-container">
+    <h2>Hole {{ holeNumber }}</h2>
+    <p><strong>Par:</strong> {{ holeDetails?.par }}</p>
+    <p><strong>Yardage:</strong> {{ holeDetails?.yardage }}</p>
+  
+    <h3>Shots Taken</h3>
+    <div *ngIf="shots.length > 0; else noShots">
+      <ul>
+        <li *ngFor="let shot of shots">
+          <strong>{{ shot.club_used }}</strong> - {{ shot.distance }} yards - {{ shot.result }}
+        </li>
+      </ul>
+    </div>
+    <ng-template #noShots>
+      <p>No shots recorded for this hole.</p>
+    </ng-template>
+  
+    <button class="enter-shot-btn" (click)="goToShotEntry()">Enter Shot</button>
+  </div> -->
+  <div class="golf-hole-container">
+    <h1>Hole {{ holeNumber }}</h1>
+    
+    <div class="hole-info">
+      <p><strong>Par:</strong> {{ holeDetails?.par }}</p>
+      <p><strong>Yardage:</strong> {{ holeDetails?.yardage }}</p>
+    </div>
+  
+    <h3>Shots Taken</h3>
+    <ul class="shot-list">
+      <li *ngFor="let shot of shots" class="shot-item">
+        <span class="distance">{{ shot.distance }} yards</span> - 
+        <span class="lie">{{ shot.lie }}</span> → 
+        <span class="result">{{ shot.result }}</span>
+      </li>
+    </ul>
+  
+    <button class="enter-shot-btn" (click)="goToShotEntry()">Enter Shot</button>
+  </div>
+  

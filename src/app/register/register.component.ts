@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { SupabaseService } from '../supabase.service';
+import { SupabaseService } from '../services/supabase.service';
 
 @Component({
   selector: 'app-register',
@@ -26,6 +26,7 @@ export class RegisterComponent {
   }
 
   async onSubmit(): Promise<void> {
+    console.log('beet')
     if (this.registerForm.valid) {
       const { username, email, password } = this.registerForm.value;
   

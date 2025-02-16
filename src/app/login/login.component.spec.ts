@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { of } from 'rxjs';
-import { SupabaseService } from '../supabase.service';
+import { SupabaseService } from '../services/supabase.service';
 import { LoginComponent } from './login.component';
 
 describe('LoginComponent', () => {

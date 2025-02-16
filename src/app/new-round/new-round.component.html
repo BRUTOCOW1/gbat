@@ -1,0 +1,16 @@
+<form [formGroup]="newRoundForm" (ngSubmit)="submitRound()">
+  <label>Date:</label>
+  <input type="date" formControlName="date_played" required />
+
+  <label>Golf Course:</label>
+  <select formControlName="course_id" required>
+    <option *ngFor="let course of golfCourses" [value]="course.id">{{ course.name }}</option>
+  </select>
+
+  <label>Golf Bag:</label>
+  <select formControlName="golfbag_id" required>
+    <option *ngFor="let bag of golfBags" [value]="bag.golfbag_id">{{ bag.name }}</option>
+  </select>
+
+  <button type="submit" [disabled]="newRoundForm.invalid">Start Round</button>
+</form>

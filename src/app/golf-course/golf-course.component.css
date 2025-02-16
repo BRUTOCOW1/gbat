@@ -1,0 +1,42 @@
+.course-container {
+  padding: 20px;
+  max-width: 900px;
+  margin: auto;
+}
+
+.search-bar {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 30px;
+  border: none;
+  background-color: #222;
+  color: white;
+  margin-bottom: 20px;
+}
+
+.search-bar:focus {
+  background-color: #333;
+}
+
+.course-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px;
+}
+
+.course-card {
+  background: linear-gradient(145deg, #1e1e1e, #2a2a2a);
+  color: white;
+  padding: 15px;
+  width: 280px;
+  border-radius: 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+}
+
+.course-card:hover {
+  transform: scale(1.05);
+}

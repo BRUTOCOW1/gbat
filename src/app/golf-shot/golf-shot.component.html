@@ -1,79 +1,85 @@
-<main class="main">
-  <form [formGroup]="golfShotForm" (ngSubmit)="onSubmit()" class="golf-shot-form">
-    <div class="form-group">
-      <label for="club">Club Used</label>
-      <select id="club" formControlName="club" class="form-control" (change)="updateClubOptions()">
-        <option value="driver">Driver</option>
-        <option value="wood">Wood</option>
-        <option value="iron">Iron</option>
-        <option value="wedge">Wedge</option>
-        <option value="putter">Putter</option>
-      </select>
-    </div>
+<div class="golf-shot-container">
+  <h2>Shots for Hole {{ holeNum }}</h2>
 
-    <div class="form-group" *ngIf="clubOptions.length > 0">
-      <label for="specificClub">Select Specific Club</label>
-      <select id="specificClub" formControlName="specificClub" class="form-control">
-        <option *ngFor="let option of clubOptions" [value]="option">{{ option }}</option>
-      </select>
+  <!-- 📝 List of existing shots -->
+  <div class="shot-list">
+    <h3>Logged Shots</h3>
+    <div *ngIf="shots.length > 0; else noShots">
+      <ul>
+        <li *ngFor="let shot of shots" class="shot-item">
+          <span class="shot-detail">
+            <strong>Shot {{ shot.stroke_number }}:</strong> 
+            <span class="club">{{ shot.club_id }}</span> - 
+            <span class="distance">{{ shot.distance }} yards</span> - 
+            <span class="lie">{{ shot.lie }}</span> → 
+            <span class="result">{{ shot.result }}</span>
+          </span>
+          <button class="btn-delete" (click)="deleteShot(shot.id!)">❌</button>
+        </li>
+      </ul>
     </div>
+    <ng-template #noShots>
+      <p class="no-shots">No shots logged yet.</p>
+    </ng-template>
+  </div>
 
-    <div class="form-group">
-      <label for="distance">Distance (yards)</label>
-      <input
-        type="number"
-        id="distance"
-        formControlName="distance"
-        class="form-control"
-        placeholder="Enter distance"
-      />
-    </div>
+  <!-- 🎯 Add New Shot Form -->
+  <div class="golf-shot-form">
+    <h3>Add a New Shot</h3>
+    <form (submit)="addShot(); $event.preventDefault();">
+      
+      <div class="form-group">
+        <label for="clubUsed">Club Used:</label>
+        <select [(ngModel)]="newShot.club_id" name="clubUsed" required>
+          <option *ngFor="let club of golferClubs" [value]="club.id">
+            {{ club.number }} - {{ club.category }}
+          </option>
+        </select>
+      </div>
 
-    <div class="form-group">
-      <label for="shotType">Shot Type</label>
-      <select id="shotType" formControlName="shotType" class="form-control">
-        <option value="drive">Drive</option>
-        <option value="approach">Approach</option>
-        <option value="chip">Chip</option>
-        <option value="putt">Putt</option>
-      </select>
-    </div>
+      <div class="form-group">
+        <label for="distance">Distance (yards):</label>
+        <input type="number" [(ngModel)]="newShot.distance" name="distance">
+      </div>
 
-    <div class="form-group">
-      <label for="wind">Wind Conditions</label>
-      <input
-        type="text"
-        id="wind"
-        formControlName="wind"
-        class="form-control"
-        placeholder="e.g., 10 mph headwind"
-      />
-    </div>
+      <div class="form-group">
+        <label for="shotType">Shot Type:</label>
+        <select [(ngModel)]="newShot.shot_type" name="shotType">
+          <option value="Tee Shot">Tee Shot</option>
+          <option value="Approach">Approach</option>
+          <option value="Chip">Chip</option>
+          <option value="Putt">Putt</option>
+        </select>
+      </div>
 
-    <div class="form-group">
-      <label for="lie">Ball Lie</label>
-      <select id="lie" formControlName="lie" class="form-control">
-        <option value="fairway">Fairway</option>
-        <option value="rough">Rough</option>
-        <option value="sand">Sand</option>
-        <option value="green">Green</option>
-      </select>
-    </div>
+      <div class="form-group">
+        <label for="lie">Lie:</label>
+        <select [(ngModel)]="newShot.lie" name="lie">
+          <option value="Fairway">Fairway</option>
+          <option value="Rough">Rough</option>
+          <option value="Bunker">Bunker</option>
+          <option value="Green">Green</option>
+          <option value="Water">Water</option>
+          <option value="OB">OB</option>
+        </select>
+      </div>
 
-    <div class="form-group">
-      <label for="notes">Additional Notes</label>
-      <textarea
-        id="notes"
-        formControlName="notes"
-        class="form-control"
-        rows="3"
-        placeholder="Enter any additional notes"
-      ></textarea>
-    </div>
+      <div class="form-group">
+        <label for="result">Result:</label>
+        <select [(ngModel)]="newShot.result" name="result">
+          <option value="Fairway">Fairway</option>
+          <option value="Bunker">Bunker</option>
+          <option value="OB">OB</option>
+          <option value="Water">Water</option>
+          <option value="Green">Green</option>
+          <option value="Missed">Missed</option>
+          <option value="Made">Made</option>
+        </select>
+      </div>
 
-    <button type="submit" class="btn btn-primary" [disabled]="golfShotForm.invalid">
-      Submit
-    </button>
-    <button type="button" class="btn btn-secondary" (click)="resetForm()">Reset</button>
-  </form>
-</main>
+      <div class="btn-group">
+        <button type="submit" class="btn btn-primary">Add Shot</button>
+      </div>
+    </form>
+  </div>
+</div>

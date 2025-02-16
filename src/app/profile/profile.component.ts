@@ -1,7 +1,7 @@
 import { Router } from '@angular/router';
 
 import { Component, OnInit } from '@angular/core';
-import { SupabaseService } from '../supabase.service';
+import { SupabaseService } from '../services/supabase.service';
 
 @Component({
   selector: 'app-profile',

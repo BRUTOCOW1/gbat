@@ -1,0 +1,54 @@
+<div class="search-container">
+    <input 
+      type="text" 
+      [(ngModel)]="searchQuery" 
+      (keyup.enter)="searchCourses()" 
+      placeholder="Search for a golf course..."
+      class="search-bar"
+    />
+    <button (click)="searchCourses()" class="search-button">🔍</button>
+  </div>
+  
+  <!-- Course List -->
+  <div *ngIf="courses.length > 0" class="course-list">
+    <div 
+      *ngFor="let course of courses" 
+      class="course-card"
+      (click)="selectCourse(course.id)"
+    >
+      <h3>{{ course.name }}</h3>
+      <p>{{ course.location }}</p>
+    </div>
+  </div>
+  
+  <!-- Course Details -->
+  <div *ngIf="selectedCourse" class="course-details">
+    <h2>{{ selectedCourse.name }}</h2>
+    <p><strong>Location:</strong> {{ selectedCourse.location }}</p>
+    <p><strong>Rating:</strong> {{ selectedCourse.rating || 'N/A' }}</p>
+    <p><strong>Slope:</strong> {{ selectedCourse.slope || 'N/A' }}</p>
+    <p><strong>Par:</strong> {{ selectedCourse.par || 'N/A' }}</p>
+  
+    <!-- Holes Subheader -->
+    <div class="holes-subheader">
+      <h3>Holes</h3>
+      <div class="holes-bubble-container">
+        <div 
+          *ngFor="let hole of selectedCourse.holes" 
+          class="hole-bubble" 
+          (click)="toggleHoleDetails(hole.hole_number)"
+        >
+          {{ hole.hole_number }}
+        </div>
+      </div>
+    </div>
+  
+    <!-- Hole Details -->
+    <div class="hole-info" *ngIf="selectedHole">
+      <h3>Hole {{ selectedHole.hole_number }}</h3>
+      <p><strong>Par:</strong> {{ selectedHole.par }}</p>
+      <p><strong>Yardage:</strong> {{ selectedHole.yardage }} yards</p>
+      <p><strong>Handicap:</strong> {{ selectedHole.handicap || 'N/A' }}</p>
+    </div>
+  </div>
+  

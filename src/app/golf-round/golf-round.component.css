@@ -1,0 +1,119 @@
+/* Golf Round Container */
+.golf-round-container {
+  max-width: 800px;
+  margin: 60px auto;
+  padding: 25px;
+  background: #1e1e1e;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+/* Header */
+.golf-round-container h2 {
+  font-size: 26px;
+  font-weight: bold;
+  color: #00bfff;
+  margin-bottom: 10px;
+}
+
+/* Start New Round Button */
+.start-round-btn {
+  width: 100%;
+  padding: 12px;
+  font-size: 18px;
+  font-weight: bold;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.start-round-btn:hover {
+  background: #1f8a3d;
+  transform: scale(1.05);
+}
+
+/* Round List */
+.round-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 15px;
+}
+
+/* Round Card */
+.round-card {
+  background: #333;
+  padding: 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: white;
+  text-align: left;
+  position: relative;
+}
+
+.round-card:hover {
+  background: #444;
+  transform: scale(1.02);
+}
+
+/* Round Title */
+.round-card h3 {
+  font-size: 18px;
+  font-weight: bold;
+  color: #00bfff;
+}
+
+/* Round Details */
+.round-details {
+  background: #222;
+  padding: 12px;
+  border-radius: 8px;
+  margin-top: 8px;
+  font-size: 14px;
+}
+
+/* Hole Buttons */
+.hole-buttons {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.hole-buttons button {
+  padding: 8px;
+  font-size: 14px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.hole-buttons button:hover {
+  background: #0056b3;
+}
+
+/* Weather Widget */
+.weather-widget {
+  background: #2a2a2a;
+  padding: 12px;
+  border-radius: 6px;
+  margin-top: 10px;
+}
+
+.weather-widget h3 {
+  font-size: 16px;
+  color: #f5f5f5;
+  margin-bottom: 6px;
+}
+
+.weather-widget p {
+  font-size: 14px;
+  color: #ccc;
+}
