@@ -1,0 +1,81 @@
+.course-builder {
+    max-width: 800px;
+    margin: auto;
+    padding: 2rem;
+    background: #1e1e1e;
+    border-radius: 12px;
+    color: white;
+  
+    h2, h3 {
+      margin-top: 1rem;
+    }
+  
+    .form-group {
+      margin-bottom: 1rem;
+      display: flex;
+      flex-direction: column;
+  
+      label {
+        margin-bottom: 4px;
+      }
+  
+      input {
+        padding: 8px;
+        background: #2a2a2a;
+        color: white;
+        border: 1px solid #444;
+        border-radius: 6px;
+      }
+    }
+  
+    .hole-form {
+      background: #2a2a2a;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border-radius: 8px;
+  
+      label {
+        display: block;
+        margin-top: 0.5rem;
+      }
+  
+      input {
+        width: 100%;
+      }
+  
+      button {
+        margin-top: 0.5rem;
+        background: #aa3333;
+        border: none;
+        color: white;
+        padding: 6px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+    }
+  
+    .form-actions {
+      margin-top: 2rem;
+  
+      button {
+        background: #338833;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        font-weight: bold;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+  
+      .success {
+        color: #44cc44;
+        margin-top: 1rem;
+      }
+  
+      .error {
+        color: #cc4444;
+        margin-top: 1rem;
+      }
+    }
+  }
+  

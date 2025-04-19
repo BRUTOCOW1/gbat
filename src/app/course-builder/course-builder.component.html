@@ -1,0 +1,63 @@
+<div class="course-builder">
+    <h2>Create a Golf Course</h2>
+  
+    <div class="form-group">
+      <label>Name</label>
+      <input [(ngModel)]="course.name" type="text" required />
+    </div>
+  
+    <div class="form-group">
+      <label>Location</label>
+      <input [(ngModel)]="course.location" type="text" required />
+    </div>
+  
+    <div class="form-group">
+      <label>Rating</label>
+      <input [(ngModel)]="course.rating" type="number" step="0.1" />
+    </div>
+  
+    <div class="form-group">
+      <label>Slope</label>
+      <input [(ngModel)]="course.slope" type="number" />
+    </div>
+  
+    <div class="form-group">
+      <label>Par</label>
+      <input [(ngModel)]="course.par" type="number" />
+    </div>
+  
+    <h3>Holes</h3>
+    <div *ngFor="let hole of holes; let i = index" class="hole-form">
+        <strong>Hole {{ i + 1 }}</strong>
+        
+        <label>Par</label>
+        <input type="number" [(ngModel)]="hole.par" />
+      
+        <label>Handicap</label>
+        <input type="number" [(ngModel)]="hole.handicap" />
+      
+        <label>Black Tee Yardage</label>
+        <input type="number" [(ngModel)]="hole.tee_box_black" />
+      
+        <label>Blue Tee Yardage</label>
+        <input type="number" [(ngModel)]="hole.tee_box_blue" />
+      
+        <label>White Tee Yardage</label>
+        <input type="number" [(ngModel)]="hole.tee_box_white" />
+      
+        <label>Red Tee Yardage</label>
+        <input type="number" [(ngModel)]="hole.tee_box_red" />
+      
+        <button (click)="removeHole(i)">Remove</button>
+      </div>
+      
+  
+    <button (click)="addHole()">Add Hole</button>
+  
+    <div class="form-actions">
+      <button (click)="submitCourse()" [disabled]="saving">Submit</button>
+      <p *ngIf="successMessage" class="success">{{ successMessage }}</p>
+      <p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
+    </div>
+  </div>
+  

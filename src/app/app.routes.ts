@@ -12,7 +12,7 @@ import { CreateGolfBagComponent } from './create-golf-bag/create-golf-bag.compon
 import { GolfHoleComponent } from './golf-hole/golf-hole.component';
 import { GolfCourseComponent } from './golf-course/golf-course.component';
 import { NewRoundComponent } from './new-round/new-round.component';
-
+import { CourseBuilderComponent } from './course-builder/course-builder.component';
 
 export const routes: Routes = [
     // ✅ Alphabetized Components
@@ -31,6 +31,7 @@ export const routes: Routes = [
     { path: 'profile', component: ProfileComponent },
     { path: 'register', component: RegisterComponent },
     { path: 'new-round', component: NewRoundComponent},
+    { path: 'new-course', component: CourseBuilderComponent},
   
     // ✅ Organized Redirects
     { path: 'blog-component/golf-component', redirectTo: 'golf-component' },

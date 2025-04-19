@@ -1,22 +1,63 @@
 .course-container {
+  max-width: 960px;
+  margin: 40px auto;
   padding: 20px;
-  max-width: 900px;
-  margin: auto;
+  color: white;
 }
 
-.search-bar {
-  width: 100%;
-  padding: 10px;
-  font-size: 16px;
-  border-radius: 30px;
-  border: none;
-  background-color: #222;
-  color: white;
+.search-container {
+  display: flex;
+  gap: 8px;
+  align-items: center;
   margin-bottom: 20px;
 }
 
+.search-bar {
+  flex: 1;
+  padding: 12px 16px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: 1px solid #444;
+  background-color: #222;
+  color: white;
+}
+
 .search-bar:focus {
-  background-color: #333;
+  outline: none;
+  border-color: #888;
+  background-color: #2b2b2b;
+}
+
+.search-button {
+  padding: 12px 16px;
+  background-color: #444;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .material-icons {
+    font-size: 20px;
+  }
+
+  &:hover {
+    background-color: #666;
+  }
+
+  &:active {
+    background-color: #888;
+  }
+}
+
+.no-results {
+  text-align: center;
+  color: #aaa;
+  margin-bottom: 20px;
 }
 
 .course-list {
@@ -28,15 +69,79 @@
 
 .course-card {
   background: linear-gradient(145deg, #1e1e1e, #2a2a2a);
-  color: white;
   padding: 15px;
   width: 280px;
   border-radius: 12px;
   text-align: center;
   cursor: pointer;
   transition: transform 0.2s ease-in-out;
+  border: 2px solid transparent;
+
+  &:hover {
+    transform: scale(1.05);
+  }
+
+  &.selected {
+    border-color: #00ffcc;
+  }
 }
 
-.course-card:hover {
-  transform: scale(1.05);
+.course-details {
+  margin-top: 30px;
+  background-color: #1c1c1c;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.holes-subheader {
+  margin-top: 20px;
+}
+
+.holes-bubble-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.hole-bubble {
+  width: 40px;
+  height: 40px;
+  background-color: #444;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 40px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+
+  &.active {
+    background-color: #00ffcc;
+    color: #000;
+  }
+
+  &:hover {
+    background-color: #666;
+  }
+}
+
+.hole-info {
+  margin-top: 20px;
+  background-color: #2a2a2a;
+  padding: 15px;
+  border-radius: 10px;
+}
+
+.nav-link {
+  text-align: right;
+  margin-bottom: 1rem;
+
+  a {
+    color: #42a5f5;
+    text-decoration: none;
+    font-weight: bold;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
 }

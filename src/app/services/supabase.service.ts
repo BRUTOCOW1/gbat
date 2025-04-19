@@ -306,6 +306,38 @@ export class SupabaseService {
     }
   }
 
+  async insertGolfCourseWithHoles(course: Partial<GolfCourse>, holes: Omit<GolfHole, 'course_id'>[]) {
+    try {
+      // Insert the course and get its ID
+      const { data: insertedCourse, error: courseError } = await this.supabase
+        .from('golf_courses')
+        .insert([course])
+        .select()
+        .single();
+  
+      if (courseError) throw courseError;
+      const course_id = insertedCourse.id;
+  
+      // Insert the holes, attaching the course_id
+      const holesWithCourseId = holes.map(hole => ({
+        ...hole,
+        course_id,
+        id: crypto.randomUUID() // if your DB expects this
+      }));
+  
+      const { error: holesError } = await this.supabase
+        .from('golf_holes')
+        .insert(holesWithCourseId);
+  
+      if (holesError) throw holesError;
+  
+      return insertedCourse;
+    } catch (error: any) {
+      this.handleError('insertGolfCourseWithHoles', error);
+      throw error;
+    }
+  }
+  
   // ==================== GOLF ROUND METHODS ====================
 
   async getGolfRoundsByUser(userId: string) {

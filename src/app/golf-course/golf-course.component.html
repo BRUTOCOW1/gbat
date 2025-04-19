@@ -1,26 +1,47 @@
-<div class="search-container">
+<div class="course-container">
+  <!-- Search -->
+  <div class="nav-link">
+    <a routerLink="/new-course">➕ Add a New Golf Course</a>
+  </div>
+  
+  <div class="search-container">
     <input 
       type="text" 
       [(ngModel)]="searchQuery" 
-      (keyup.enter)="searchCourses()" 
+      (input)="onSearchChange()" 
       placeholder="Search for a golf course..."
       class="search-bar"
     />
-    <button (click)="searchCourses()" class="search-button">🔍</button>
+    <button (click)="searchCourses(searchQuery)" class="search-button">
+      <span class="material-icons">search</span>
+    </button>
   </div>
-  
+
+
+  <!-- Loading Spinner -->
+  <p *ngIf="loading" class="loading">Searching courses...</p>
+
+  <!-- No Results -->
+  <p *ngIf="!loading && courses.length === 0 && searchQuery" class="no-results">
+    No courses found for "{{ searchQuery }}".
+  </p>
+
   <!-- Course List -->
-  <div *ngIf="courses.length > 0" class="course-list">
+  <div *ngIf="!loading && courses.length > 0" class="course-list">
     <div 
       *ngFor="let course of courses" 
-      class="course-card"
-      (click)="selectCourse(course.id)"
+      class="course-card" 
+      [class.selected]="selectedCourse?.id === course.id"
+      (click)="selectCourse(course)"
     >
       <h3>{{ course.name }}</h3>
       <p>{{ course.location }}</p>
+      <p class="course-meta">
+        Par: {{ course.par || 'N/A' }} | Rating: {{ course.rating || 'N/A' }}
+      </p>
     </div>
   </div>
-  
+
   <!-- Course Details -->
   <div *ngIf="selectedCourse" class="course-details">
     <h2>{{ selectedCourse.name }}</h2>
@@ -28,27 +49,28 @@
     <p><strong>Rating:</strong> {{ selectedCourse.rating || 'N/A' }}</p>
     <p><strong>Slope:</strong> {{ selectedCourse.slope || 'N/A' }}</p>
     <p><strong>Par:</strong> {{ selectedCourse.par || 'N/A' }}</p>
-  
+
     <!-- Holes Subheader -->
-    <div class="holes-subheader">
+    <div *ngIf="selectedCourse.holes?.length" class="holes-subheader">
       <h3>Holes</h3>
       <div class="holes-bubble-container">
         <div 
           *ngFor="let hole of selectedCourse.holes" 
           class="hole-bubble" 
-          (click)="toggleHoleDetails(hole.hole_number)"
+          [class.active]="selectedHole?.hole_number === hole.hole_number"
+          (click)="toggleHoleDetails(hole)"
         >
           {{ hole.hole_number }}
         </div>
       </div>
     </div>
-  
+
     <!-- Hole Details -->
     <div class="hole-info" *ngIf="selectedHole">
       <h3>Hole {{ selectedHole.hole_number }}</h3>
       <p><strong>Par:</strong> {{ selectedHole.par }}</p>
-      <p><strong>Yardage:</strong> {{ selectedHole.yardage }} yards</p>
+      <p><strong>Yardage:</strong> {{ selectedHole.tee_box_blue }} yards</p>
       <p><strong>Handicap:</strong> {{ selectedHole.handicap || 'N/A' }}</p>
     </div>
   </div>
-  
+</div>

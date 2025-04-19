@@ -9,9 +9,16 @@ export interface GolfCourse {
   }
   
   export interface GolfHole {
+    id?: string;
+    course_id: string;
     hole_number: number;
     par: number;
-    yardage: number;
     handicap?: number;
+  
+    tee_box_black?: number;
+    tee_box_blue?: number;
+    tee_box_white?: number;
+    tee_box_red?: number;
   }
+  
   
