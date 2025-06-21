@@ -1,85 +1,215 @@
 <div class="golf-shot-container">
-  <h2>Shots for Hole {{ holeNum }}</h2>
 
-  <!-- 📝 List of existing shots -->
-  <div class="shot-list">
-    <h3>Logged Shots</h3>
+  <!-- Header -->
+  <h2>Hole {{ holeNum }} · Shot Entry</h2>
+
+  <!-- Shot Trail Timeline -->
+  <div class="shot-timeline">
+    <h3>Shot Trail</h3>
     <div *ngIf="shots.length > 0; else noShots">
-      <ul>
-        <li *ngFor="let shot of shots" class="shot-item">
-          <span class="shot-detail">
-            <strong>Shot {{ shot.stroke_number }}:</strong> 
-            <span class="club">{{ shot.club_id }}</span> - 
-            <span class="distance">{{ shot.distance }} yards</span> - 
-            <span class="lie">{{ shot.lie }}</span> → 
-            <span class="result">{{ shot.result }}</span>
-          </span>
-          <button class="btn-delete" (click)="deleteShot(shot.id!)">❌</button>
-        </li>
-      </ul>
+      <div *ngFor="let shot of shots; index as i" class="shot-card" (click)="viewShotDetail(shot)">
+        <div class="shot-summary">
+          <span class="shot-number">#{{ i + 1 }}</span>
+          <span class="distance-tag">{{ shot.distance }} yds</span>
+          <span class="lie-tag">{{ shot.lie }}</span>
+          <span class="arrow">→</span>
+          <span class="result-tag">{{ shot.result }}</span>
+          <span class="intent-tag" *ngIf="shot.shot_intent">[{{ shot.shot_intent }}]</span>
+        </div>
+        <div class="details-row" *ngIf="shot.contact || shot.notes">
+          <span *ngIf="shot.contact">Contact: {{ shot.contact }} ({{ shot.contact_severity }}%)</span>
+          <span *ngIf="shot.impact_location">Impact: {{ shot.impact_location }}</span>
+          <span *ngIf="shot.notes">Note: {{ shot.notes }}</span>
+        </div>
+        <button class="btn-delete" (click)="deleteShot(shot.id!)">🗑</button>
+      </div>
     </div>
     <ng-template #noShots>
-      <p class="no-shots">No shots logged yet.</p>
+      <p>No shots yet — ready when you are.</p>
     </ng-template>
   </div>
 
-  <!-- 🎯 Add New Shot Form -->
-  <div class="golf-shot-form">
-    <h3>Add a New Shot</h3>
-    <form (submit)="addShot(); $event.preventDefault();">
-      
+  <!-- Add New Shot Form -->
+  <form class="golf-shot-form" (submit)="addShot(); $event.preventDefault();">
+    <h3>Add Shot</h3>
+
+    <!-- Club and Shot -->
+    <div class="form-row">
       <div class="form-group">
-        <label for="clubUsed">Club Used:</label>
-        <select [(ngModel)]="newShot.club_id" name="clubUsed" required>
-          <option *ngFor="let club of golferClubs" [value]="club.id">
-            {{ club.number }} - {{ club.category }}
-          </option>
+        <label>Club:</label>
+        <select [(ngModel)]="newShot.club_id" name="club_id" required>
+          <option *ngFor="let club of golferClubs" [value]="club.id">{{ club.number }} – {{ club.category }}</option>
         </select>
       </div>
-
       <div class="form-group">
-        <label for="distance">Distance (yards):</label>
+        <label>Shot Type:</label>
+        <select [(ngModel)]="newShot.shot_type" name="shot_type" required>
+          <option>Tee Shot</option>
+          <option>Approach</option>
+          <option>Layup</option>
+          <option>Recovery</option>
+          <option>Punchout</option>
+          <option>Chip</option>
+          <option>Putt</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Distance, Lie, Result -->
+    <div class="form-row">
+      <div class="form-group">
+        <label>Distance (yds):</label>
         <input type="number" [(ngModel)]="newShot.distance" name="distance">
       </div>
-
       <div class="form-group">
-        <label for="shotType">Shot Type:</label>
-        <select [(ngModel)]="newShot.shot_type" name="shotType">
-          <option value="Tee Shot">Tee Shot</option>
-          <option value="Approach">Approach</option>
-          <option value="Chip">Chip</option>
-          <option value="Putt">Putt</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label for="lie">Lie:</label>
+        <label>Lie:</label>
         <select [(ngModel)]="newShot.lie" name="lie">
-          <option value="Fairway">Fairway</option>
-          <option value="Rough">Rough</option>
-          <option value="Bunker">Bunker</option>
-          <option value="Green">Green</option>
-          <option value="Water">Water</option>
-          <option value="OB">OB</option>
+          <option>Fairway</option>
+          <option>Light Rough</option>
+          <option>Thick Rough</option>
+          <option>Bunker</option>
+          <option>Trees</option>
+          <option>Fringe</option>
+          <option>Green</option>
+          <option>Water</option>
+          <option>OB</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Result:</label>
+        <select [(ngModel)]="newShot.result" name="result">
+          <option>Fairway</option>
+          <option>Light Rough</option>
+          <option>Thick Rough</option>
+          <option>Bunker</option>
+          <option>Fringe</option>
+          <option>Green</option>
+          <option>Missed Left</option>
+          <option>Missed Right</option>
+          <option>Short</option>
+          <option>Long</option>
+          <option>Water</option>
+          <option>OB</option>
+          <option>Made</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Intent + Trajectory + Shape (hide for putts) -->
+    <div class="form-row" *ngIf="newShot.shot_type !== 'Putt'">
+      <div class="form-group">
+        <label>Intent:</label>
+        <select [(ngModel)]="newShot.shot_intent" name="shot_intent">
+          <option>Aggressive</option>
+          <option>Smart</option>
+          <option>Layup</option>
+          <option>Punchout</option>
+          <option>Escape</option>
+          <option>Hero</option>
         </select>
       </div>
 
       <div class="form-group">
-        <label for="result">Result:</label>
-        <select [(ngModel)]="newShot.result" name="result">
-          <option value="Fairway">Fairway</option>
-          <option value="Bunker">Bunker</option>
-          <option value="OB">OB</option>
-          <option value="Water">Water</option>
-          <option value="Green">Green</option>
-          <option value="Missed">Missed</option>
-          <option value="Made">Made</option>
+        <label>Trajectory:</label>
+        <select [(ngModel)]="newShot.trajectory" name="trajectory">
+          <option>Normal</option>
+          <option>Low</option>
+          <option>High</option>
         </select>
       </div>
 
-      <div class="btn-group">
-        <button type="submit" class="btn btn-primary">Add Shot</button>
+      <div class="form-group">
+        <label>Shot Shape:</label>
+        <select [(ngModel)]="newShot.shape" name="shape">
+          <option>Straight</option>
+          <option>Draw</option>
+          <option>Fade</option>
+          <option>Hook</option>
+          <option>Slice</option>
+        </select>
       </div>
-    </form>
-  </div>
+    </div>
+
+    <!-- Contact + Location -->
+    <div class="form-row">
+      <div class="form-group">
+        <label>Contact Quality:</label>
+        <select [(ngModel)]="newShot.contact" name="contact">
+          <option>Flush</option>
+          <option>Thin</option>
+          <option>Heavy</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Severity: {{ newShot.contact_severity ?? 50 }}%</label>
+        <input type="range" min="0" max="100" [(ngModel)]="newShot.contact_severity" name="contact_severity">
+      </div>
+      <div class="form-group">
+        <label>Impact Location:</label>
+        <select [(ngModel)]="newShot.impact_location" name="impact_location">
+          <option>Center</option>
+          <option>Toe</option>
+          <option>Heel</option>
+          <option>Top</option>
+          <option>Sky</option>
+        </select>
+      </div>
+    </div>
+    <div *ngIf="newShot.shot_type === 'Putt'" class="putt-section">
+      <div class="form-group">
+        <label>Putt Length (ft):</label>
+        <input type="number" [(ngModel)]="newShot.putt_length" name="putt_length">
+      </div>
+    
+      <div class="form-group">
+        <label>Slope:</label>
+        <select [(ngModel)]="newShot.slope" name="slope">
+          <option>Flat</option>
+          <option>Uphill</option>
+          <option>Downhill</option>
+        </select>
+      </div>
+    
+      <div class="form-group">
+        <label>Grain Direction:</label>
+        <select [(ngModel)]="newShot.grain_direction" name="grain_direction">
+          <option>With</option>
+          <option>Against</option>
+          <option>Cross</option>
+        </select>
+      </div>
+    
+      <div class="form-group">
+        <label>Green Speed (stimp):</label>
+        <input type="number" step="0.1" [(ngModel)]="newShot.green_speed" name="green_speed">
+      </div>
+    
+      <div class="form-group">
+        <label>Read Quality:</label>
+        <select [(ngModel)]="newShot.read_quality" name="read_quality">
+          <option>Good</option>
+          <option>Misread</option>
+          <option>Guess</option>
+        </select>
+      </div>
+    
+      <div class="form-group">
+        <label>Break Pattern:</label>
+        <input type="text" [(ngModel)]="break_pattern_string" name="break_pattern"
+          placeholder='e.g. [{"direction": "L→R", "severity": 3}]'>
+      </div>
+      
+    </div>
+    
+    <!-- Notes -->
+    <div class="form-group">
+      <label>Notes:</label>
+      <input type="text" [(ngModel)]="newShot.notes" name="notes" placeholder="e.g. uphill, tree trouble, flyer">
+    </div>
+
+    <!-- Submit -->
+    <div class="btn-group">
+      <button type="submit" class="btn btn-primary">Add Shot</button>
+    </div>
+  </form>
 </div>

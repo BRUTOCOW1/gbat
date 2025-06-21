@@ -55,25 +55,53 @@ export class NewRoundComponent implements OnInit {
   }
 
   async submitRound() {
-    if (this.newRoundForm.invalid) return;
-
+    if (this.newRoundForm.invalid || !this.userId) return;
+  
+    const formValues = this.newRoundForm.value;
+  
     const roundData = {
-      user_id: this.userId!,
-      ...this.newRoundForm.value,
+      user_id: this.userId,
+      date_played: formValues.date_played,
+      golfbag_id: formValues.golfbag_id,
+      course_id: formValues.course_id,
     };
-
-    const { data, error } = await this.supabaseService.createGolfRound(roundData);
-
-    if (!error && data && data.length > 0) {
-      const newRoundId = data[0].id;
-
-      this.router.navigate([`/golf-hole/1`], {
-        state: { roundId: newRoundId }
-      });
-    } else {
+  
+    const { data: roundInsert, error } = await this.supabaseService.createGolfRound(roundData);
+  
+    if (error || !roundInsert?.length) {
       console.error('Error creating round:', error);
+      return;
     }
+  
+    const roundId = roundInsert[0].id;
+  
+    // 🔁 Get all 18 holes for the course
+    const holes = await this.supabaseService.getGolfHolesByCourseId(formValues.course_id);
+    if (!holes?.length) {
+      console.warn('No holes found for course.');
+      return;
+    }
+  
+    // ⛳ Insert one played_golf_hole row per hole
+    for (const hole of holes) {
+      await this.supabaseService.createPlayedHole({
+        round_id: roundId,
+        hole_id: hole.id!,
+        strokes: 0,
+      });
+    }
+  
+    // ✅ Navigate to hole 1
+    this.router.navigate([`/golf-hole/1`], {
+      state: {
+        roundId,
+        userId: this.userId,
+        golfBagId: formValues.golfbag_id,
+        courseId: formValues.course_id,
+      }
+    });
   }
+  
 }
 
 

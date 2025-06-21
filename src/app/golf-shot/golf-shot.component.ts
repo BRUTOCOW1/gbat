@@ -23,6 +23,8 @@ export class GolfShotComponent implements OnInit {
   playedHoleId!: string;  // from played_golf_hole.id
   shots: GolfShot[] = [];
   golferClubs: GolferClub[] = [];
+  break_pattern_string: string = '';
+
 
   newShot: GolfShot = {
     hole_id: '',  // Will be set to playedHoleId
@@ -62,7 +64,14 @@ export class GolfShotComponent implements OnInit {
     // 3) Load existing shots
     await this.loadShots();
   }
-
+  getParsedBreakPattern(): any {
+    try {
+      return JSON.parse(this.break_pattern_string || '[]');
+    } catch (e) {
+      return [];
+    }
+  }
+  
   private async ensurePlayedHoleId(): Promise<void> {
     const playedHoleRes = await this.supabaseService.getPlayedHole(this.roundId, this.holeId);
     if (playedHoleRes.data && playedHoleRes.data.length > 0) {
@@ -105,58 +114,76 @@ export class GolfShotComponent implements OnInit {
       this.golferClubs = clubs || [];
     }
   }
-
+  getClubName(clubId: string): string {
+    const club = this.golferClubs.find(c => c.id === clubId);
+    return club ? `${club.number} (${club.category})` : 'Unknown Club';
+  }
+  
+  viewShotDetail(shot: GolfShot) {
+    this.router.navigate([`/golf-shot-detail/${shot.id}`], {
+      state: { shot, holeId: this.holeId, roundId: this.roundId }
+    });
+  }
   async addShot() {
     const { data, error } = await this.supabaseService.get_golferci_from_golfci(this.newShot.club_id);
     if (!error && data) {
-        this.newShot.club_id = data[0].id;
+      this.newShot.club_id = data[0].id;
     } else {
-        console.error("Was not able to find golfer club id from golf club id");
-        return;
+      console.error("Was not able to find golfer club id from golf club id");
+      return;
     }
-
+  
     if (!this.holeId || !this.newShot.club_id) return;
   
     this.newShot.stroke_number = this.shots.length + 1;
-
+  
     try {
-        // Ensure `played_golf_hole` exists
-        let { data: playedHoleData } = await this.supabaseService.getPlayedHole(this.roundId, this.holeId);
-        let playedHoleId = playedHoleData?.length ? playedHoleData[0].id : null;
-
-        if (!playedHoleId) {
-            const newPlayedHole = {
-                round_id: this.roundId!,
-                hole_id: this.holeId,
-                strokes: 1,
-            };
-            const { data: createdPlayedHole } = await this.supabaseService.createPlayedHole(newPlayedHole);
-            if (createdPlayedHole && createdPlayedHole.length > 0) {
-                playedHoleId = createdPlayedHole[0].id;
-            } else {
-                console.error("Error: played_golf_hole was not created correctly.");
-                return;
-            }
+      // Ensure played_golf_hole exists
+      let { data: playedHoleData } = await this.supabaseService.getPlayedHole(this.roundId, this.holeId);
+      let playedHoleId = playedHoleData?.length ? playedHoleData[0].id : null;
+  
+      if (!playedHoleId) {
+        const newPlayedHole = {
+          round_id: this.roundId!,
+          hole_id: this.holeId,
+          strokes: 1,
+        };
+        const { data: createdPlayedHole } = await this.supabaseService.createPlayedHole(newPlayedHole);
+        if (createdPlayedHole && createdPlayedHole.length > 0) {
+          playedHoleId = createdPlayedHole[0].id;
+        } else {
+          console.error("Error: played_golf_hole was not created correctly.");
+          return;
         }
-
-        // Insert the shot
-        this.newShot.hole_id = playedHoleId;
-        const addedShot = await this.supabaseService.addGolfShot(this.newShot);
-        this.shots.push(...addedShot??[]);
-
-        // Update strokes in `played_golf_hole`
-        await this.supabaseService.updatePlayedHoleStrokes(playedHoleId, this.shots.length);
-
-        // Check if hole is complete (i.e., last shot result is "Made")
-        if (this.newShot.result === "Made") {
-            this.moveToNextHole();
-        }
-
-        this.resetNewShot();
+      }
+  
+      // ✅ Convert break_pattern string → JSON before insert
+      try {
+        this.newShot.break_pattern = JSON.parse(this.break_pattern_string || '[]');
+      } catch (e) {
+        console.error('Invalid break pattern JSON:', e);
+        this.newShot.break_pattern = [];
+      }
+  
+      // Insert the shot
+      this.newShot.hole_id = playedHoleId;
+      const addedShot = await this.supabaseService.addGolfShot(this.newShot);
+      this.shots.push(...addedShot ?? []);
+  
+      // Update strokes in played_golf_hole
+      await this.supabaseService.updatePlayedHoleStrokes(playedHoleId, this.shots.length);
+  
+      // Check if hole is complete
+      if (this.newShot.result === "Made") {
+        this.moveToNextHole();
+      }
+  
+      this.resetNewShot();
     } catch (error) {
-        console.error("Error adding shot:", error);
+      console.error("Error adding shot:", error);
     }
-}
+  }
+  
 
 
   private moveToNextHole(): void {

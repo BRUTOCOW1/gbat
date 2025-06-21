@@ -123,3 +123,47 @@ select:focus {
   background-color: #0086cc;
   transform: scale(1.05);
 }
+
+.form-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.form-group {
+  flex: 1 1 30%;
+  min-width: 200px;
+}
+.shot-card {
+  background: #2c2c2c;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border-left: 5px solid #28a745;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+}
+.shot-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  font-weight: bold;
+}
+.shot-number {
+  color: #00bfff;
+}
+.club-tag, .distance-tag, .lie-tag, .result-tag {
+  background: #444;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.intent-tag {
+  color: #ffc107;
+  font-style: italic;
+}
+.details-row {
+  margin-top: 4px;
+  font-size: 14px;
+  color: #aaa;
+}
