@@ -1,0 +1,177 @@
+/* Main Container */
+.golf-shot-container {
+  width: 100%;
+  max-width: 700px;
+  margin: 50px auto;
+  padding: 20px;
+  background: #1e1e1e;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+/* Section Titles */
+h2, h3 {
+  color: #00bfff;
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+
+/* Shot List */
+.shot-list {
+  margin-bottom: 20px;
+  background: #222;
+  padding: 12px;
+  border-radius: 10px;
+}
+
+.shot-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  margin: 5px 0;
+  background: #333;
+  border-radius: 6px;
+  font-size: 16px;
+}
+
+.shot-item:hover {
+  background: #444;
+}
+
+/* Shot Details */
+.shot-detail {
+  font-weight: bold;
+}
+
+.club { color: #00bfff; }
+.distance { color: #28a745; }
+.lie { color: #ffc107; }
+.result { color: #dc3545; }
+
+/* Delete Button */
+.btn-delete {
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: red;
+}
+
+.btn-delete:hover {
+  color: darkred;
+}
+
+/* New Shot Form */
+.golf-shot-form {
+  background: #232323;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  text-align: left;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+label {
+  font-weight: bold;
+  color: #ccc;
+  display: block;
+}
+
+input,
+select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #555;
+  border-radius: 5px;
+  font-size: 1rem;
+  margin-top: 5px;
+  background: #333;
+  color: white;
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: #00bfff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+/* Submit Button */
+.btn-group {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.btn-primary {
+  background-color: #00bfff;
+  color: white;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: #0086cc;
+  transform: scale(1.05);
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.form-group {
+  flex: 1 1 30%;
+  min-width: 200px;
+}
+.shot-card {
+  background: #2c2c2c;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border-left: 5px solid #28a745;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+}
+.shot-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  font-weight: bold;
+}
+.shot-number {
+  color: #00bfff;
+}
+.distance-tag, .lie-tag, .result-tag {
+  background: #444;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.club-tag {
+  background-color: #e0f0ff;
+  color: #005d9b;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  margin-right: 5px;
+}
+.intent-tag {
+  color: #ffc107;
+  font-style: italic;
+}
+.details-row {
+  margin-top: 4px;
+  font-size: 14px;
+  color: #aaa;
+}
