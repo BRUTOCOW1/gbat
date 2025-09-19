@@ -153,10 +153,18 @@ select:focus {
 .shot-number {
   color: #00bfff;
 }
-.club-tag, .distance-tag, .lie-tag, .result-tag {
+.distance-tag, .lie-tag, .result-tag {
   background: #444;
   padding: 2px 6px;
   border-radius: 4px;
+}
+.club-tag {
+  background-color: #e0f0ff;
+  color: #005d9b;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  margin-right: 5px;
 }
 .intent-tag {
   color: #ffc107;

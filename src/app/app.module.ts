@@ -7,6 +7,8 @@ import { BlogComponent } from './blog/blog.component';
 import { RouterOutlet, RouterModule, RouterLink, RouterLinkActive} from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { GolfShotComponent } from './golf-shot/golf-shot.component';
+import { GolfShotEntryComponent } from './golf-shot-entry/golf-shot-entry.component';
+
 import { LoginComponent } from './login/login.component';
 import { GolfHoleComponent } from './golf-hole/golf-hole.component';
 import {routes} from './app.routes'
@@ -14,6 +16,8 @@ import { GolfBagComponent } from './golf-bag/golf-bag.component';
 import { GolfClubComponent } from './golf-club/golf-club.component';
 import { GolfCourseComponent } from './golf-course/golf-course.component';
 import { GolfRoundComponent } from './golf-round/golf-round.component';
+import { GolfRoundsComponent } from './golf-rounds/golf-rounds.component';
+
 import { NewRoundComponent } from './new-round/new-round.component';
 import { CourseBuilderComponent } from './course-builder/course-builder.component';
 import { RegisterComponent } from './register/register.component';
@@ -27,10 +31,12 @@ import { HttpClientModule } from '@angular/common/http'; // Import HttpClientMod
     BlogComponent,
     CourseBuilderComponent,
     GolfShotComponent,
+    GolfShotEntryComponent,
     GolfHoleComponent,
     GolfClubComponent,
     GolfCourseComponent,
     GolfRoundComponent,
+    GolfRoundsComponent,
     GolfBagComponent,
     LoginComponent,
     RegisterComponent,

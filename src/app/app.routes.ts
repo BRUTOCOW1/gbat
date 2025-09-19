@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
 import {GolfShotComponent} from './golf-shot/golf-shot.component';
+import {GolfShotEntryComponent} from './golf-shot-entry/golf-shot-entry.component';
+
 import {GolfBagComponent} from './golf-bag/golf-bag.component';
 import {GolfClubComponent} from './golf-club/golf-club.component';
 import {LoginComponent} from './login/login.component';
@@ -8,6 +10,8 @@ import {BlogComponent} from './blog/blog.component';
 import { RegisterComponent } from './register/register.component';
 import { ProfileComponent } from './profile/profile.component';
 import { GolfRoundComponent } from './golf-round/golf-round.component';
+import { GolfRoundsComponent } from './golf-rounds/golf-rounds.component';
+
 import { CreateGolfBagComponent } from './create-golf-bag/create-golf-bag.component';
 import { GolfHoleComponent } from './golf-hole/golf-hole.component';
 import { GolfCourseComponent } from './golf-course/golf-course.component';
@@ -17,13 +21,19 @@ import { CourseBuilderComponent } from './course-builder/course-builder.componen
 export const routes: Routes = [
     // ✅ Alphabetized Components
     { path: 'blog-component', component: BlogComponent },
-    { path: 'dashboard', component: GolfRoundComponent, canActivate: [AuthGuard] },
+    { path: 'dashboard', component: GolfRoundsComponent, canActivate: [AuthGuard] },
+    { path: 'golf-round/:id', component: GolfRoundComponent, canActivate: [AuthGuard] },
     { path: 'golf-bags', component: GolfBagComponent },
     { path: 'golf-bag/:id', component: GolfBagComponent },
     { path: 'golf-clubs', component: GolfClubComponent },
     { path: 'golf-courses', component: GolfCourseComponent }, // ✅ Added
     { path: 'golf-hole/:holeNumber', component: GolfHoleComponent },
-    { path: 'golf-shot/:holeNumber', component: GolfShotComponent },
+    // app.routes.ts
+    { path: 'golf-shot/:holeNumber/:shotNumber/edit', component: GolfShotEntryComponent },
+    { path: 'golf-shot/:holeNumber/newShot',         component: GolfShotEntryComponent },
+    { path: 'golf-shot/:holeNumber/:shotNumber',     component: GolfShotComponent },
+
+
     { path: 'add-clubs', component: GolfClubComponent },
     // { path: 'golf-shot/:holeId/:userId/:golfBagId', component: GolfShotComponent },
     { path: 'login', component: LoginComponent },

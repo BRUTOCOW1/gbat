@@ -2,17 +2,17 @@ export interface GolfShot {
   id?: string;
   hole_id: string;
   club_id: string;
+  golfer_club_id?: string;
+  club_name?: string; // ✅ added for display / denormalization
   distance: number;
   shot_type: string;
   lie: string;
   result: string;
   stroke_number: number;
 
-  // ✅ Mark these optional
+  // Optional shot details
   trajectory?: string;
   shape?: string;
-
-  // Optional already (or should be)
   shot_intent?: string;
   contact?: string;
   contact_severity?: number;
@@ -22,6 +22,10 @@ export interface GolfShot {
   grain_direction?: string;
   green_speed?: number;
   read_quality?: string;
-  break_pattern?: any; // or more specific type
+  break_pattern?: any;
   notes?: string;
+
+  // ✅ Add these for penalties
+  penalty?: 'none' | 'stroke_only' | 'stroke_and_distance' | 'drop' | 'unplayable';
+  penalty_strokes?: number;
 }

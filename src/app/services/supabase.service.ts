@@ -209,10 +209,10 @@ export class SupabaseService {
   async getClubsByBagId(bagId: string, userId: string) {
     try {
       return await this.supabase
-        .from('golfer_club')
-        .select('club_id')
-        .eq('golfer_id', userId)
-        .eq('cur_bag_id', bagId);
+      .from('golfer_club')
+      .select('id, club_id')  // ✅ include the PK id!
+      .eq('cur_bag_id', bagId)
+      .eq('golfer_id', userId);    
     } catch (error: any) {
       this.handleError('getClubsByBagId', error);
       return { data: null, error };
@@ -228,14 +228,21 @@ export class SupabaseService {
     }
   }
 
-  async get_golferci_from_golfci(golf_ci: string) {
+  async get_golferci_from_golfci(golfer_club_id: string) {
+    var club_id = null
     try {
-      return await this.supabase.from('golfer_club').select('id').eq('club_id', golf_ci);
+          return await this.supabase
+          .from('golfclub')
+          .select('number, category')
+          .eq('id', golfer_club_id);
     } catch (error: any) {
       this.handleError('get_golferci_from_golfci', error);
       return { data: null, error };
     }
   }
+  
+  
+  
 
   // ==================== GOLF COURSE METHODS ====================
 
@@ -282,7 +289,7 @@ export class SupabaseService {
       return [];
     }
   }
-
+  
   async getGolfCourseNameById(courseId: string) {
     try {
       const { data, error } = await this.supabase
@@ -468,6 +475,23 @@ export class SupabaseService {
     }
   }
 
+  async getShotForPlayedHole(played_hole_id: string, shot_num: number): Promise<GolfShot | null> {
+    try {
+      const { data, error } = await this.supabase
+      .from('golf_shot')
+      .select('*')
+      .eq('hole_id', played_hole_id)
+      .eq('stroke_number', shot_num)
+      .maybeSingle();
+    if (error) throw error;
+    return data as GolfShot | null;
+    } catch (error: any) {
+      this.handleError('getShotForPlayedHole', error); // (typo fixed)
+      return null;
+    }
+  }
+  
+
   // ==================== OPTIONAL: ADVANCED QUERIES (EXAMPLE) ====================
 
   /**
@@ -502,4 +526,42 @@ export class SupabaseService {
       return { totalStrokes: 0, totalPutts: 0 };
     }
   }
+
+
+  // Update by id (preferred)
+async updateGolfShotById(id: string, patch: Partial<GolfShot>) {
+  const { data, error } = await this.supabase
+    .from('golf_shot')
+    .update(patch)
+    .eq('id', id)
+    .select()
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+// Update by (played_hole_id, stroke_number)
+async updateGolfShotByPlayedHoleAndStroke(played_hole_id: string, stroke_number: number, patch: Partial<GolfShot>) {
+  const { data, error } = await this.supabase
+    .from('golf_shot')
+    .update(patch)
+    .eq('hole_id', played_hole_id)
+    .eq('stroke_number', stroke_number)
+    .select()
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+// Delete by (played_hole_id, stroke_number) if needed
+async deleteShotByPlayedHoleAndStroke(played_hole_id: string, stroke_number: number) {
+  const { error } = await this.supabase
+    .from('golf_shot')
+    .delete()
+    .eq('hole_id', played_hole_id)
+    .eq('stroke_number', stroke_number);
+  if (error) throw error;
+}
+
+
 }

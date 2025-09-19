@@ -4,10 +4,13 @@ import { SupabaseService } from '../services/supabase.service';
 import { GolfShot } from '../models/golf-shot.model';
 
 interface GolferClub {
-  id: string;
+  id: string;             // ✅ golfer_club.id
+  club_id: string;        // ✅ golfclub.id (for FK)
   number: string;
   category: string;
 }
+
+
 
 @Component({
   selector: 'app-golf-shot',
@@ -15,18 +18,19 @@ interface GolferClub {
   styleUrls: ['./golf-shot.component.css']
 })
 export class GolfShotComponent implements OnInit {
+  shotNum!: string;
   holeNum!: string;
+  holeNumber!: number;
   userId!: string;
   roundId!: string;
   golfBagId!: string;
   holeId!: string;        // actual golf_holes.id
-  playedHoleId!: string;  // from played_golf_hole.id
-  shots: GolfShot[] = [];
+  playedHoleId: string | null = null;  // from played_golf_hole.id
   golferClubs: GolferClub[] = [];
   break_pattern_string: string = '';
 
 
-  newShot: GolfShot = {
+  shot: GolfShot = {
     hole_id: '',  // Will be set to playedHoleId
     club_id: '',
     distance: 0,
@@ -52,6 +56,9 @@ export class GolfShotComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     this.holeNum = this.route.snapshot.paramMap.get('holeNumber')!;
+    this.holeNumber = parseInt(this.holeNum, 10);
+    this.shotNum = this.route.snapshot.paramMap.get('shotNumber')!;
+
     if (!this.userId || !this.golfBagId) {
       console.error('Missing userId or golfBagId in navigation state');
       this.router.navigate(['/new-round']);
@@ -59,10 +66,8 @@ export class GolfShotComponent implements OnInit {
     }
     // 1) Load clubs for the user’s selected bag
     await this.loadClubs();
-    // 2) Ensure we have a playedHoleId
-    await this.ensurePlayedHoleId();
-    // 3) Load existing shots
-    await this.loadShots();
+    await this.tryLoadExistingPlayedHoleAndShots();
+    await this.loadShot();
   }
   getParsedBreakPattern(): any {
     try {
@@ -71,32 +76,31 @@ export class GolfShotComponent implements OnInit {
       return [];
     }
   }
-  
-  private async ensurePlayedHoleId(): Promise<void> {
-    const playedHoleRes = await this.supabaseService.getPlayedHole(this.roundId, this.holeId);
-    if (playedHoleRes.data && playedHoleRes.data.length > 0) {
-      this.playedHoleId = playedHoleRes.data[0].id;
-    } else {
-      // If for some reason it doesn’t exist, create it
-      const { data: createdHole, error } = await this.supabaseService.createPlayedHole({
-        round_id: this.roundId,
-        hole_id: this.holeId,
-        strokes: 0
-      });
-      if (error || !createdHole?.length) {
-        console.error('Error creating played hole:', error);
-        return;
-      }
-      this.playedHoleId = createdHole[0].id;
-    }
-    this.newShot.hole_id = this.playedHoleId;
-  }
 
-  private async loadShots(): Promise<void> {
-    if (!this.playedHoleId) return;
-    const data = await this.supabaseService.getShotsForPlayedHole(this.playedHoleId);
-    this.shots = data || [];
+  getPenaltyStrokes(penalty: string | undefined): number {
+    switch (penalty) {
+      case 'stroke_only':
+      case 'drop':
+      case 'unplayable':
+        return 1;
+      case 'stroke_and_distance':
+        return 2;
+      default:
+        return 0;
+    }
   }
+  
+  
+  private async tryLoadExistingPlayedHoleAndShots(): Promise<void> {
+    const ph = await this.supabaseService.getPlayedHole(this.roundId, this.holeId);
+    const existing = ph?.data ?? [];
+    if (existing.length) {
+      this.playedHoleId = existing[0].id;
+    } else {
+      this.playedHoleId = null; // No row yet; that’s fine until first shot
+    }
+  }
+  
 
   private async loadClubs(): Promise<void> {
     const { data, error } = await this.supabaseService.getClubsByBagId(this.golfBagId, this.userId);
@@ -111,109 +115,68 @@ export class GolfShotComponent implements OnInit {
         console.error('Error fetching club details:', clubsErr);
         return;
       }
-      this.golferClubs = clubs || [];
+      this.golferClubs = data.map((gc) => {
+        const match = (clubs || []).find((club) => club.id === gc.club_id);
+        return match
+          ? {
+              id: gc.id,                // ✅ golfer_club.id
+              club_id: gc.club_id,      // ✅ FK to golfclub
+              number: match.number,
+              category: match.category
+            }
+          : {
+              id: gc.id,                // ✅ still use golfer_club.id
+              club_id: gc.club_id,
+              number: 'Unknown',
+              category: 'Unknown'
+            };
+      });
     }
   }
+
+  private async loadShot(): Promise<void> {
+
+    if (!this.playedHoleId) return;
+  
+    const row = await this.supabaseService.getShotForPlayedHole(
+      this.playedHoleId,
+      parseInt(this.shotNum, 10)
+    );
+    if (!row) { this.shot = { ...this.shot, stroke_number: 1 }; return; }
+  
+    const club = this.golferClubs.find(c => c.id === row.club_id);
+    this.shot = {
+      ...row,
+      club_name: club ? `${club.number} ${club.category}`.trim() : 'Unknown Club',
+    };
+  }
+  
+
+  onPenaltyChange(): void {
+    this.shot.penalty_strokes = this.getPenaltyStrokes(this.shot.penalty);
+  }
+  
   getClubName(clubId: string): string {
     const club = this.golferClubs.find(c => c.id === clubId);
     return club ? `${club.number} (${club.category})` : 'Unknown Club';
   }
-  
-  viewShotDetail(shot: GolfShot) {
-    this.router.navigate([`/golf-shot-detail/${shot.id}`], {
-      state: { shot, holeId: this.holeId, roundId: this.roundId }
-    });
-  }
-  async addShot() {
-    const { data, error } = await this.supabaseService.get_golferci_from_golfci(this.newShot.club_id);
-    if (!error && data) {
-      this.newShot.club_id = data[0].id;
-    } else {
-      console.error("Was not able to find golfer club id from golf club id");
-      return;
-    }
-  
-    if (!this.holeId || !this.newShot.club_id) return;
-  
-    this.newShot.stroke_number = this.shots.length + 1;
-  
-    try {
-      // Ensure played_golf_hole exists
-      let { data: playedHoleData } = await this.supabaseService.getPlayedHole(this.roundId, this.holeId);
-      let playedHoleId = playedHoleData?.length ? playedHoleData[0].id : null;
-  
-      if (!playedHoleId) {
-        const newPlayedHole = {
-          round_id: this.roundId!,
-          hole_id: this.holeId,
-          strokes: 1,
-        };
-        const { data: createdPlayedHole } = await this.supabaseService.createPlayedHole(newPlayedHole);
-        if (createdPlayedHole && createdPlayedHole.length > 0) {
-          playedHoleId = createdPlayedHole[0].id;
-        } else {
-          console.error("Error: played_golf_hole was not created correctly.");
-          return;
-        }
-      }
-  
-      // ✅ Convert break_pattern string → JSON before insert
-      try {
-        this.newShot.break_pattern = JSON.parse(this.break_pattern_string || '[]');
-      } catch (e) {
-        console.error('Invalid break pattern JSON:', e);
-        this.newShot.break_pattern = [];
-      }
-  
-      // Insert the shot
-      this.newShot.hole_id = playedHoleId;
-      const addedShot = await this.supabaseService.addGolfShot(this.newShot);
-      this.shots.push(...addedShot ?? []);
-  
-      // Update strokes in played_golf_hole
-      await this.supabaseService.updatePlayedHoleStrokes(playedHoleId, this.shots.length);
-  
-      // Check if hole is complete
-      if (this.newShot.result === "Made") {
-        this.moveToNextHole();
-      }
-  
-      this.resetNewShot();
-    } catch (error) {
-      console.error("Error adding shot:", error);
-    }
-  }
-  
 
-
-  private moveToNextHole(): void {
-    const nextHole = parseInt(this.holeNum, 10) + 1;
-    if (nextHole > 18) {
-      console.log('Round complete! Navigating back to round summary...');
-      this.router.navigate(['/dashboard']); 
-      return;
-    }
-    this.router.navigate([`/golf-hole/${nextHole}`], {
+  goToHole(holeNumber: number): void {
+    this.router.navigate([`/golf-hole/${holeNumber}`], {
       state: { roundId: this.roundId }
     });
   }
-
-  async deleteShot(id: string): Promise<void> {
-    await this.supabaseService.deleteShot(id);
-    this.shots = this.shots.filter((shot) => shot.id !== id);
-    // Update strokes in played_golf_hole
-    await this.supabaseService.updatePlayedHoleStrokes(this.playedHoleId, this.shots.length);
+  editShot(shot: GolfShot) {
+    this.router.navigate([`/golf-shot/${this.holeNumber}/${shot.stroke_number}/edit`], {
+      state: {
+        shot,                    // ← whole object
+        roundId: this.roundId,
+        userId: this.userId,
+        golfBagId: this.golfBagId,
+        holeId: this.holeId      // golf_holes.id
+      }
+    });
   }
+  
 
-  private resetNewShot(): void {
-    this.newShot = {
-      hole_id: this.playedHoleId,
-      club_id: '',
-      distance: 0,
-      shot_type: 'Tee Shot',
-      lie: 'Fairway',
-      result: 'Fairway',
-      stroke_number: this.shots.length + 1
-    };
-  }
 }

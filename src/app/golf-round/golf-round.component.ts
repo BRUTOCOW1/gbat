@@ -1,22 +1,24 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { SupabaseService } from '../services/supabase.service';
 import { WeatherService } from '../services/weather.service';
-import { Router } from '@angular/router';
-
+import { ActivatedRoute, Router } from '@angular/router';
+import { GolfHole } from '../models/golf-course.model';
 @Component({
   selector: 'app-golf-round',
   templateUrl: './golf-round.component.html',
   styleUrls: ['./golf-round.component.css'],
 })
 export class GolfRoundComponent implements OnInit {
-  rounds: any[] = [];
-  selectedRound: any | null = null;
+  roundId: any;
   weatherData: any | null = null;
   courseName: string | null = null;
+  courseId: any;
+  datePlayed: any;
+  selectedHole: any;
   loading = false;
   userId: string | null = null;
   golfBagId: string | null = null;
-  holes: number[] = Array.from({ length: 18 }, (_, i) => i + 1);
+  holes: GolfHole[];
 
   // For optional aggregator data
   totalStrokes: number | null = null;
@@ -26,8 +28,11 @@ export class GolfRoundComponent implements OnInit {
     private supabaseService: SupabaseService,
     private weatherService: WeatherService,
     private router: Router,
+    private route: ActivatedRoute,
     private cdRef: ChangeDetectorRef
-  ) {}
+  ) {
+    this.holes = [];
+  }
 
   async ngOnInit(): Promise<void> {
     const user = await this.supabaseService.getUser();
@@ -37,66 +42,47 @@ export class GolfRoundComponent implements OnInit {
       return;
     }
     this.userId = user.id;
-    await this.loadRounds();
-  }
+    this.roundId = this.route.snapshot.paramMap.get('id');
 
-  async loadRounds(): Promise<void> {
-    if (!this.userId) return;
-    this.loading = true;
-
-    try {
-      const { data, error } = await this.supabaseService.getGolfRoundsByUser(this.userId);
-      if (error) {
-        console.error('Error fetching rounds:', error);
-        return;
-      }
-      if (data) {
-        // Example: load course name for each round
-        this.rounds = await Promise.all(
-          data.map(async (round) => {
-            const courseData = await this.supabaseService.getGolfCourseNameById(round.course_id);
-            const courseName = courseData?.length ? courseData[0].name : 'Unknown Course';
-            return { ...round, course_name: courseName };
-          })
-        );
-      }
-    } catch (err) {
-      console.error('Unexpected error:', err);
-    } finally {
-      this.loading = false;
-      this.cdRef.detectChanges();
-    }
-  }
-
-  async selectRound(round: any): Promise<void> {
-    if (this.selectedRound && this.selectedRound.id === round.id) {
-      // Collapse if same round is clicked
-      this.selectedRound = null;
+    const roundRes = await this.supabaseService.getGolfRoundById(this.roundId);
+    if (roundRes.data && roundRes.data.length > 0) {
+      const round = roundRes.data[0];
+      this.courseId = round.course_id;
+      this.userId = round.user_id;
+      this.golfBagId = round.golfbag_id;
+      this.datePlayed = round.date_played;
+      this.fetchWeather(round);
+      this.getHoles();
+    } else {
+      console.error('No round data found. Redirecting...');
+      this.router.navigate(['/dashboard']);
       return;
     }
-    this.selectedRound = round;
-    this.golfBagId = round.golfbag_id;
-    this.weatherData = null;
-    this.totalStrokes = null;
-    this.totalPutts = null;
 
-    // Optionally fetch aggregator data
-    const aggregator = await this.supabaseService.getRoundAggregate(round.id);
-    this.totalStrokes = aggregator.totalStrokes;
-    this.totalPutts = aggregator.totalPutts;
+  }
 
-    // Fetch weather data if needed
-    this.fetchWeather(round);
+  async selectHole(hole: any): Promise<void> {
+    if (this.selectedHole && this.selectedHole.id === hole.id) {
+      // Collapse if same round is clicked
+      this.selectedHole = null;
+      return;
+    }
+    this.selectedHole = hole;
+
+  }
+
+  async getHoles(): Promise<void> {
+    this.holes = await this.supabaseService.getGolfHolesByCourseId(this.courseId);
+
   }
 
   async fetchWeather(round: any): Promise<void> {
-    if (!round || !round.course_id || !round.date_played) return;
     try {
-      const courseData = await this.supabaseService.getGolfCourseNameById(round.course_id);
+      const courseData = await this.supabaseService.getGolfCourseNameById(this.courseId);
       this.courseName = courseData?.length ? courseData[0].name : 'Unknown Course';
 
       // Example usage of your WeatherService
-      this.weatherService.getWeather(this.courseName!, 'Austin', 'USA', round.date_played)
+      this.weatherService.getWeather(this.courseName!, 'Austin', 'USA', this.datePlayed)
         .subscribe({
           next: (data) => {
             this.weatherData = data?.weather;
@@ -111,14 +97,13 @@ export class GolfRoundComponent implements OnInit {
     }
   }
 
-  startNewRound(): void {
-    this.router.navigate(['/new-round']);
+  goToHole(holeNumber: number): void {
+    this.router.navigate([`/golf-hole/${holeNumber}`], {
+      state: { roundId: this.roundId }
+    });
   }
 
-  goToHole(holeNumber: number): void {
-    if (!this.selectedRound || !this.golfBagId) return;
-    this.router.navigate([`/golf-hole/${holeNumber}`], {
-      state: { roundId: this.selectedRound.id }
-    });
+  goToRounds(): void {
+    this.router.navigate(['/dashboard'])
   }
 }

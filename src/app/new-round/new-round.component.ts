@@ -67,31 +67,15 @@ export class NewRoundComponent implements OnInit {
     };
   
     const { data: roundInsert, error } = await this.supabaseService.createGolfRound(roundData);
-  
     if (error || !roundInsert?.length) {
       console.error('Error creating round:', error);
       return;
     }
   
     const roundId = roundInsert[0].id;
+
   
-    // 🔁 Get all 18 holes for the course
-    const holes = await this.supabaseService.getGolfHolesByCourseId(formValues.course_id);
-    if (!holes?.length) {
-      console.warn('No holes found for course.');
-      return;
-    }
-  
-    // ⛳ Insert one played_golf_hole row per hole
-    for (const hole of holes) {
-      await this.supabaseService.createPlayedHole({
-        round_id: roundId,
-        hole_id: hole.id!,
-        strokes: 0,
-      });
-    }
-  
-    // ✅ Navigate to hole 1
+    // ✅ go straight to hole 1; create played_golf_hole later (on first shot)
     this.router.navigate([`/golf-hole/1`], {
       state: {
         roundId,
@@ -101,6 +85,7 @@ export class NewRoundComponent implements OnInit {
       }
     });
   }
+  
   
 }
 

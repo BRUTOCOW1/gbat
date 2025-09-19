@@ -2,37 +2,12 @@
   <h2 class="rounds-title">Golf Rounds</h2>
   
   <div class="rounds-actions">
-    <button class="btn btn-primary" (click)="startNewRound()">Start New Round</button>
+    <button class="btn btn-primary" (click)="goToRounds()">Back To All Rounds</button>
   </div>
 
   <!-- Two-column layout: left for the round cards, right for the selected details -->
-  <div class="rounds-layout">
-    
-    <!-- Left Column: Round Cards Grid -->
-    <div class="round-list">
-      <div
-        *ngFor="let round of rounds"
-        class="round-card"
-        (click)="selectRound(round)"
-        [class.selected]="selectedRound?.id === round.id"
-      >
-        <div class="round-header">
-          <h3 class="round-date">{{ round.date_played | date: 'mediumDate' }}</h3>
-          <p class="round-course">{{ round.course_name }}</p>
-        </div>
-      </div>
-    </div>
+  <div class="round-layout">
 
-    <!-- Right Column: Expanded Details (only shown if selectedRound is defined) -->
-    <div class="selected-round-details card" *ngIf="selectedRound">
-      <h3 class="selected-round-date">{{ selectedRound.date_played | date:'mediumDate' }}</h3>
-      <p class="selected-round-course">{{ selectedRound.course_name }}</p>
-      
-      <div class="round-stats">
-        <p><strong>Total Strokes:</strong> {{ selectedRound.total_strokes }}</p>
-        <p><strong>Fairways Hit:</strong> {{ selectedRound.fairways_hit }}</p>
-        <p><strong>Putts:</strong> {{ selectedRound.putts }}</p>
-      </div>
 
       <div *ngIf="weatherData" class="weather-widget">
         <p><strong>Weather:</strong></p>
@@ -42,15 +17,30 @@
       </div>
 
       <!-- 18 Clickable Buttons for Holes -->
-      <div class="hole-buttons">
-        <button
-          *ngFor="let hole of holes" 
-          class="btn btn-secondary"
-          (click)="goToHole(hole)"
-        >
-          Hole {{ hole }}
-        </button>
-      </div>
     </div>
-  </div>
+
+    <!-- 18 Clickable Buttons for Holes -->
+    <div class="hole-buttons">
+      <button
+        *ngFor="let hole of holes" 
+        class="btn btn-secondary"
+        (click)="selectHole(hole)"
+      >
+        Hole {{ hole.hole_number }}
+      </button>
+    </div>
+
+    <!-- Right Column: Expanded Details (only shown if selectedRound is defined) -->
+    <div class="selected-round-details card" *ngIf="selectedHole">
+      <h3 class="selected-round-date">{{ selectedHole.hole_number }}</h3>
+      
+      <button
+        class="btn btn-secondary"
+        (click)="goToHole(selectedHole.hole_number)"
+      >
+        Go To Hole
+      </button>
+
+
+    </div>
 </div>
