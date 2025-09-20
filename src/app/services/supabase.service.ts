@@ -2,11 +2,11 @@
 import { Injectable } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { BehaviorSubject } from 'rxjs';
-import { GolfBag } from '../models/golf-bag.model';
-import { GolfShot } from '../models/golf-shot.model';
-import { GolfClub } from '../models/golf-club.model';
-import { User } from '../models/user.model';
-import { GolfCourse, GolfHole } from '../models/golf-course.model';
+import { GolfBag } from '../shared/models/golf-bag.model';
+import { GolfShot } from '../shared/models/golf-shot.model';
+import { GolfClub } from '../shared/models/golf-club.model';
+import { User } from '../shared/models/user.model';
+import { GolfCourse, GolfHole } from '../shared/models/golf-course.model';
 import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { map, catchError } from 'rxjs/operators';

@@ -1,22 +1,34 @@
 import { Routes } from '@angular/router';
-import {GolfShotComponent} from './golf-shot/golf-shot.component';
-import {GolfShotEntryComponent} from './golf-shot-entry/golf-shot-entry.component';
+// BAG AND CLUBS 
+import { CreateGolfBagComponent } from './bagAndClubs/create-golf-bag/create-golf-bag.component';
+import { GolfBagComponent } from './bagAndClubs//golf-bag/golf-bag.component';
+import { GolfClubComponent } from './bagAndClubs//golf-club/golf-club.component';
 
-import {GolfBagComponent} from './golf-bag/golf-bag.component';
-import {GolfClubComponent} from './golf-club/golf-club.component';
-import {LoginComponent} from './login/login.component';
-import { AuthGuard } from './guards/auth.guard';
-import {BlogComponent} from './blog/blog.component';
-import { RegisterComponent } from './register/register.component';
-import { ProfileComponent } from './profile/profile.component';
-import { GolfRoundComponent } from './golf-round/golf-round.component';
-import { GolfRoundsComponent } from './golf-rounds/golf-rounds.component';
+// COURSE 
+import { GolfCourseComponent } from './course/golf-course/golf-course.component';
+import { CourseBuilderComponent } from './course/course-builder/course-builder.component';
 
-import { CreateGolfBagComponent } from './create-golf-bag/create-golf-bag.component';
-import { GolfHoleComponent } from './golf-hole/golf-hole.component';
-import { GolfCourseComponent } from './golf-course/golf-course.component';
-import { NewRoundComponent } from './new-round/new-round.component';
-import { CourseBuilderComponent } from './course-builder/course-builder.component';
+// HOLE AND SHOTS 
+import { GolfHoleComponent } from './holeAndShots/golf-hole/golf-hole.component';
+import { GolfShotComponent } from './holeAndShots/golf-shot/golf-shot.component';
+import { GolfShotEntryComponent } from './holeAndShots/golf-shot-entry/golf-shot-entry.component';
+
+// ROUND 
+import { GolfRoundComponent } from './round/golf-round/golf-round.component';
+import { GolfRoundsComponent } from './round/golf-rounds/golf-rounds.component';
+import { NewRoundComponent } from './round/new-round/new-round.component';
+
+// SHARED 
+import { BlogComponent } from './shared/blog/blog.component';
+import { NavbarComponent } from './shared/navbar/navbar.component';
+import { AuthGuard } from './shared/guards/auth.guard';
+
+// USER OPS 
+import { LoginComponent } from './userOps/login/login.component';
+import { LogoutComponent } from './userOps/logout/logout.component';
+import { ProfileComponent } from './userOps/profile/profile.component';
+import { RegisterComponent } from './userOps/register/register.component';
+
 
 export const routes: Routes = [
     // ✅ Alphabetized Components
