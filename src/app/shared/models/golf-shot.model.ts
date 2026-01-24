@@ -7,7 +7,7 @@ export interface GolfShot {
   distance: number;
   shot_type: string;
   lie: string;
-  result: string;
+  result: string; // Keep for backward compatibility, but we'll use result_location and result_quality
   stroke_number: number;
 
   // Optional shot details
@@ -28,4 +28,11 @@ export interface GolfShot {
   // ✅ Add these for penalties
   penalty?: 'none' | 'stroke_only' | 'stroke_and_distance' | 'drop' | 'unplayable';
   penalty_strokes?: number;
+
+  // New fields for improved shot entry
+  result_location?: string; // Where the ball ended up (Fairway, Green, Thick Rough, etc.)
+  result_direction?: string; // Direction miss (Missed Left, Missed Right, Short, Long, etc.)
+  result_quality?: string; // Quality of result (Still on Green, etc.)
+  putt_speed_quality?: number; // Speed quality gauge for putts (0-100)
+  is_kick_in?: boolean; // Flag for kick-in putts that skip detailed entry
 }

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SupabaseService } from '../../services/supabase.service';
 import { GolfShot } from '../../shared/models/golf-shot.model';
+import { NotificationService } from '../../shared/services/notification.service';
 
 interface GolferClub {
   id: string;             // ✅ golfer_club.id
@@ -43,7 +44,8 @@ export class GolfShotComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private supabaseService: SupabaseService
+    private supabaseService: SupabaseService,
+    private notificationService: NotificationService
   ) {
     const nav = this.router.getCurrentNavigation();
     if (nav?.extras.state) {
@@ -60,7 +62,7 @@ export class GolfShotComponent implements OnInit {
     this.shotNum = this.route.snapshot.paramMap.get('shotNumber')!;
 
     if (!this.userId || !this.golfBagId) {
-      console.error('Missing userId or golfBagId in navigation state');
+      this.notificationService.showError('Missing round information. Please start a new round.');
       this.router.navigate(['/new-round']);
       return;
     }
@@ -121,6 +123,8 @@ export class GolfShotComponent implements OnInit {
       const clubIds = data.map((c) => c.club_id);
       const { data: clubs, error: clubsErr } = await this.supabaseService.getClubsFromIds(clubIds);
       if (clubsErr) {
+        const errorMsg = this.notificationService.getErrorMessage(clubsErr);
+        this.notificationService.showError(`Error loading club details: ${errorMsg}`);
         console.error('Error fetching club details:', clubsErr);
         return;
       }

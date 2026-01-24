@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { SupabaseService } from '../../services/supabase.service';
 import { WeatherService } from '../../services/weather.service';
 import { Router } from '@angular/router';
+import { NotificationService } from '../../shared/services/notification.service';
 
 @Component({
   selector: 'app-golf-rounds',
@@ -25,13 +26,14 @@ export class GolfRoundsComponent implements OnInit {
     private supabaseService: SupabaseService,
     private weatherService: WeatherService,
     private router: Router,
-    private cdRef: ChangeDetectorRef
+    private cdRef: ChangeDetectorRef,
+    private notificationService: NotificationService
   ) {}
 
   async ngOnInit(): Promise<void> {
     const user = await this.supabaseService.getUser();
     if (!user) {
-      console.warn('No user is authenticated.');
+      this.notificationService.showWarning('Please log in to view your rounds.');
       this.router.navigate(['/login']);
       return;
     }
@@ -46,6 +48,8 @@ export class GolfRoundsComponent implements OnInit {
     try {
       const { data, error } = await this.supabaseService.getGolfRoundsByUser(this.userId);
       if (error) {
+        const errorMsg = this.notificationService.getErrorMessage(error);
+        this.notificationService.showError(errorMsg);
         console.error('Error fetching rounds:', error);
         return;
       }
@@ -54,12 +58,17 @@ export class GolfRoundsComponent implements OnInit {
         this.rounds = await Promise.all(
           data.map(async (round) => {
             const courseData = await this.supabaseService.getGolfCourseNameById(round.course_id);
-            const courseName = courseData?.length ? courseData[0].name : 'Unknown Course';
+            const courseName = courseData || 'Unknown Course';
             return { ...round, course_name: courseName };
           })
         );
+        if (this.rounds.length === 0) {
+          this.notificationService.showInfo('No rounds found. Start a new round to begin tracking!');
+        }
       }
     } catch (err) {
+      const errorMsg = this.notificationService.getErrorMessage(err);
+      this.notificationService.showError(errorMsg);
       console.error('Unexpected error:', err);
     } finally {
       this.loading = false;

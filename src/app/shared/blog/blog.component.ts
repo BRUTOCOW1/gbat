@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { SupabaseService } from '../../services/supabase.service';
+import { NotificationService } from '../services/notification.service';
 
 @Component({
   selector: 'app-blog',
@@ -11,7 +12,10 @@ export class BlogComponent implements OnInit {
 
   data: any;
 
-  constructor(private supabaseService: SupabaseService) {}
+  constructor(
+    private supabaseService: SupabaseService,
+    private notificationService: NotificationService
+  ) {}
 
   ngOnInit(): void {
     this.fetchData();
@@ -22,10 +26,16 @@ export class BlogComponent implements OnInit {
       const entries = await this.supabaseService.getBlogPosts();
       if (entries) {
         this.data = entries;
+        if (entries.length === 0) {
+          this.notificationService.showInfo('No blog posts found.');
+        }
+      } else {
+        this.notificationService.showWarning('Unable to load blog posts.');
       }
     } catch (error) {
+      const errorMsg = this.notificationService.getErrorMessage(error);
+      this.notificationService.showError(`Error loading blog: ${errorMsg}`);
       console.error('Error fetching data:', error);
-      // Handle error as needed
     }
   }
 }

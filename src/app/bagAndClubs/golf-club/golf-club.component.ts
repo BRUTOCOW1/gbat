@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { SupabaseService } from '../../services/supabase.service';
 import { GolfClub } from '../../shared/models/golf-club.model';
+import { NotificationService } from '../../shared/services/notification.service';
 
 interface NestedClubs {
   maker: string;
@@ -40,7 +41,8 @@ export class GolfClubComponent implements OnInit {
   constructor(
     private supabaseService: SupabaseService,
     private router: Router,
-    private http: HttpClient
+    private http: HttpClient,
+    private notificationService: NotificationService
   ) {
     // Optionally retrieve bagId from navigation state
     const nav = this.router.getCurrentNavigation();
@@ -53,10 +55,15 @@ export class GolfClubComponent implements OnInit {
     // 1) Load clubs from Supabase
     const { data, error } = await this.supabaseService.getAllClubs();
     if (error) {
+      const errorMsg = this.notificationService.getErrorMessage(error);
+      this.notificationService.showError(`Error loading clubs: ${errorMsg}`);
       console.error('Error fetching golf clubs:', error);
       return;
     }
     this.allClubs = data || [];
+    if (this.allClubs.length === 0) {
+      this.notificationService.showInfo('No clubs found. Seed the database to get started!');
+    }
 
     // 2) Apply any initial filter (optional)
     this.applyFilter();
@@ -138,12 +145,16 @@ export class GolfClubComponent implements OnInit {
   // Bulk add selected clubs to the bag
   async addSelectedClubsToBag() {
     if (!this.currentBagId) {
-      alert('No bag selected. Please navigate with a bagId or create a bag first.');
+      this.notificationService.showWarning('No bag selected. Please navigate with a bagId or create a bag first.');
+      return;
+    }
+    if (this.selectedClubIds.size === 0) {
+      this.notificationService.showWarning('Please select at least one club to add.');
       return;
     }
     const user = await this.supabaseService.getUser();
     if (!user) {
-      alert('Not logged in. Redirecting...');
+      this.notificationService.showError('You must be logged in to add clubs.');
       this.router.navigate(['/login']);
       return;
     }
@@ -167,9 +178,20 @@ export class GolfClubComponent implements OnInit {
         results.push({ clubId, success: false });
       }
     }
+    
+    const successCount = results.filter(r => r.success).length;
+    const failCount = results.filter(r => !r.success).length;
+    
     // Clear selection
     this.selectedClubIds.clear();
-    alert('Selected clubs added to bag. Check console for any errors.');
+    
+    if (failCount === 0) {
+      this.notificationService.showSuccess(`Successfully added ${successCount} club(s) to your bag!`);
+    } else if (successCount > 0) {
+      this.notificationService.showWarning(`Added ${successCount} club(s), but ${failCount} failed. Please try again.`);
+    } else {
+      this.notificationService.showError('Failed to add clubs. Please try again.');
+    }
   }
 
   async seedDatabase() {
@@ -177,15 +199,26 @@ export class GolfClubComponent implements OnInit {
 
     this.http.get<GolfClub[]>('assets/club_catalog.json').subscribe(async (clubs) => {
       if (clubs && clubs.length > 0) {
-        const { error } = await this.supabaseService.upsertClubs(clubs);
-        if (error) {
-          console.error('Seeding failed', error);
-          alert('Failed to seed database.');
-        } else {
-          alert('Database seeded successfully! Refreshing list...');
-          this.ngOnInit(); // Reload list
+        try {
+          const { error } = await this.supabaseService.upsertClubs(clubs);
+          if (error) {
+            const errorMsg = this.notificationService.getErrorMessage(error);
+            this.notificationService.showError(`Failed to seed database: ${errorMsg}`);
+            console.error('Seeding failed', error);
+          } else {
+            this.notificationService.showSuccess(`Database seeded successfully! Added ${clubs.length} clubs.`);
+            this.ngOnInit(); // Reload list
+          }
+        } catch (error) {
+          const errorMsg = this.notificationService.getErrorMessage(error);
+          this.notificationService.showError(`Unexpected error: ${errorMsg}`);
         }
+      } else {
+        this.notificationService.showError('No clubs found in catalog file.');
       }
+    }, (error) => {
+      const errorMsg = this.notificationService.getErrorMessage(error);
+      this.notificationService.showError(`Error loading club catalog: ${errorMsg}`);
     });
   }
 }

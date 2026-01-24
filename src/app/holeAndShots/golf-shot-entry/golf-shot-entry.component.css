@@ -1,4 +1,11 @@
 /* Main Container */
+.golf-shot-entry-container {
+  width: 100%;
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+}
+
 .golf-shot-container {
   width: 100%;
   max-width: 700px;
@@ -8,6 +15,35 @@
   border-radius: 12px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
   text-align: center;
+}
+
+/* Context Badge - Smart Inference Indicator */
+.shot-context-info {
+  margin: 15px 0;
+  padding: 12px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 8px;
+  color: white;
+  font-size: 14px;
+}
+
+.context-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.badge-icon {
+  font-size: 18px;
+}
+
+.club-suggestion {
+  font-weight: bold;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-left: 8px;
 }
 
 /* Section Titles */
@@ -174,4 +210,168 @@ select:focus {
   margin-top: 4px;
   font-size: 14px;
   color: #aaa;
+}
+
+.putt-section {
+  margin-top: 20px;
+  padding: 15px;
+  background: #2a2a2a;
+  border-radius: 8px;
+  border: 1px solid #444;
+}
+
+.autofill-hint {
+  display: block;
+  color: #888;
+  font-size: 0.85rem;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+.help-text {
+  display: block;
+  color: #888;
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #555;
+  border-radius: 5px;
+  font-size: 1rem;
+  margin-top: 5px;
+  background: #333;
+  color: white;
+  font-family: monospace;
+  resize: vertical;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: #00bfff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+input[type="checkbox"] {
+  width: auto;
+  margin-right: 8px;
+  cursor: pointer;
+}
+
+input[type="range"] {
+  width: 100%;
+  margin-top: 8px;
+  cursor: pointer;
+}
+
+small {
+  display: block;
+  margin-top: 4px;
+}
+
+/* Break Pattern Segments */
+.break-pattern-group {
+  margin-top: 15px;
+}
+
+.break-segments-container {
+  margin-top: 10px;
+}
+
+.break-segment {
+  background: #333;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 10px;
+  border: 1px solid #555;
+}
+
+.segment-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.segment-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.segment-field label {
+  font-size: 0.85rem;
+  margin-bottom: 5px;
+  color: #aaa;
+}
+
+.segment-field select,
+.segment-field input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #555;
+  border-radius: 5px;
+  background: #2a2a2a;
+  color: white;
+  font-size: 0.9rem;
+}
+
+.segment-field select:focus,
+.segment-field input:focus {
+  outline: none;
+  border-color: #00bfff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+.btn-remove-segment {
+  background: #f44336;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  margin-bottom: 0;
+}
+
+.btn-remove-segment:hover {
+  background: #d32f2f;
+  transform: scale(1.1);
+}
+
+.btn-add-segment {
+  background: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 15px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.btn-add-segment:hover {
+  background: #45a049;
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .segment-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  
+  .btn-remove-segment {
+    width: 100%;
+    border-radius: 6px;
+    margin-top: 5px;
+  }
 }

@@ -1,16 +1,139 @@
-<form [formGroup]="newRoundForm" (ngSubmit)="submitRound()">
-  <label>Date:</label>
-  <input type="date" formControlName="date_played" required />
+<div class="new-round-container">
+  <h2>Start a New Round</h2>
+  
+  <div class="course-builder-option">
+    <p>Don't see your course?</p>
+    <a routerLink="/new-course" class="btn-create-course">➕ Create New Course</a>
+  </div>
 
-  <label>Golf Course:</label>
-  <select formControlName="course_id" required>
-    <option *ngFor="let course of golfCourses" [value]="course.id">{{ course.name }}</option>
-  </select>
+  <form [formGroup]="newRoundForm" (ngSubmit)="submitRound()">
+    <div class="form-group">
+      <label for="date_played">
+        <span class="label-text">Date</span>
+        <span class="label-hint">When are you playing?</span>
+      </label>
+      <input 
+        id="date_played"
+        type="date" 
+        formControlName="date_played" 
+        required 
+        [class.error]="newRoundForm.get('date_played')?.invalid && newRoundForm.get('date_played')?.touched"
+      />
+    </div>
 
-  <label>Golf Bag:</label>
-  <select formControlName="golfbag_id" required>
-    <option *ngFor="let bag of golfBags" [value]="bag.golfbag_id">{{ bag.name }}</option>
-  </select>
+    <div class="form-group">
+      <label for="tee_time">
+        <span class="label-text">Tee Time</span>
+        <span class="label-hint">What time does your round start? (optional)</span>
+      </label>
+      <input 
+        id="tee_time"
+        type="time" 
+        formControlName="tee_time"
+        [class.error]="newRoundForm.get('tee_time')?.invalid && newRoundForm.get('tee_time')?.touched"
+      />
+    </div>
 
-  <button type="submit" [disabled]="newRoundForm.invalid">Start Round</button>
-</form>
+    <div class="form-group">
+      <label for="course_id">
+        <span class="label-text">Golf Course</span>
+        <span class="label-hint">Select the course you're playing</span>
+      </label>
+      <select 
+        id="course_id"
+        formControlName="course_id" 
+        required
+        (change)="onCourseSelected()"
+        [class.error]="newRoundForm.get('course_id')?.invalid && newRoundForm.get('course_id')?.touched"
+      >
+        <option value="">Select a course...</option>
+        <option *ngFor="let course of golfCourses" [value]="course.id">
+          {{ course.name }}<span *ngIf="course.location"> - {{ course.location }}</span>
+        </option>
+      </select>
+    </div>
+
+    <!-- Course Preview Card -->
+    <div class="course-preview" *ngIf="selectedCourse && !loadingCourseDetails">
+      <div class="preview-header">
+        <h3>{{ selectedCourse.name }}</h3>
+        <span class="preview-location" *ngIf="selectedCourse.location">{{ selectedCourse.location }}</span>
+      </div>
+      <div class="preview-stats">
+        <div class="stat-item" *ngIf="coursePar > 0">
+          <span class="stat-label">Par</span>
+          <span class="stat-value">{{ coursePar }}</span>
+        </div>
+        <div class="stat-item" *ngIf="courseHoles.length > 0">
+          <span class="stat-label">Holes</span>
+          <span class="stat-value">{{ courseHoles.length }}</span>
+        </div>
+        <div class="stat-item" *ngIf="selectedCourse.rating">
+          <span class="stat-label">Rating</span>
+          <span class="stat-value">{{ selectedCourse.rating }}</span>
+        </div>
+        <div class="stat-item" *ngIf="selectedCourse.slope">
+          <span class="stat-label">Slope</span>
+          <span class="stat-value">{{ selectedCourse.slope }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="loading-indicator" *ngIf="loadingCourseDetails">
+      <span>Loading course details...</span>
+    </div>
+
+    <div class="form-group" *ngIf="selectedCourse && courseHoles.length > 0">
+      <label for="tee_box">
+        <span class="label-text">Tee Box</span>
+        <span class="label-hint" *ngIf="availableTees.length > 0">Which tees are you playing from?</span>
+        <span class="label-hint" *ngIf="availableTees.length === 0" style="color: #ff9800;">No tee information available for this course</span>
+      </label>
+      <select 
+        id="tee_box"
+        formControlName="tee_box" 
+        [required]="availableTees.length > 0"
+        [disabled]="availableTees.length === 0"
+        [class.error]="newRoundForm.get('tee_box')?.invalid && newRoundForm.get('tee_box')?.touched"
+      >
+        <option value="">{{ availableTees.length > 0 ? 'Select tee box...' : 'No tees available' }}</option>
+        <option *ngFor="let tee of availableTees" [value]="tee.key">
+          {{ tee.label }} ({{ tee.totalYards }} yards)
+        </option>
+      </select>
+      <div class="tee-info" *ngIf="selectedTeeInfo">
+        <span class="tee-badge" [class]="'tee-' + selectedTeeInfo.key">
+          {{ selectedTeeInfo.label }} Tees
+        </span>
+        <span class="tee-yards">{{ selectedTeeInfo.totalYards }} total yards</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="golfbag_id">
+        <span class="label-text">Golf Bag</span>
+        <span class="label-hint">Which bag are you using today?</span>
+      </label>
+      <select 
+        id="golfbag_id"
+        formControlName="golfbag_id" 
+        required
+        [class.error]="newRoundForm.get('golfbag_id')?.invalid && newRoundForm.get('golfbag_id')?.touched"
+      >
+        <option value="">Select a bag...</option>
+        <option *ngFor="let bag of golfBags" [value]="bag.golfbag_id">{{ bag.name }}</option>
+      </select>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" [disabled]="newRoundForm.invalid || loading" class="btn-submit">
+        <span *ngIf="!loading">🚀 Start Round</span>
+        <span *ngIf="loading">Starting...</span>
+      </button>
+    </div>
+
+    <div class="form-help" *ngIf="newRoundForm.invalid && newRoundForm.touched">
+      <p>Please fill in all required fields to start your round.</p>
+    </div>
+  </form>
+</div>

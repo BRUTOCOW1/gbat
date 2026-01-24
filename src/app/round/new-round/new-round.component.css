@@ -1,39 +1,255 @@
 .new-round-container {
-    max-width: 500px;
-    margin: auto;
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 2rem;
     text-align: center;
+  }
+
+  .new-round-container h2 {
+    margin-bottom: 1.5rem;
+    color: var(--primary-color, #4CAF50);
+    font-size: 2rem;
+  }
+  
+  .course-builder-option {
+    background: var(--input-bg, #2a2a2a);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--border-color, #444);
+  }
+
+  .course-builder-option p {
+    margin: 0 0 0.75rem 0;
+    color: var(--text-secondary, #aaa);
+    font-size: 0.9rem;
+  }
+
+  .btn-create-course {
+    display: inline-block;
+    background: var(--primary-color, #4CAF50);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: background 0.2s, transform 0.2s;
+  }
+
+  .btn-create-course:hover {
+    background: #45a049;
+    transform: translateY(-1px);
   }
   
   form {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 1.5rem;
+    text-align: left;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
   }
   
   label {
-    font-weight: bold;
-    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-weight: 600;
+    color: var(--text-color, #fff);
+  }
+
+  .label-text {
+    font-size: 1rem;
+  }
+
+  .label-hint {
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: var(--text-secondary, #aaa);
   }
   
   input, select {
-    padding: 8px;
+    padding: 0.75rem;
     width: 100%;
-    border-radius: 5px;
-    border: 1px solid #ddd;
+    border-radius: 6px;
+    border: 2px solid var(--border-color, #444);
+    background: var(--input-bg, #2a2a2a);
+    color: var(--text-color, #fff);
+    font-size: 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
   }
-  
-  button {
-    background: green;
+
+  input:focus, select:focus {
+    outline: none;
+    border-color: var(--primary-color, #4CAF50);
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+  }
+
+  input.error, select.error {
+    border-color: #f44336;
+  }
+
+  input.error:focus, select.error:focus {
+    box-shadow: 0 0 0 3px rgba(244, 67, 54, 0.1);
+  }
+
+  /* Course Preview Card */
+  .course-preview {
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(76, 175, 80, 0.05) 100%);
+    border: 2px solid var(--primary-color, #4CAF50);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin: 0.5rem 0;
+  }
+
+  .preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    gap: 1rem;
+  }
+
+  .preview-header h3 {
+    margin: 0;
+    color: var(--text-color, #fff);
+    font-size: 1.25rem;
+    flex: 1;
+  }
+
+  .preview-location {
+    color: var(--text-secondary, #aaa);
+    font-size: 0.9rem;
+    white-space: nowrap;
+  }
+
+  .preview-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 1rem;
+  }
+
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary, #aaa);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color, #4CAF50);
+  }
+
+  .loading-indicator {
+    text-align: center;
+    padding: 1rem;
+    color: var(--text-secondary, #aaa);
+    font-style: italic;
+  }
+
+  /* Tee Selection Info */
+  .tee-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: var(--input-bg, #2a2a2a);
+    border-radius: 6px;
+  }
+
+  .tee-badge {
+    display: inline-block;
+    padding: 0.375rem 0.75rem;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .tee-badge.tee-black {
+    background: #1a1a1a;
+    color: #fff;
+    border: 1px solid #444;
+  }
+
+  .tee-badge.tee-blue {
+    background: #1976d2;
+    color: #fff;
+  }
+
+  .tee-badge.tee-white {
+    background: #f5f5f5;
+    color: #333;
+  }
+
+  .tee-badge.tee-red {
+    background: #d32f2f;
+    color: #fff;
+  }
+
+  .tee-yards {
+    color: var(--text-secondary, #aaa);
+    font-size: 0.9rem;
+  }
+
+  /* Form Actions */
+  .form-actions {
+    margin-top: 1rem;
+  }
+
+  .btn-submit {
+    width: 100%;
+    background: var(--primary-color, #4CAF50);
     color: white;
-    padding: 10px;
-    font-size: 16px;
+    padding: 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
     cursor: pointer;
+    transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+  }
+
+  .btn-submit:hover:not(:disabled) {
+    background: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
   }
   
-  button:disabled {
-    background: gray;
+  .btn-submit:disabled {
+    background: #666;
     cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .form-help {
+    padding: 0.75rem;
+    background: rgba(255, 193, 7, 0.1);
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    border-radius: 6px;
+    color: #ffc107;
+    font-size: 0.9rem;
+    text-align: center;
+  }
+
+  .form-help p {
+    margin: 0;
   }
   

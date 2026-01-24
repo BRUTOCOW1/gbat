@@ -11,6 +11,13 @@ interface GolferClub {
   category: string;
 }
 
+interface BreakSegment {
+  direction: string;
+  severity: number;
+  distance_start: number;
+  distance_end: number;
+}
+
 
 
 @Component({
@@ -29,6 +36,7 @@ export class GolfShotEntryComponent implements OnInit {
   shots: GolfShot[] = [];
   golferClubs: GolferClub[] = [];
   break_pattern_string: string = '';
+  breakSegments: BreakSegment[] = [];
   isEditMode = false;
   formReady = false;
 
@@ -51,8 +59,11 @@ export class GolfShotEntryComponent implements OnInit {
     shot_type: 'Tee Shot',
     lie: 'Fairway',
     result: 'Fairway',
-    stroke_number: 1
+    stroke_number: 1,
+    is_kick_in: false
   };
+
+  lastGreenSpeed?: number; // Track last green speed for autofill
 
   constructor(
     private route: ActivatedRoute,
@@ -70,9 +81,6 @@ export class GolfShotEntryComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
-    console.error("getting here");
-
-
     this.holeNum = this.route.snapshot.paramMap.get('holeNumber')!;
     this.holeNumber = parseInt(this.holeNum, 10);
 
@@ -108,25 +116,17 @@ export class GolfShotEntryComponent implements OnInit {
         }
       }
     } else {
-      console.log("one out though")
-
-      if (this.playedHoleId){
-        const escrow = await this.supabaseService.getShotCountForPlayedHole(this.playedHoleId);
-        const prevShotNum = escrow?.length;
-        if (prevShotNum){
-          console.log(prevShotNum)
-          const row = await this.supabaseService.getShotForPlayedHole(this.playedHoleId, prevShotNum);
-          this.prevShot = row as GolfShot;
-
+      // Create mode - load previous shot for smart inference
+      if (this.playedHoleId && this.shots.length > 0) {
+        // Get the last shot from the shots array (already loaded)
+        const lastShot = this.shots[this.shots.length - 1];
+        if (lastShot) {
+          this.prevShot = lastShot;
         }
       }
 
-        // create mode
-      this.resetNewShot(); // ensure defaults
-    
-
-
-
+      // Reset with smart defaults
+      this.resetNewShot();
     }
 
     this.formReady = true;
@@ -187,12 +187,42 @@ export class GolfShotEntryComponent implements OnInit {
       this.playedHoleId = null; // No row yet; that’s fine until first shot
       this.shots = [];
     }
+    
+    // Load last green speed from round for autofill
+    if (!this.lastGreenSpeed) {
+      await this.loadLastGreenSpeed();
+    }
   }
-  
-  
+
+  private async loadLastGreenSpeed(): Promise<void> {
+    try {
+      // Get all played holes for this round
+      const { data: playedHoles } = await this.supabaseService.getPlayedHolesForRound(this.roundId);
+      if (!playedHoles || playedHoles.length === 0) return;
+
+      const playedHoleIds = playedHoles.map(h => h.id);
+      
+      // Get all shots from this round
+      const allShots: GolfShot[] = [];
+      for (const holeId of playedHoleIds) {
+        const shots = await this.supabaseService.getShotsForPlayedHole(holeId);
+        if (shots) {
+          allShots.push(...shots);
+        }
+      }
+
+      // Find the last putt with a green speed
+      const putts = allShots.filter(s => s.shot_type === 'Putt' && s.green_speed);
+      if (putts.length > 0) {
+        const lastPutt = putts[putts.length - 1];
+        this.lastGreenSpeed = lastPutt.green_speed;
+      }
+    } catch (error) {
+      console.error('Error loading last green speed:', error);
+    }
+  }
 
   
-
   private async loadClubs(): Promise<void> {
     const { data, error } = await this.supabaseService.getClubsByBagId(this.golfBagId, this.userId);
     if (error) {
@@ -240,30 +270,72 @@ export class GolfShotEntryComponent implements OnInit {
 
   async addShot() {
     try {
-      // a) club resolve
-      const selected = this.golferClubs.find(gc => gc.id === this.newShot.club_id);
-      if (!selected) {
-        this.notificationService.showError('Please select a club for this shot.');
-        return;
+      // Handle kick-in putt - minimal entry
+      if (this.newShot.is_kick_in && this.newShot.shot_type === 'Putt') {
+        // Set minimal required fields for kick-in
+        const putter = this.golferClubs.find(c => 
+          c.category?.toLowerCase().includes('putter') ||
+          c.number?.toLowerCase().includes('putter')
+        );
+        if (putter) {
+          this.newShot.club_id = putter.id;
+          this.newShot.club_name = `${putter.number} ${putter.category}`.trim();
+        }
+        this.newShot.putt_length = 0; // Kick-in is essentially 0 feet
+        this.newShot.result = 'Made';
+        this.newShot.result_location = 'Made';
+        // Skip other validations for kick-in
+      } else {
+        // a) club resolve
+        const selected = this.golferClubs.find(gc => gc.id === this.newShot.club_id);
+        if (!selected) {
+          this.notificationService.showError('Please select a club for this shot.');
+          return;
+        }
+        this.newShot.club_name = `${selected.number} ${selected.category}`.trim();
       }
-      this.newShot.club_name = `${selected.number} ${selected.category}`.trim();
   
       // b) normalize JSON + penalties
-      const arr = this.normalizeBreak(this.break_pattern_string);
-      this.newShot.break_pattern = arr;
+      // Use break segments if available, otherwise fall back to string parsing
+      if (this.breakSegments.length > 0) {
+        this.newShot.break_pattern = this.convertBreakSegmentsToJson();
+      } else {
+        const arr = this.normalizeBreak(this.break_pattern_string);
+        this.newShot.break_pattern = arr;
+      }
       
       this.newShot.penalty_strokes = this.getPenaltyStrokes(this.newShot.penalty);
+      
+      // Set result field for backward compatibility - use result_location as primary value
+      // The check constraint expects single values, not combined strings
+      if (this.newShot.result_location) {
+        this.newShot.result = this.newShot.result_location;
+      } else if (!this.newShot.result) {
+        // If no result_location and no existing result, set to empty string
+        this.newShot.result = '';
+      }
+      
+      // For putts, remove distance if putt_length is set (avoid dual distance)
+      if (this.newShot.shot_type === 'Putt' && this.newShot.putt_length) {
+        this.newShot.distance = 0;
+      }
+      
+      // Save green speed for next putt autofill
+      if (this.newShot.shot_type === 'Putt' && this.newShot.green_speed) {
+        this.lastGreenSpeed = this.newShot.green_speed;
+      }
   
       // c) find existing played row
       const ph = await this.supabaseService.getPlayedHole(this.roundId, this.holeId);
       let playedHoleId = ph?.data?.[0]?.id as string | undefined;
   
-      // d) if missing, create with strokes: 1
+      // d) if missing, create with strokes: 1 + penalty strokes
       if (!playedHoleId) {
+        const initialStrokes = 1 + (this.newShot.penalty_strokes || 0);
         const { data: created, error } = await this.supabaseService.createPlayedHole({
           round_id: this.roundId!,
           hole_id: this.holeId,
-          strokes: 1, // ✅ satisfies the CHECK constraint
+          strokes: initialStrokes, // ✅ satisfies the CHECK constraint, includes penalty
         });
         if (error || !created?.length) {
           const errorMsg = this.notificationService.getErrorMessage(error);
@@ -276,31 +348,44 @@ export class GolfShotEntryComponent implements OnInit {
   
       // e) compute next stroke number (use current list length + 1)
       const nextStroke = (this.shots?.length ?? 0) + 1;
-  
+
       // f) set FK to played hole, stroke number
       this.newShot.hole_id = playedHoleId!;
       this.newShot.stroke_number = nextStroke;
-  
+
       // g) insert shot
       const inserted = await this.supabaseService.addGolfShot(this.newShot);
       if (!inserted) {
         this.notificationService.showError('Unable to save shot. Please try again.');
         return;
       }
+
+      // h) update strokes on played hole - calculate total including penalty strokes
+      // Reload shots to get accurate count including the one we just added
+      await this.tryLoadExistingPlayedHoleAndShots();
+      // Calculate total: each shot counts as 1 stroke, plus any penalty strokes
+      const totalStrokes = this.shots.reduce((sum, shot) => {
+        return sum + 1 + (shot.penalty_strokes || 0);
+      }, 0);
+      await this.supabaseService.updatePlayedHoleStrokes(playedHoleId!, totalStrokes);
   
-      // h) update strokes on played hole to nextStroke
-      await this.supabaseService.updatePlayedHoleStrokes(playedHoleId!, nextStroke);
-  
-      // i) local state
+      // i) local state (shots already refreshed in step h)
       this.playedHoleId = playedHoleId!;
-      await this.tryLoadExistingPlayedHoleAndShots(); // refresh list
   
       this.notificationService.showSuccess('Shot saved successfully!');
-  
-      if (this.newShot.result === 'Made') {
+
+      // Check if hole is complete (Made or kick-in putt)
+      const isComplete = this.newShot.result === 'Made' || 
+                        this.newShot.result_location === 'Made' ||
+                        (this.newShot.is_kick_in && this.newShot.shot_type === 'Putt');
+      
+      if (isComplete) {
+        this.notificationService.showSuccess(`Hole ${this.holeNumber} complete! Moving to next hole...`);
         this.moveToNextHole();
       } else {
-        this.resetNewShot(); // keep hole_id prefilled below
+        // Update prevShot to the shot we just added for next shot inference
+        this.prevShot = { ...this.newShot };
+        this.resetNewShot(); // Smart defaults for next shot
       }
     } catch (err) {
       const errorMsg = this.notificationService.getErrorMessage(err);
@@ -311,44 +396,276 @@ export class GolfShotEntryComponent implements OnInit {
 
 
   private resetNewShot(): void {
+    const nextStrokeNumber = (this.shots?.length ?? 0) + 1;
+    
+    // Default values
     this.newShot = {
-      hole_id: this.playedHoleId || '', // keep it if we have it
+      hole_id: this.playedHoleId || '',
       club_id: '',
       distance: 0,
       shot_type: 'Tee Shot',
-      lie: 'Light Rough',
+      lie: 'Fairway',
       result: '',
-      stroke_number: (this.shots?.length ?? 0) + 1,
+      stroke_number: nextStrokeNumber,
+      is_kick_in: false,
     };
 
-    if (this.prevShot == null){
+    // Smart inference based on context
+    if (nextStrokeNumber === 1 || this.shots.length === 0) {
+      // First shot of the hole is always a tee shot
+      this.newShot.shot_type = 'Tee Shot';
+      this.newShot.lie = 'Tee Box'; // Special lie for tee shots
+      // Suggest driver or appropriate tee club
+      this.suggestTeeClub();
+    } else if (this.prevShot) {
+      // Infer from previous shot's result
+      this.inferShotFromPrevious(this.prevShot);
+    } else if (this.shots.length > 0) {
+      // Fallback: use last shot from array if prevShot wasn't set
+      const lastShot = this.shots[this.shots.length - 1];
+      if (lastShot) {
+        this.inferShotFromPrevious(lastShot);
+      }
+    }
+
+    // Clear break pattern for new shots
+    this.break_pattern_string = '';
+    this.breakSegments = [];
+    
+    // Autofill green speed for putts if available
+    if (this.newShot.shot_type === 'Putt' && this.lastGreenSpeed) {
+      this.newShot.green_speed = this.lastGreenSpeed;
+    }
+  }
+
+  addBreakSegment(): void {
+    const lastSegment = this.breakSegments.length > 0 
+      ? this.breakSegments[this.breakSegments.length - 1] 
+      : null;
+    
+    const newSegment: BreakSegment = {
+      direction: '',
+      severity: 1,
+      distance_start: lastSegment ? lastSegment.distance_end : 0,
+      distance_end: lastSegment ? lastSegment.distance_end + 10 : 10
+    };
+    
+    this.breakSegments.push(newSegment);
+  }
+
+  removeBreakSegment(index: number): void {
+    this.breakSegments.splice(index, 1);
+  }
+
+  convertBreakSegmentsToJson(): any[] {
+    return this.breakSegments.filter(seg => seg.direction && seg.distance_start !== undefined && seg.distance_end !== undefined);
+  }
+
+  /**
+   * Smart inference of shot type, lie, and club based on previous shot result
+   */
+  private inferShotFromPrevious(prevShot: GolfShot): void {
+    // Use result_location if available, otherwise fall back to result
+    const prevResult = prevShot.result_location || prevShot.result || '';
+    const prevLie = prevShot.lie || '';
+
+    // Determine shot type based on where the previous shot ended
+    // Check result_location first, then fall back to result
+    const location = prevShot.result_location || prevResult;
+    
+    if (location === 'Green' || location === 'Made' || prevResult.includes('Made')) {
+      // If on green or made, next shot is a putt
+      this.newShot.shot_type = 'Putt';
+      this.newShot.lie = 'Green';
+      this.suggestPuttClub();
+    } else if (location === 'Fringe') {
+      // If on fringe, next is a chip
+      this.newShot.shot_type = 'Chip';
+      this.newShot.lie = 'Fringe';
+      this.suggestChipClub();
+    } else if (location === 'Bunker' || prevLie === 'Bunker') {
+      // If in bunker, next is a recovery/sand shot
+      this.newShot.shot_type = 'Recovery';
+      this.newShot.lie = 'Bunker';
+      this.suggestSandClub();
+    } else if (location === 'Water' || location === 'OB') {
+      // If in water or OB, next is a recovery/re-entry shot
+      this.newShot.shot_type = 'Recovery';
+      this.newShot.lie = location === 'Water' ? 'Fairway' : 'Fairway'; // After drop/penalty
+      this.suggestRecoveryClub();
+    } else if (['Fairway', 'Light Rough', 'Thick Rough'].includes(location)) {
+      // If on fairway or rough, next is likely an approach shot
+      this.newShot.shot_type = 'Approach';
+      this.newShot.lie = location;
+      this.suggestApproachClub();
+    } else if (location === 'Trees') {
+      // If in trees, next is a punchout/recovery
+      this.newShot.shot_type = 'Punchout';
+      this.newShot.lie = 'Trees';
+      this.suggestPunchoutClub();
+    } else {
+      // Default: approach shot from current lie
+      this.newShot.shot_type = 'Approach';
+      this.newShot.lie = location || prevLie || 'Fairway';
+    }
+  }
+
+  /**
+   * Suggest appropriate club for tee shot (usually driver or longest club)
+   */
+  private suggestTeeClub(): void {
+    if (this.golferClubs.length === 0) return;
+    
+    // Look for driver first
+    const driver = this.golferClubs.find(c => 
+      c.category?.toLowerCase().includes('driver') || 
+      c.number?.toLowerCase().includes('driver')
+    );
+    
+    if (driver) {
+      this.newShot.club_id = driver.id;
       return;
     }
-
-    let shotType = "Tee Shot";
-    if (this.prevShot.result == "Green") {
-      shotType = "Putt";
-    } else if (this.prevShot.result == "Fringe"){
-      shotType = "Chip";
-    } else if (["Fairway", "Light Rough", "Thick Rough", "Bunker"].includes(this.prevShot.result)) {
-      shotType = "Approach";
+    
+    // Otherwise, suggest the longest club (lowest number in irons, or wood)
+    const sortedClubs = [...this.golferClubs].sort((a, b) => {
+      const aNum = parseInt(a.number || '99');
+      const bNum = parseInt(b.number || '99');
+      return aNum - bNum;
+    });
+    
+    if (sortedClubs.length > 0) {
+      this.newShot.club_id = sortedClubs[0].id;
     }
-    console.log(shotType);
+  }
 
-    this.newShot.shot_type = shotType;
-    this.newShot.lie = this.prevShot.result;
+  /**
+   * Suggest appropriate club for putting (putter)
+   */
+  private suggestPuttClub(): void {
+    if (this.golferClubs.length === 0) return;
+    
+    const putter = this.golferClubs.find(c => 
+      c.category?.toLowerCase().includes('putter') ||
+      c.number?.toLowerCase().includes('putter')
+    );
+    
+    if (putter) {
+      this.newShot.club_id = putter.id;
+    }
+  }
 
-    console.log(this.newShot);
+  /**
+   * Suggest appropriate club for chipping (usually wedge)
+   */
+  private suggestChipClub(): void {
+    if (this.golferClubs.length === 0) return;
+    
+    // Look for wedge (sand, gap, lob, or pitching wedge)
+    const wedge = this.golferClubs.find(c => {
+      const cat = c.category?.toLowerCase() || '';
+      const num = c.number?.toLowerCase() || '';
+      return cat.includes('wedge') || num.includes('wedge') || 
+             ['sw', 'gw', 'lw', 'pw', 'aw'].some(w => num.includes(w));
+    });
+    
+    if (wedge) {
+      this.newShot.club_id = wedge.id;
+    }
+  }
 
+  /**
+   * Suggest appropriate club for sand shots (sand wedge)
+   */
+  private suggestSandClub(): void {
+    if (this.golferClubs.length === 0) return;
+    
+    // Look for sand wedge specifically
+    const sandWedge = this.golferClubs.find(c => {
+      const cat = c.category?.toLowerCase() || '';
+      const num = c.number?.toLowerCase() || '';
+      return cat.includes('sand') || num.includes('sand') || num.includes('sw');
+    });
+    
+    if (sandWedge) {
+      this.newShot.club_id = sandWedge.id;
+    } else {
+      // Fallback to any wedge
+      this.suggestChipClub();
+    }
+  }
 
+  /**
+   * Suggest appropriate club for recovery shots (usually mid-iron or hybrid)
+   */
+  private suggestRecoveryClub(): void {
+    if (this.golferClubs.length === 0) return;
+    
+    // Look for hybrid or mid-iron (6-8 iron)
+    const hybrid = this.golferClubs.find(c => 
+      c.category?.toLowerCase().includes('hybrid')
+    );
+    
+    if (hybrid) {
+      this.newShot.club_id = hybrid.id;
+      return;
+    }
+    
+    // Otherwise suggest 7-iron
+    const sevenIron = this.golferClubs.find(c => 
+      c.number === '7' && c.category?.toLowerCase().includes('iron')
+    );
+    
+    if (sevenIron) {
+      this.newShot.club_id = sevenIron.id;
+    }
+  }
+
+  /**
+   * Suggest appropriate club for approach shots (usually mid to short iron)
+   */
+  private suggestApproachClub(): void {
+    if (this.golferClubs.length === 0) return;
+    
+    // Suggest 7 or 8 iron for approach shots (can be adjusted based on distance)
+    const approachIron = this.golferClubs.find(c => {
+      const num = c.number || '';
+      return (num === '7' || num === '8' || num === '9') && 
+             c.category?.toLowerCase().includes('iron');
+    });
+    
+    if (approachIron) {
+      this.newShot.club_id = approachIron.id;
+    }
+  }
+
+  /**
+   * Suggest appropriate club for punchout shots (usually low iron or hybrid)
+   */
+  private suggestPunchoutClub(): void {
+    if (this.golferClubs.length === 0) return;
+    
+    // Suggest 4 or 5 iron for punchout (low trajectory)
+    const punchoutIron = this.golferClubs.find(c => {
+      const num = c.number || '';
+      return (num === '4' || num === '5') && 
+             c.category?.toLowerCase().includes('iron');
+    });
+    
+    if (punchoutIron) {
+      this.newShot.club_id = punchoutIron.id;
+    } else {
+      // Fallback to recovery club
+      this.suggestRecoveryClub();
+    }
   }
   
 
   private moveToNextHole(): void {
     const nextHole = parseInt(this.holeNum, 10) + 1;
     if (nextHole > 18) {
-      console.log('Round complete! Navigating back to round summary...');
-      this.router.navigate(['/dashboard']); 
+      this.notificationService.showSuccess('Round complete! Great round!');
+      this.router.navigate([`/round-summary/${this.roundId}`]); 
       return;
     }
     this.router.navigate([`/golf-hole/${nextHole}`], {
@@ -386,6 +703,18 @@ export class GolfShotEntryComponent implements OnInit {
     const arr = this.normalizeBreak(shot.break_pattern);
     this.break_pattern_string = JSON.stringify(arr);
     this.newShot.break_pattern = arr;
+    
+    // Load break segments from the parsed array
+    if (Array.isArray(arr) && arr.length > 0) {
+      this.breakSegments = arr.map((seg: any) => ({
+        direction: seg.direction || '',
+        severity: seg.severity || 1,
+        distance_start: seg.distance_start ?? 0,
+        distance_end: seg.distance_end ?? 10
+      }));
+    } else {
+      this.breakSegments = [];
+    }
   }
 
   private normalizeBeforeSave() {
@@ -394,8 +723,13 @@ export class GolfShotEntryComponent implements OnInit {
       this.newShot.club_name = `${selected.number} ${selected.category}`.trim();
     }
   
-    const arr = this.normalizeBreak(this.break_pattern_string);
-    this.newShot.break_pattern = arr;
+    // Use break segments if available, otherwise fall back to string parsing
+    if (this.breakSegments.length > 0) {
+      this.newShot.break_pattern = this.convertBreakSegmentsToJson();
+    } else {
+      const arr = this.normalizeBreak(this.break_pattern_string);
+      this.newShot.break_pattern = arr;
+    }
     this.newShot.penalty_strokes = this.getPenaltyStrokes(this.newShot.penalty);
   }
 
@@ -420,7 +754,7 @@ export class GolfShotEntryComponent implements OnInit {
         this.newShot
       );
     } else {
-      console.error('No key to update shot.');
+      this.notificationService.showError('Unable to update shot. Missing shot identifier.');
       return;
     }
 
@@ -437,11 +771,25 @@ export class GolfShotEntryComponent implements OnInit {
   }
 
   async deleteCurrentShot() {
-    if (this.currentShotId) {
-      await this.supabaseService.deleteShot(this.currentShotId);
-    } else if (this.playedHoleId && this.currentStrokeNumber) {
-      await this.supabaseService.deleteShotByPlayedHoleAndStroke(this.playedHoleId, this.currentStrokeNumber);
+    if (!confirm('Are you sure you want to delete this shot?')) {
+      return;
     }
-    this.router.navigate([`/golf-shot/${this.holeNumber}`], { state: { roundId: this.roundId } });
+
+    try {
+      if (this.currentShotId) {
+        await this.supabaseService.deleteShot(this.currentShotId);
+      } else if (this.playedHoleId && this.currentStrokeNumber) {
+        await this.supabaseService.deleteShotByPlayedHoleAndStroke(this.playedHoleId, this.currentStrokeNumber);
+      } else {
+        this.notificationService.showError('Unable to delete shot. Missing shot identifier.');
+        return;
+      }
+
+      this.notificationService.showSuccess('Shot deleted successfully.');
+      this.router.navigate([`/golf-shot/${this.holeNumber}`], { state: { roundId: this.roundId } });
+    } catch (error) {
+      const errorMsg = this.notificationService.getErrorMessage(error);
+      this.notificationService.showError(`Error deleting shot: ${errorMsg}`);
+    }
   }
 }

@@ -1,0 +1,120 @@
+<div class="round-summary-container" *ngIf="!loading && statistics">
+  <div class="summary-header">
+    <h1>Round Summary</h1>
+    <div class="round-info">
+      <h2>{{ statistics.courseName }}</h2>
+      <p class="date-played">{{ statistics.datePlayed | date:'mediumDate' }}</p>
+    </div>
+  </div>
+
+  <!-- Overall Statistics -->
+  <div class="stats-grid">
+    <div class="stat-card primary">
+      <div class="stat-label">Total Score</div>
+      <div class="stat-value">{{ statistics.totalStrokes }}</div>
+      <div class="stat-subtitle" [ngClass]="getScoreClass(statistics.scoreToPar)">
+        {{ formatScoreToPar(statistics.scoreToPar) }} (Par {{ statistics.totalPar }})
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-label">Total Putts</div>
+      <div class="stat-value">{{ statistics.totalPutts }}</div>
+      <div class="stat-subtitle">{{ statistics.averagePuttsPerHole.toFixed(1) }} avg per hole</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-label">Greens in Regulation</div>
+      <div class="stat-value">{{ statistics.greensInRegulation }}</div>
+      <div class="stat-subtitle">{{ (statistics.greensInRegulation / statistics.holesPlayed * 100).toFixed(0) }}%</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-label">Fairways in Regulation</div>
+      <div class="stat-value">{{ statistics.fairwaysInRegulation }}</div>
+      <div class="stat-subtitle">{{ statistics.holesPlayed }} applicable</div>
+    </div>
+  </div>
+
+  <!-- Score Breakdown -->
+  <div class="score-breakdown">
+    <h3>Score Breakdown</h3>
+    <div class="breakdown-grid">
+      <div class="breakdown-item birdie">
+        <span class="breakdown-label">Birdies</span>
+        <span class="breakdown-value">{{ statistics.birdies }}</span>
+      </div>
+      <div class="breakdown-item par">
+        <span class="breakdown-label">Pars</span>
+        <span class="breakdown-value">{{ statistics.pars }}</span>
+      </div>
+      <div class="breakdown-item bogey">
+        <span class="breakdown-label">Bogeys</span>
+        <span class="breakdown-value">{{ statistics.bogeys }}</span>
+      </div>
+      <div class="breakdown-item double">
+        <span class="breakdown-label">Double Bogeys</span>
+        <span class="breakdown-value">{{ statistics.doubleBogeys }}</span>
+      </div>
+      <div class="breakdown-item worse">
+        <span class="breakdown-label">Worse</span>
+        <span class="breakdown-value">{{ statistics.worse }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hole-by-Hole Breakdown -->
+  <div class="hole-breakdown">
+    <h3>Hole-by-Hole</h3>
+    <div class="hole-table">
+      <div class="table-header">
+        <div class="col-hole">Hole</div>
+        <div class="col-par">Par</div>
+        <div class="col-score">Score</div>
+        <div class="col-putts">Putts</div>
+        <div class="col-gir">GIR</div>
+        <div class="col-fir">FIR</div>
+        <div class="col-to-par">To Par</div>
+      </div>
+      <div class="table-row" *ngFor="let hole of statistics.holeStats">
+        <div class="col-hole">{{ hole.holeNumber }}</div>
+        <div class="col-par">{{ hole.par }}</div>
+        <div class="col-score" [ngClass]="getScoreClass(hole.scoreToPar)">{{ hole.strokes }}</div>
+        <div class="col-putts">{{ hole.putts }}</div>
+        <div class="col-gir">
+          <span class="checkmark" *ngIf="hole.gir">✓</span>
+          <span class="x-mark" *ngIf="!hole.gir">✗</span>
+        </div>
+        <div class="col-fir">
+          <span class="checkmark" *ngIf="hole.fir">✓</span>
+          <span class="x-mark" *ngIf="!hole.fir">✗</span>
+          <span class="na" *ngIf="hole.par < 4">—</span>
+        </div>
+        <div class="col-to-par" [ngClass]="getScoreClass(hole.scoreToPar)">
+          {{ formatScoreToPar(hole.scoreToPar) }}
+        </div>
+      </div>
+      <div class="table-footer">
+        <div class="col-hole"><strong>Total</strong></div>
+        <div class="col-par"><strong>{{ statistics.totalPar }}</strong></div>
+        <div class="col-score"><strong>{{ statistics.totalStrokes }}</strong></div>
+        <div class="col-putts"><strong>{{ statistics.totalPutts }}</strong></div>
+        <div class="col-gir"><strong>{{ statistics.greensInRegulation }}</strong></div>
+        <div class="col-fir"><strong>{{ statistics.fairwaysInRegulation }}</strong></div>
+        <div class="col-to-par" [ngClass]="getScoreClass(statistics.scoreToPar)">
+          <strong>{{ formatScoreToPar(statistics.scoreToPar) }}</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="action-buttons">
+    <button class="btn btn-secondary" (click)="goToRound()">View Round Details</button>
+    <button class="btn btn-primary" (click)="goToDashboard()">Back to Dashboard</button>
+  </div>
+</div>
+
+<div class="loading-container" *ngIf="loading">
+  <p>Loading round statistics...</p>
+</div>

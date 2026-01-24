@@ -1,7 +1,20 @@
 <div class="golf-shot-entry-container">
 
   <!-- Header -->
-  <h2>Hole {{ holeNum }} · Shot Blegh Entry</h2>
+  <h2>Hole {{ holeNum }} · Shot Entry</h2>
+  <div class="shot-context-info" *ngIf="!isEditMode && formReady">
+    <div class="context-badge" *ngIf="shots.length === 0">
+      <span class="badge-icon">🏌️</span>
+      <span>Starting hole - Tee Shot suggested</span>
+    </div>
+    <div class="context-badge" *ngIf="shots.length > 0 && newShot.shot_type">
+      <span class="badge-icon">🎯</span>
+      <span>Shot {{ shots.length + 1 }} - {{ newShot.shot_type }} suggested</span>
+      <span class="club-suggestion" *ngIf="newShot.club_id">
+        ({{ getClubName(newShot.club_id) }})
+      </span>
+    </div>
+  </div>
   
   <!-- Add New Shot Form -->
   <form class="golf-shot-form" *ngIf="formReady"
@@ -52,13 +65,14 @@
 
     <!-- Distance, Lie, Result -->
     <div class="form-row">
-      <div class="form-group">
+      <div class="form-group" *ngIf="newShot.shot_type !== 'Putt'">
         <label>Distance (yds):</label>
         <input type="number" [(ngModel)]="newShot.distance" name="distance">
       </div>
       <div class="form-group">
         <label>Lie:</label>
         <select [(ngModel)]="newShot.lie" name="lie">
+          <option *ngIf="newShot.shot_type === 'Tee Shot'">Tee Box</option>
           <option>Fairway</option>
           <option>Light Rough</option>
           <option>Thick Rough</option>
@@ -70,23 +84,46 @@
           <option>OB</option>
         </select>
       </div>
-      <div class="form-group">
-        <label>Result:</label>
-        <select [(ngModel)]="newShot.result" name="result">
+      <!-- Separated Result Fields -->
+      <div class="form-group" *ngIf="newShot.shot_type !== 'Putt'">
+        <label>Result Location:</label>
+        <select [(ngModel)]="newShot.result_location" name="result_location">
+          <option value="">-- Select --</option>
           <option>Fairway</option>
           <option>Light Rough</option>
           <option>Thick Rough</option>
           <option>Bunker</option>
           <option>Fringe</option>
           <option>Green</option>
-          <option>Missed Left</option>
-          <option>Missed Right</option>
-          <option>Short</option>
-          <option>Long</option>
           <option>Water</option>
           <option>OB</option>
           <option>Made</option>
         </select>
+      </div>
+      <div class="form-group" *ngIf="newShot.shot_type !== 'Putt'">
+        <label>Result Direction:</label>
+        <select [(ngModel)]="newShot.result_direction" name="result_direction">
+          <option value="">-- None --</option>
+          <option>Missed Left</option>
+          <option>Missed Right</option>
+          <option>Short</option>
+          <option>Long</option>
+        </select>
+      </div>
+      <div class="form-group" *ngIf="newShot.shot_type !== 'Putt'">
+        <label>Result Quality:</label>
+        <select [(ngModel)]="newShot.result_quality" name="result_quality">
+          <option value="">-- None --</option>
+          <option>Still on Green</option>
+          <option>In Play</option>
+        </select>
+      </div>
+    </div>
+    
+    <!-- Penalty Strokes Display -->
+    <div class="form-row" *ngIf="newShot.penalty && newShot.penalty !== 'none'">
+      <div class="form-group">
+        <label>Penalty Strokes: <strong>{{ newShot.penalty_strokes || getPenaltyStrokes(newShot.penalty) }}</strong></label>
       </div>
     </div>
 
@@ -150,48 +187,140 @@
         </select>
       </div>
     </div>
-    <div *ngIf="newShot.shot_type === 'Putt'" class="putt-section">
+    <!-- Kick-in Putt Option -->
+    <div *ngIf="newShot.shot_type === 'Putt'" class="form-row">
       <div class="form-group">
-        <label>Putt Length (ft):</label>
-        <input type="number" [(ngModel)]="newShot.putt_length" name="putt_length">
+        <label>
+          <input type="checkbox" [(ngModel)]="newShot.is_kick_in" name="is_kick_in">
+          Kick-in Putt (skip detailed entry)
+        </label>
+      </div>
+    </div>
+    
+    <div *ngIf="newShot.shot_type === 'Putt' && !newShot.is_kick_in" class="putt-section">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Putt Length (ft):</label>
+          <input type="number" [(ngModel)]="newShot.putt_length" name="putt_length">
+        </div>
+        
+        <div class="form-group">
+          <label>Result Location:</label>
+          <select [(ngModel)]="newShot.result_location" name="result_location">
+            <option value="">-- Select --</option>
+            <option>Green</option>
+            <option>Made</option>
+            <option>Fringe</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label>Result Direction:</label>
+          <select [(ngModel)]="newShot.result_direction" name="result_direction">
+            <option value="">-- None --</option>
+            <option>Missed Left</option>
+            <option>Missed Right</option>
+            <option>Short</option>
+            <option>Long</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label>Result Quality:</label>
+          <select [(ngModel)]="newShot.result_quality" name="result_quality">
+            <option value="">-- None --</option>
+            <option>Still on Green</option>
+          </select>
+        </div>
       </div>
     
-      <div class="form-group">
-        <label>Slope:</label>
-        <select [(ngModel)]="newShot.slope" name="slope">
-          <option>Flat</option>
-          <option>Uphill</option>
-          <option>Downhill</option>
-        </select>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Slope:</label>
+          <select [(ngModel)]="newShot.slope" name="slope">
+            <option>Flat</option>
+            <option>Uphill</option>
+            <option>Downhill</option>
+          </select>
+        </div>
+    
+        <div class="form-group">
+          <label>Grain Direction:</label>
+          <select [(ngModel)]="newShot.grain_direction" name="grain_direction">
+            <option>With</option>
+            <option>Against</option>
+            <option>Cross</option>
+          </select>
+        </div>
+    
+        <div class="form-group">
+          <label>Green Speed (stimp):</label>
+          <input type="number" step="0.1" [(ngModel)]="newShot.green_speed" name="green_speed">
+          <small *ngIf="lastGreenSpeed && !newShot.green_speed" class="autofill-hint">
+            (Last: {{ lastGreenSpeed }})
+          </small>
+        </div>
       </div>
     
-      <div class="form-group">
-        <label>Grain Direction:</label>
-        <select [(ngModel)]="newShot.grain_direction" name="grain_direction">
-          <option>With</option>
-          <option>Against</option>
-          <option>Cross</option>
-        </select>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Read Quality:</label>
+          <select [(ngModel)]="newShot.read_quality" name="read_quality">
+            <option>Good</option>
+            <option>Misread</option>
+            <option>Guess</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label>Speed Quality: {{ newShot.putt_speed_quality ?? 50 }}%</label>
+          <input type="range" min="0" max="100" [(ngModel)]="newShot.putt_speed_quality" name="putt_speed_quality">
+        </div>
       </div>
     
-      <div class="form-group">
-        <label>Green Speed (stimp):</label>
-        <input type="number" step="0.1" [(ngModel)]="newShot.green_speed" name="green_speed">
-      </div>
-    
-      <div class="form-group">
-        <label>Read Quality:</label>
-        <select [(ngModel)]="newShot.read_quality" name="read_quality">
-          <option>Good</option>
-          <option>Misread</option>
-          <option>Guess</option>
-        </select>
-      </div>
-    
-      <div class="form-group">
+      <div class="form-group break-pattern-group">
         <label>Break Pattern:</label>
-        <input type="text" [(ngModel)]="break_pattern_string" name="break_pattern"
-          placeholder='e.g. [{"direction": "L→R", "severity": 3}]'>
+        <div class="break-segments-container">
+          <div class="break-segment" *ngFor="let segment of breakSegments; let i = index">
+            <div class="segment-row">
+              <div class="segment-field">
+                <label>Direction:</label>
+                <select [(ngModel)]="segment.direction" [name]="'break_direction_' + i">
+                  <option value="">-- Select --</option>
+                  <option>L→R</option>
+                  <option>R→L</option>
+                  <option>Straight</option>
+                  <option>L→R→L</option>
+                  <option>R→L→R</option>
+                </select>
+              </div>
+              
+              <div class="segment-field">
+                <label>Severity (1-5):</label>
+                <input type="number" min="1" max="5" [(ngModel)]="segment.severity" [name]="'break_severity_' + i">
+              </div>
+              
+              <div class="segment-field">
+                <label>Start (ft):</label>
+                <input type="number" min="0" [(ngModel)]="segment.distance_start" [name]="'break_start_' + i">
+              </div>
+              
+              <div class="segment-field">
+                <label>End (ft):</label>
+                <input type="number" min="0" [(ngModel)]="segment.distance_end" [name]="'break_end_' + i">
+              </div>
+              
+              <button type="button" class="btn-remove-segment" (click)="removeBreakSegment(i)" title="Remove segment">
+                ×
+              </button>
+            </div>
+          </div>
+          
+          <button type="button" class="btn-add-segment" (click)="addBreakSegment()">
+            + Add Break Segment
+          </button>
+        </div>
+        <small class="help-text">Add multiple segments to break down the putt into sections with different breaks</small>
       </div>
       
     </div>

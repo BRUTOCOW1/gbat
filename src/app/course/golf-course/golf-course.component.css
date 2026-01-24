@@ -61,10 +61,26 @@
 }
 
 .course-list {
+  margin-bottom: 30px;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 15px;
+}
+
+.course-list h3 {
+  width: 100%;
+  margin-bottom: 0.5rem;
+  color: #00ffcc;
+  text-align: center;
+}
+
+.courses-subtitle {
+  width: 100%;
+  color: #aaa;
+  font-size: 0.9rem;
+  margin-bottom: 15px;
+  text-align: center;
 }
 
 .course-card {

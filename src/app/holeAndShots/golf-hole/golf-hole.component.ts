@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SupabaseService } from '../../services/supabase.service';
+import { NotificationService } from '../../shared/services/notification.service';
 
 @Component({
   selector: 'app-golf-hole',
@@ -23,6 +24,7 @@ export class GolfHoleComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private supabaseService: SupabaseService,
+    private notificationService: NotificationService
   ) {
     // getCurrentNavigation only exists during an in-app navigation, not on hard reloads.
     const nav = this.router.getCurrentNavigation();
@@ -46,7 +48,7 @@ export class GolfHoleComponent implements OnInit {
     const roundRes = await this.supabaseService.getGolfRoundById(this.roundId);
     const round = roundRes?.data?.[0];
     if (!round) {
-      console.error('No round data found. Redirecting...');
+      this.notificationService.showError('Round not found. Redirecting to dashboard...');
       this.router.navigate(['/dashboard']);
       return;
     }
@@ -81,6 +83,8 @@ export class GolfHoleComponent implements OnInit {
       await this.loadHoleDetails(num); // sets this.holeDetails
       await this.loadShots();          // uses this.holeDetails.id
     } catch (e) {
+      const errorMsg = this.notificationService.getErrorMessage(e);
+      this.notificationService.showError(`Failed to load hole ${num}: ${errorMsg}`);
       console.error('Failed to load hole:', e);
     }
   }
@@ -96,6 +100,7 @@ export class GolfHoleComponent implements OnInit {
     const rows = resp.data ?? [];
     this.holeDetails = Array.isArray(rows) ? rows[0] : rows;
     if (!this.holeDetails) {
+      this.notificationService.showWarning(`Hole ${holeNum} details not found for this course.`);
       console.warn('No hole details returned for course', this.courseId, 'hole', holeNum);
     }
   }
@@ -110,6 +115,8 @@ export class GolfHoleComponent implements OnInit {
     // // 1) Find or create played_golf_hole
     const playedHoleRes = await this.supabaseService.getPlayedHole(this.roundId, this.holeDetails.id);
     if (playedHoleRes.error) {
+      const errorMsg = this.notificationService.getErrorMessage(playedHoleRes.error);
+      this.notificationService.showError(`Error loading played hole: ${errorMsg}`);
       console.error('Error fetching played hole:', playedHoleRes.error);
       return;
     }
@@ -134,6 +141,8 @@ export class GolfHoleComponent implements OnInit {
     if (this.playedHoleId) {
       const shotsRes = await this.supabaseService.getShotsForPlayedHole(this.playedHoleId);
       if ((shotsRes as any)?.error) {
+        const errorMsg = this.notificationService.getErrorMessage((shotsRes as any).error);
+        this.notificationService.showError(`Error loading shots: ${errorMsg}`);
         console.error('Error fetching shots:', (shotsRes as any).error);
         this.shots = [];
         return;

@@ -17,6 +17,7 @@ import { GolfShotEntryComponent } from './holeAndShots/golf-shot-entry/golf-shot
 import { GolfRoundComponent } from './round/golf-round/golf-round.component';
 import { GolfRoundsComponent } from './round/golf-rounds/golf-rounds.component';
 import { NewRoundComponent } from './round/new-round/new-round.component';
+import { RoundSummaryComponent } from './round/round-summary/round-summary.component';
 
 // SHARED 
 import { BlogComponent } from './shared/blog/blog.component';
@@ -35,6 +36,7 @@ export const routes: Routes = [
     { path: 'blog-component', component: BlogComponent },
     { path: 'dashboard', component: GolfRoundsComponent, canActivate: [AuthGuard] },
     { path: 'golf-round/:id', component: GolfRoundComponent, canActivate: [AuthGuard] },
+    { path: 'round-summary/:id', component: RoundSummaryComponent, canActivate: [AuthGuard] },
     { path: 'golf-bags', component: GolfBagComponent },
     { path: 'golf-bag/:id', component: GolfBagComponent },
     { path: 'golf-clubs', component: GolfClubComponent },

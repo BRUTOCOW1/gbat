@@ -1,114 +1,501 @@
-/* Wrapper for the entire page */
-.golf-rounds-wrapper {
-  max-width: 1000px;
-  margin: 2rem auto;
-  padding: 0 1rem;
+.golf-round-container {
+  max-width: 1400px;
+  margin: 20px auto;
+  padding: 20px;
+  color: #fff;
 }
 
-/* Title and actions */
-.rounds-title {
-  text-align: center;
-  margin-bottom: 1rem;
-  font-size: 2rem;
-  color: var(--accent-color, #FFD700);
-}
-
-.rounds-actions {
+/* Header */
+.round-header {
   display: flex;
-  justify-content: center;
-  margin-bottom: 2rem;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #444;
+  flex-wrap: wrap;
+  gap: 20px;
 }
 
-/* Two-column layout */
-.rounds-layout {
-  display: grid;
-  grid-template-columns: 1fr 1fr;  /* left col: 1fr, right col: 1fr */
-  gap: 2rem;
-  align-items: start;
+.header-content h1 {
+  color: #00bfff;
+  font-size: 2.5rem;
+  margin: 0 0 5px 0;
 }
 
-/* Grid for the round cards in the left column */
-.round-list {
+.round-date {
+  color: #aaa;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* Statistics Grid */
+.round-stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
+  gap: 20px;
+  margin-bottom: 30px;
 }
 
-/* Round cards */
-.round-card {
-  background-color: var(--card-bg-light, #2c2c2c);
-  color: var(--text-color-light, #fff);
+.stat-card {
+  background: #2a2a2a;
   border-radius: 12px;
-  padding: 1rem;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-.round-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.3);
-}
-.round-card.selected {
-  border: 2px solid var(--accent-color, #FFD700);
+  padding: 20px;
+  text-align: center;
+  border: 2px solid #444;
+  transition: transform 0.2s, border-color 0.2s;
 }
 
-/* Round header in each card */
-.round-header {
-  margin: 0;
-}
-.round-date {
-  margin: 0;
-  font-size: 1.25rem;
-  color: var(--secondary-color, #3B6E23);
-}
-.round-course {
-  margin: 0.25rem 0 0;
-  font-weight: 500;
+.stat-card:hover {
+  transform: translateY(-2px);
+  border-color: #00bfff;
 }
 
-/* Right column: Selected round details */
-.selected-round-details {
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-  background-color: var(--card-bg-light, #2c2c2c);
-  color: var(--text-color-light, #fff);
-  transition: background-color 0.3s, color 0.3s;
+.stat-card.primary {
+  border-color: #00bfff;
+  background: linear-gradient(135deg, #1a3a4a 0%, #2a2a2a 100%);
 }
 
-.selected-round-date {
-  font-size: 1.5rem;
-  margin: 0;
-  color: var(--secondary-color, #3B6E23);
-}
-.selected-round-course {
-  margin: 0.25rem 0 1rem;
-  font-weight: 500;
+.stat-label {
+  color: #aaa;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
-/* Additional stats styling */
-.round-stats p {
-  margin: 0.25rem 0;
+.stat-value {
+  color: #00bfff;
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 5px;
 }
 
-/* Weather widget styling */
+.stat-subtitle {
+  color: #888;
+  font-size: 0.85rem;
+}
+
+/* Weather Widget */
 .weather-widget {
-  margin-top: 1rem;
-  padding: 1rem;
-  background: rgba(255,255,255,0.1);
-  border-radius: 8px;
-  font-size: 0.9rem;
+  background: #2a2a2a;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 30px;
+  border: 1px solid #444;
 }
 
-/* Hole buttons (1-18) */
-.hole-buttons {
+.weather-widget h3 {
+  color: #00bfff;
+  margin: 0 0 15px 0;
+  font-size: 1.2rem;
+}
+
+.weather-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+}
+
+.weather-item {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 1rem;
+  justify-content: space-between;
+  padding: 10px;
+  background: #333;
+  border-radius: 6px;
 }
 
-.hole-buttons .btn-secondary {
+.weather-label {
+  color: #aaa;
+}
+
+.weather-value {
+  color: #fff;
+  font-weight: bold;
+}
+
+/* Holes Section */
+.holes-section {
+  margin-bottom: 30px;
+}
+
+.holes-section h2 {
+  color: #00bfff;
+  margin-bottom: 20px;
+  font-size: 1.8rem;
+}
+
+.holes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.hole-card {
+  background: #2a2a2a;
+  border-radius: 12px;
+  padding: 15px;
+  border: 2px solid #444;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.hole-card:hover {
+  transform: translateY(-3px);
+  border-color: #00bfff;
+  box-shadow: 0 4px 12px rgba(0, 191, 255, 0.3);
+}
+
+.hole-card.selected {
+  border-color: #00bfff;
+  background: #1a3a4a;
+}
+
+.hole-card.played {
+  border-left: 4px solid #4caf50;
+}
+
+.hole-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.hole-number {
+  color: #00bfff;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.hole-par {
+  color: #aaa;
   font-size: 0.9rem;
-  padding: 0.5rem 1rem;
+}
+
+.hole-score {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.score-main {
+  font-size: 2.5rem;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.score-main.not-played {
+  color: #666;
+}
+
+.score-to-par {
+  font-size: 0.9rem;
+  margin-top: 5px;
+}
+
+.score-under {
+  color: #4caf50;
+}
+
+.score-even {
+  color: #2196f3;
+}
+
+.score-over {
+  color: #f44336;
+}
+
+.hole-stats {
+  display: flex;
+  justify-content: space-around;
+  gap: 10px;
+  margin-bottom: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #444;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.85rem;
+  color: #aaa;
+}
+
+.stat-icon {
+  font-size: 1.2rem;
+}
+
+.btn-hole-detail {
+  width: 100%;
+  padding: 8px;
+  background: #555;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.btn-hole-detail:hover {
+  background: #666;
+}
+
+/* Selected Hole Details */
+.selected-hole-details {
+  background: #2a2a2a;
+  border-radius: 12px;
+  padding: 25px;
+  margin-top: 30px;
+  border: 2px solid #00bfff;
+}
+
+.details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #444;
+}
+
+.details-header h3 {
+  color: #00bfff;
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.btn-close {
+  background: #f44336;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: background 0.2s;
+}
+
+.btn-close:hover {
+  background: #d32f2f;
+}
+
+.details-content {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.hole-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+}
+
+.info-item {
+  background: #333;
+  padding: 15px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.info-label {
+  color: #aaa;
+  font-size: 0.9rem;
+}
+
+.info-value {
+  color: #fff;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.info-value.success {
+  color: #4caf50;
+}
+
+.info-value.fail {
+  color: #f44336;
+}
+
+/* Shots Timeline */
+.shots-timeline h4 {
+  color: #00bfff;
+  margin: 0 0 15px 0;
+  font-size: 1.2rem;
+}
+
+.shots-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.shot-item {
+  background: #333;
+  padding: 15px;
+  border-radius: 8px;
+  display: flex;
+  gap: 15px;
+  border-left: 4px solid #00bfff;
+}
+
+.shot-number {
+  background: #00bfff;
+  color: white;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.shot-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.shot-primary {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.shot-club {
+  background: #444;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: bold;
+  color: #00bfff;
+}
+
+.shot-type {
+  color: #aaa;
+  font-size: 0.9rem;
+}
+
+.shot-distance,
+.shot-putt {
+  color: #888;
+  font-size: 0.85rem;
+}
+
+.shot-result {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #aaa;
+}
+
+.result-arrow {
+  color: #666;
+}
+
+.result-location {
+  color: #fff;
+  font-weight: 500;
+}
+
+.result-direction {
+  color: #888;
+  font-size: 0.9rem;
+}
+
+.shot-meta {
+  margin-top: 5px;
+}
+
+.penalty-badge {
+  background: #f44336;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+
+/* Buttons */
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background-color: #00bfff;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #0086cc;
+  transform: scale(1.05);
+}
+
+.btn-secondary {
+  background-color: #555;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background-color: #666;
+  transform: scale(1.05);
+}
+
+/* Loading */
+.loading-container {
+  text-align: center;
+  padding: 50px;
+  color: #aaa;
+  font-size: 1.2rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .round-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .header-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .header-actions .btn {
+    width: 100%;
+  }
+
+  .holes-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hole-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .shot-item {
+    flex-direction: column;
+  }
 }

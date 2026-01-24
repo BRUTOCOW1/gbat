@@ -1,9 +1,5 @@
 <div class="course-container">
   <!-- Search -->
-  <div class="nav-link">
-    <a routerLink="/new-course">➕ Add a New Golf Course</a>
-  </div>
-
   <div class="search-container">
     <div class="search-mode-toggle">
       <button [class.active]="searchMode === 'local'" (click)="setSearchMode('local')">
@@ -26,6 +22,9 @@
   <p *ngIf="loading" class="loading">Searching courses...</p>
 
   <!-- No Results -->
+  <p *ngIf="!loading && searchMode === 'local' && courses.length === 0 && !searchQuery" class="no-results">
+    You haven't played any courses yet. Start a round to add courses to "My Courses"!
+  </p>
   <p *ngIf="!loading && courses.length === 0 && externalCourses.length === 0 && searchQuery" class="no-results">
     No courses found for "{{ searchQuery }}".
   </p>
@@ -33,6 +32,7 @@
   <!-- Local Course List -->
   <div *ngIf="!loading && courses.length > 0" class="course-list">
     <h3>My Courses</h3>
+    <p class="courses-subtitle">Courses you've played</p>
     <div *ngFor="let course of courses" class="course-card" [class.selected]="selectedCourse?.id === course.id"
       (click)="selectCourse(course)">
       <h3>{{ course.name }}</h3>

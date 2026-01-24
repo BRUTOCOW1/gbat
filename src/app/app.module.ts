@@ -24,6 +24,7 @@ import { GolfShotEntryComponent } from './holeAndShots/golf-shot-entry/golf-shot
 import { GolfRoundComponent } from './round/golf-round/golf-round.component';
 import { GolfRoundsComponent } from './round/golf-rounds/golf-rounds.component';
 import { NewRoundComponent } from './round/new-round/new-round.component';
+import { RoundSummaryComponent } from './round/round-summary/round-summary.component';
 
 // SHARED 
 import { BlogComponent } from './shared/blog/blog.component';
@@ -53,6 +54,7 @@ import { routes } from './app.routes'
     GolfCourseComponent,
     GolfRoundComponent,
     GolfRoundsComponent,
+    RoundSummaryComponent,
     GolfBagComponent,
     LoginComponent,
     RegisterComponent,
