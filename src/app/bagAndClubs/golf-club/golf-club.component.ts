@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { SupabaseService } from '../../services/supabase.service';
 import { GolfClub } from '../../shared/models/golf-club.model';
 
@@ -38,7 +39,8 @@ export class GolfClubComponent implements OnInit {
 
   constructor(
     private supabaseService: SupabaseService,
-    private router: Router
+    private router: Router,
+    private http: HttpClient
   ) {
     // Optionally retrieve bagId from navigation state
     const nav = this.router.getCurrentNavigation();
@@ -169,4 +171,22 @@ export class GolfClubComponent implements OnInit {
     this.selectedClubIds.clear();
     alert('Selected clubs added to bag. Check console for any errors.');
   }
+
+  async seedDatabase() {
+    if (!confirm('This will add popular clubs to the database. Continue?')) return;
+
+    this.http.get<GolfClub[]>('assets/club_catalog.json').subscribe(async (clubs) => {
+      if (clubs && clubs.length > 0) {
+        const { error } = await this.supabaseService.upsertClubs(clubs);
+        if (error) {
+          console.error('Seeding failed', error);
+          alert('Failed to seed database.');
+        } else {
+          alert('Database seeded successfully! Refreshing list...');
+          this.ngOnInit(); // Reload list
+        }
+      }
+    });
+  }
 }
+

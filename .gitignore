@@ -73,3 +73,8 @@ pnpm-lock.yaml
 jest/
 *.test-results/
 *.snap
+
+# Environment files (optional - uncomment if you want to exclude them from git)
+# Note: For private repos, you may want to keep environment files in git
+# but ensure production keys are rotated if repo becomes public
+# src/environments/environment.prod.ts

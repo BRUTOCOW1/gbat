@@ -1,39 +1,71 @@
-<div class="golf-shot-container">
-
+<div class="shot-card">
   <!-- Header -->
-  <h2>Hole {{ holeNum }} · Shot {{shotNum}} · Shot Description</h2>
-
-  <!-- Shot Trail Timeline -->
-  <div class="shot-timeline">
-        <div class="shot-summary">  
-          <!-- ✅ Club Name -->
-          <span class="club-tag" *ngIf="shot.club_name">{{ shot.club_name }}</span>
-  
-          <span class="distance-tag">{{ shot.distance }} yds</span>
-          <span class="lie-tag">{{ shot.lie }}</span>
-          <span class="arrow">→</span>
-          <span class="result-tag">{{ shot.result }}</span>
-          <span class="intent-tag" *ngIf="shot.shot_intent">[{{ shot.shot_intent }}]</span>
-        </div>
-  
-        <div class="details-row" *ngIf="shot.contact || shot.notes || shot.impact_location">
-          <span *ngIf="shot.contact">Contact: {{ shot.contact }} ({{ shot.contact_severity }}%)</span>
-          <span *ngIf="shot.impact_location">Impact: {{ shot.impact_location }}</span>
-          <span *ngIf="shot.notes">Note: {{ shot.notes }}</span>
-        </div>
-  
+  <header class="shot-header">
+    <div class="shot-breadcrumb">
+      <span class="crumb">Hole {{ holeNum }}</span>
+      <span class="sep">•</span>
+      <span class="crumb">Shot {{ shot?.stroke_number || shotNum }}</span>
+      <span class="sep" *ngIf="shot?.shot_type">•</span>
+      <span class="crumb muted" *ngIf="shot?.shot_type">{{ shot.shot_type }}</span>
     </div>
-    <ng-template #noShots>
-      <p>No shots yet — ready when you are.</p>
-    </ng-template>
+    <h2 class="shot-title">Shot Overview</h2>
+  </header>
 
-    <button class="btn" (click)="editShot(shot); $event.stopPropagation()">Edit</button>
+  <!-- Summary pills -->
+  <section class="shot-pills">
+    <span class="pill pill--club" *ngIf="clubName">{{ clubName }}</span>
+    <span class="pill pill--distance" *ngIf="shot?.distance">{{ shot.distance }} yds</span>
+    <span class="pill pill--lie" *ngIf="shot?.lie">{{ shot.lie }}</span>
+    <span class="pill pill--intent" *ngIf="shot?.shot_intent">{{ shot.shot_intent }}</span>
 
-    <button
-    class="btn btn-secondary"
-    (click)="goToHole(holeNumber)"
-    >
-    Go To Hole
-    </button>
+    <span class="arrow" aria-hidden="true" *ngIf="shot?.result">→</span>
+    <span class="pill pill--result" *ngIf="shot?.result">{{ shot.result }}</span>
+  </section>
 
+  <!-- Details -->
+  <section class="shot-details" *ngIf="shot?.contact || shot?.impact_location || shot?.notes">
+    <div class="detail" *ngIf="shot?.contact">
+      <div class="detail-head">
+        <span class="label">Contact</span>
+        <span class="value">
+          {{ shot.contact }}
+          <small *ngIf="shot?.contact_severity">({{ shot.contact_severity }}%)</small>
+        </span>
+      </div>
+      <div
+        class="meter"
+        role="progressbar"
+        [attr.aria-valuenow]="shot?.contact_severity || 0"
+        aria-valuemin="0"
+        aria-valuemax="100"
+      >
+        <div class="meter__bar" [style.width.%]="shot?.contact_severity || 0"></div>
+      </div>
+    </div>
+
+    <div class="detail" *ngIf="shot?.impact_location">
+      <div class="detail-head">
+        <span class="label">Impact</span>
+        <span class="value">{{ shot.impact_location }}</span>
+      </div>
+    </div>
+
+    <div class="detail" *ngIf="shot?.notes">
+      <div class="detail-head">
+        <span class="label">Notes</span>
+        <span class="value">{{ shot.notes }}</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Empty state -->
+  <section class="empty" *ngIf="!shot?.stroke_number && !shot?.distance && !shot?.result">
+    <p>No shot recorded yet.</p>
+  </section>
+
+  <!-- Actions -->
+  <footer class="shot-actions">
+    <button class="btn btn--primary" (click)="editShot(shot); $event.stopPropagation()">Edit shot</button>
+    <button class="btn btn--ghost" (click)="goToHole(holeNumber)">Go to hole {{ holeNumber }}</button>
+  </footer>
 </div>

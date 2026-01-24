@@ -2,6 +2,7 @@ import { Component, OnInit, Renderer2 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SupabaseService } from '../../services/supabase.service';
+import { NotificationService } from '../../shared/services/notification.service';
 
 @Component({
   selector: 'app-login',
@@ -17,7 +18,8 @@ export class LoginComponent implements OnInit {
     private fb: FormBuilder,
     private router: Router,
     private readonly supabaseService: SupabaseService,
-    private renderer: Renderer2 // Renderer2 for DOM manipulation
+    private renderer: Renderer2, // Renderer2 for DOM manipulation
+    private notificationService: NotificationService
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -40,19 +42,27 @@ export class LoginComponent implements OnInit {
         const { user, session, error } = await this.supabaseService.signIn(email, password);
 
         if (error) {
-          this.errorMessage = error || 'Login failed. Please check your credentials.';
+          const errorMsg = this.notificationService.getErrorMessage(error);
+          this.errorMessage = errorMsg;
+          this.notificationService.showError(errorMsg);
         } else if (user) {
-          console.log('Login successful:', user);
+          this.notificationService.showSuccess('Login successful!');
           await this.router.navigate(['/dashboard']);
         } else {
-          this.errorMessage = 'Unexpected error occurred. Please try again.';
+          const errorMsg = 'Unexpected error occurred. Please try again.';
+          this.errorMessage = errorMsg;
+          this.notificationService.showError(errorMsg);
         }
       } catch (err) {
         console.error('An error occurred:', err);
-        this.errorMessage = 'An unexpected error occurred. Please try again later.';
+        const errorMsg = this.notificationService.getErrorMessage(err);
+        this.errorMessage = errorMsg;
+        this.notificationService.showError(errorMsg);
       }
     } else {
-      this.errorMessage = 'Please fill in all required fields correctly.';
+      const errorMsg = 'Please fill in all required fields correctly.';
+      this.errorMessage = errorMsg;
+      this.notificationService.showWarning(errorMsg);
     }
   }
 

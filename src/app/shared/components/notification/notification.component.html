@@ -1,0 +1,21 @@
+<div class="notification-container">
+  <div
+    *ngFor="let notification of notifications"
+    [class]="getNotificationClass(notification.type)"
+    class="notification"
+    (click)="removeNotification(notification.id)"
+  >
+    <div class="notification-content">
+      <span class="notification-icon">
+        <span *ngIf="notification.type === 'success'">✓</span>
+        <span *ngIf="notification.type === 'error'">✕</span>
+        <span *ngIf="notification.type === 'warning'">⚠</span>
+        <span *ngIf="notification.type === 'info'">ℹ</span>
+      </span>
+      <span class="notification-message">{{ notification.message }}</span>
+    </div>
+    <button class="notification-close" (click)="removeNotification(notification.id); $event.stopPropagation()">
+      ×
+    </button>
+  </div>
+</div>

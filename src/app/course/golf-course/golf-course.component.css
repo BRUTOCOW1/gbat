@@ -145,3 +145,56 @@
     }
   }
 }
+
+/* Search Mode Toggle */
+.search-mode-toggle {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.search-mode-toggle button {
+  background: transparent;
+  border: 1px solid #444;
+  color: #aaa;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.search-mode-toggle button.active {
+  background: #00ffcc;
+  color: #000;
+  border-color: #00ffcc;
+  font-weight: bold;
+}
+
+.search-container {
+  display: flex;
+  flex-direction: column; /* Stack toggle and input */
+  gap: 10px;
+}
+
+/* External Course Card */
+.external-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 1px dashed #666; /* Differentiate from local */
+}
+
+.import-btn {
+  margin-top: 10px;
+  background-color: #42a5f5;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.import-btn:hover {
+  background-color: #2196f3;
+}

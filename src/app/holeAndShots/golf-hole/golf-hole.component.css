@@ -1,136 +1,292 @@
-/* Golf Hole Container */
-.golf-hole-container {
-    max-width: 600px;
-    margin: 60px auto;
-    padding: 25px;
-    background: #1e1e1e;
-    border-radius: 12px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    text-align: center;
-}
-
-/* Hole Title */
-.golf-hole-container h1 {
-    font-size: 26px;
-    font-weight: bold;
-    color: #00bfff;
-    margin-bottom: 8px;
-}
-
-/* Hole Info */
-.hole-info {
-    font-size: 16px;
-    color: #ddd;
-    margin-bottom: 20px;
-}
-
-/* Shots Taken */
-.shot-list {
-    background: #2a2a2a;
-    padding: 15px;
-    border-radius: 8px;
-    text-align: left;
-    margin-bottom: 15px;
-}
-
-/* Shot Item */
-.shot-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 12px;
-    border-radius: 6px;
-    margin-bottom: 8px;
-    background: #333;
-    font-size: 16px;
-    font-weight: bold;
-}
-
-/* Color Coding for Better Readability */
-.club {
-    color: #007bff;
-}
-
-.distance {
-    color: #28a745;
-}
-
-.lie {
-    color: #ffc107;
-}
-
-.result {
-    color: #dc3545;
-}
-
-/* No Bullet Points */
-ul {
-    padding: 0;
-    list-style: none;
-}
-
-/* Enter Shot Button */
-.enter-shot-btn {
-    padding: 12px 16px;
-    font-size: 18px;
-    font-weight: bold;
-    background: #28a745;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: block;
-    margin: 15px auto 0;
+:root {
+    --bg: #0f1012;
+    --surface: #15161a;
+    --surface-2: #1b1d22;
+    --text: #e8e9ee;
+    --muted: #a3a7b3;
+    --border: rgba(255, 255, 255, 0.08);
+  
+    --primary: #00bfff;
+    --primary-weak: rgba(0, 191, 255, 0.15);
+    --success: #22c55e;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+    --ring: rgba(0, 191, 255, 0.35);
+  
+    --radius-lg: 16px;
+    --radius-md: 12px;
+    --radius-sm: 8px;
+  
+    --shadow-1: 0 6px 24px rgba(0, 0, 0, 0.35);
+    --shadow-2: 0 2px 8px rgba(0, 0, 0, 0.25);
+  }
+  
+  /* Shell */
+  .hole-card {
     width: 100%;
-}
-
-.enter-shot-btn:hover {
-    background: #1f8a3d;
-    transform: scale(1.05);
-}
-
-/* Responsive Tweaks */
-@media (max-width: 768px) {
-    .golf-hole-container {
-        width: 90%;
-    }
-
-    .shot-item {
-        font-size: 14px;
-    }
-}
-
-.tee-yardages {
-    margin-top: 10px;
-    font-size: 14px;
+    max-width: 880px;
+    margin: 40px auto;
+    padding: 22px;
+    background: linear-gradient(180deg, var(--surface), var(--surface-2));
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-1);
+    color: var(--text);
+  }
+  
+  /* Header */
+  .hole-header {
+    display: grid;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  
+  .hole-breadcrumb {
     display: flex;
-    justify-content: space-around;
     gap: 8px;
+    align-items: center;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+  .hole-breadcrumb .sep { opacity: 0.5; }
+  
+  .hole-title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+  }
+  
+  /* Context pills */
+  .hole-pills {
+    display: flex;
     flex-wrap: wrap;
-  }
-  
-  .tee-yardages span {
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-weight: bold;
-  }
-  
-  .black { color: #fff; background: #000; }
-  .blue  { color: #fff; background: #007bff; }
-  .white { color: #000; background: #eee; }
-  .red   { color: #fff; background: #d00; }
-  
-  .shot-item {
-    border-left: 5px solid #28a745;
+    gap: 10px;
     padding: 12px;
-    background: #2d2d2d;
-    margin-bottom: 10px;
-    border-radius: 6px;
-    transition: all 0.3s ease;
+    background: #121317;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
   }
   
-  .shot-item:hover {
-    transform: scale(1.02);
-    background: #3a3a3a;
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    line-height: 1;
+    white-space: nowrap;
+    border: 1px solid var(--border);
+    background: #1c1e24;
   }
+  
+  /* Specific pills */
+  .pill--par { color: var(--muted); }
+  .pill--hcp { color: var(--muted); }
+  
+  .pill--tee { font-weight: 600; }
+  .tee--black { background: #000; color: #fff; border-color: #000; }
+  .tee--blue  { background: #0b5bd7; color: #fff; border-color: #0b5bd7; }
+  .tee--white { background: #e8e8e8; color: #111; border-color: #e8e8e8; }
+  .tee--red   { background: #c62828; color: #fff; border-color: #c62828; }
+  
+  .pill--score.is-over  { color: var(--danger); }
+  .pill--score.is-under { color: var(--success); }
+  .pill--score.is-even  { color: var(--muted); }
+  
+  /* Timeline */
+  .timeline-wrap {
+    margin-top: 8px;
+  }
+  
+  .section-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0 0 10px 0;
+  }
+  
+  .timeline {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 10px;
+  }
+  
+  .timeline-item {
+    background: #121317;
+    border: 1px solid var(--border);
+    border-left: 5px solid var(--success);
+    border-radius: var(--radius-md);
+    padding: 12px;
+    cursor: pointer;
+    transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+    box-shadow: var(--shadow-2);
+  }
+  .timeline-item:hover {
+    transform: translateY(-1px);
+    border-color: var(--ring);
+    box-shadow: 0 0 0 4px var(--ring), var(--shadow-2);
+  }
+  
+  .timeline-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    font-weight: 600;
+  }
+  .kicker { color: var(--primary); }
+  .arrow { opacity: 0.7; }
+  
+  .pill--club {
+    background: var(--primary-weak);
+    border-color: var(--primary-weak);
+    color: var(--primary);
+  }
+  .pill--distance { color: var(--success); }
+  .pill--lie { color: var(--warn); }
+  .pill--result {
+    color: #eaeefb;
+    background: linear-gradient(180deg, #2a2d36, #21242c);
+    border-color: #2a2d36;
+  }
+  
+  .timeline-notes {
+    margin-top: 6px;
+    font-size: 0.92rem;
+    color: var(--muted);
+  }
+  
+  /* Empty */
+  .empty {
+    text-align: center;
+    color: var(--muted);
+    padding: 18px 8px;
+  }
+  
+  /* Actions */
+  .hole-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin-top: 14px;
+  }
+  .spacer { flex: 1 1 auto; }
+  
+  .btn {
+    appearance: none;
+    border: 1px solid var(--border);
+    background: #17181d;
+    color: var(--text);
+    padding: 10px 14px;
+    font-size: 0.95rem;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+    box-shadow: var(--shadow-2);
+  }
+  .btn:hover {
+    transform: translateY(-1px);
+    border-color: var(--ring);
+    box-shadow: 0 0 0 4px var(--ring), var(--shadow-2);
+  }
+  .btn--primary {
+    background: linear-gradient(180deg, var(--primary), #0099d1);
+    color: #c6c6c6;
+    font-weight: 700;
+    border-color: transparent;
+  }
+  .btn--ghost { background: transparent; }
+  
+  /* Responsive */
+  @media (max-width: 560px) {
+    .hole-card { padding: 16px; }
+    .hole-title { font-size: 1.35rem; }
+    .hole-pills { gap: 8px; }
+  }
+  
+  /* ——— Base carried over from previous answer ——— */
+
+.meta-grid,
+.putt-grid {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.meta-grid {
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+.putt-grid {
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  background: #101218;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 10px;
+}
+
+.tag {
+  display: inline-flex;
+  gap: 6px;
+  align-items: baseline;
+  font-size: 0.92rem;
+  color: var(--text);
+  background: #181b22;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 8px;
+}
+
+.pill--shot-type { color: var(--muted); }
+.pill--penalty   { color: var(--danger); }
+.pill--putt {
+  font-weight: 700;
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.08);
+}
+
+/* Contact meter block */
+.contact-wrap {
+  margin-top: 8px;
+  background: #101218;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 10px;
+}
+.detail-head {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+}
+.label { color: var(--muted); font-size: 0.9rem; }
+.value { font-size: 0.95rem; }
+
+.meter {
+  position: relative;
+  height: 8px;
+  background: #1e2027;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  margin-top: 8px;
+}
+.meter__bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), #6ee7ff);
+  width: 0%;
+  transition: width 250ms ease;
+}
+
+/* Break pattern */
+.break-row {
+  display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 6px;
+}
+.break-row .label { font-size: 0.9rem; color: var(--muted); }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 10px; border-radius: 999px; font-size: 0.9rem; line-height: 1;
+  background: #1c1e24; border: 1px solid var(--border); color: var(--text);
+}
+
+/* Keep the existing .timeline, .pill, .pill--club, .pill--distance, .pill--lie, .pill--result, etc. from the prior answer */

@@ -37,6 +37,12 @@
         Password is required (min. 6 characters).
       </p>
     </div>
+    <div *ngIf="errorMessage" class="error-message-global">
+      {{ errorMessage }}
+    </div>
+    <div *ngIf="successMessage" class="success-message-global">
+      {{ successMessage }}
+    </div>
     <button type="submit" class="btn-submit" [disabled]="registerForm.invalid">Register</button>
   </form>
 </div>

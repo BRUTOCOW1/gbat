@@ -1,0 +1,38 @@
+[
+    {
+        "id": "club_1",
+        "maker": "Titleist",
+        "set": "Standard",
+        "number": "1",
+        "category": "IRON",
+        "loft": "20",
+        "length": "43",
+        "club_offset": "0",
+        "lie_angle": "60",
+        "bounce": "0"
+    },
+    {
+        "id": "club_2",
+        "maker": "Callaway",
+        "set": "Standard",
+        "number": "2",
+        "category": "IRON",
+        "loft": "18",
+        "length": "44",
+        "club_offset": "0",
+        "lie_angle": "62",
+        "bounce": "0"
+    },
+    {
+        "id": "club_3",
+        "maker": "TaylorMade",
+        "set": "Standard",
+        "number": "3",
+        "category": "IRON",
+        "loft": "16",
+        "length": "45",
+        "club_offset": "0",
+        "lie_angle": "64",
+        "bounce": "0"
+    }
+]

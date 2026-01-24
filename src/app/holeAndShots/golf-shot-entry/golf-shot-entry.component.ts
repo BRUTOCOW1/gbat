@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SupabaseService } from '../../services/supabase.service';
 import { GolfShot } from '../../shared/models/golf-shot.model';
+import { NotificationService } from '../../shared/services/notification.service';
 
 interface GolferClub {
   id: string;             // ✅ golfer_club.id
@@ -33,6 +34,15 @@ export class GolfShotEntryComponent implements OnInit {
 
   currentShotId?: string;           // if you store shot.id
   currentStrokeNumber?: number;     // if your “key” is stroke_number
+  prevShot?: GolfShot = {
+    hole_id: '',  // Will be set to playedHoleId
+    club_id: '',
+    distance: 0,
+    shot_type: 'Tee Shot',
+    lie: 'Fairway',
+    result: 'Fairway',
+    stroke_number: 1   
+  }
 
   newShot: GolfShot = {
     hole_id: '',  // Will be set to playedHoleId
@@ -47,7 +57,8 @@ export class GolfShotEntryComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private supabaseService: SupabaseService
+    private supabaseService: SupabaseService,
+    private notificationService: NotificationService
   ) {
     const nav = this.router.getCurrentNavigation();
     if (nav?.extras.state) {
@@ -59,7 +70,9 @@ export class GolfShotEntryComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
-    console.error("getting here")
+    console.error("getting here");
+
+
     this.holeNum = this.route.snapshot.paramMap.get('holeNumber')!;
     this.holeNumber = parseInt(this.holeNum, 10);
 
@@ -78,6 +91,7 @@ export class GolfShotEntryComponent implements OnInit {
     await this.tryLoadExistingPlayedHoleAndShots();
 
     // Decide edit vs create
+    let strokeNum: number;
     if (passedShot || shotNumParam) {
       this.isEditMode = true;
 
@@ -86,7 +100,7 @@ export class GolfShotEntryComponent implements OnInit {
         this.hydrateFormFromShot(passedShot as GolfShot);
       } else {
         // Source 2: fetch by playedHoleId + stroke number (or by shot id)
-        const strokeNum = Number(shotNumParam);
+        strokeNum = Number(shotNumParam);
         this.currentStrokeNumber = strokeNum;
         if (this.playedHoleId && Number.isFinite(strokeNum)) {
           const row = await this.supabaseService.getShotForPlayedHole(this.playedHoleId, strokeNum);
@@ -94,13 +108,50 @@ export class GolfShotEntryComponent implements OnInit {
         }
       }
     } else {
-      // create mode
+      console.log("one out though")
+
+      if (this.playedHoleId){
+        const escrow = await this.supabaseService.getShotCountForPlayedHole(this.playedHoleId);
+        const prevShotNum = escrow?.length;
+        if (prevShotNum){
+          console.log(prevShotNum)
+          const row = await this.supabaseService.getShotForPlayedHole(this.playedHoleId, prevShotNum);
+          this.prevShot = row as GolfShot;
+
+        }
+      }
+
+        // create mode
       this.resetNewShot(); // ensure defaults
+    
+
+
+
     }
 
     this.formReady = true;
 
   }
+
+    // Tolerant JSON parse: handles string or double-encoded string
+  private parseJsonLoose(v: unknown): unknown {
+    let out = v;
+    for (let i = 0; i < 2; i++) {            // try at most twice (handles "\"[]\"" cases)
+      if (typeof out === 'string') {
+        try { out = JSON.parse(out as string); } catch { break; }
+      }
+    }
+    return out;
+  }
+
+  private normalizeBreak(raw: unknown): Array<{ direction?: string; severity?: number }> {
+    const parsed = this.parseJsonLoose(raw);
+    if (Array.isArray(parsed)) return parsed;
+    if (parsed && typeof parsed === 'object') return [parsed as any];
+    return [];
+  }
+
+
   getParsedBreakPattern(): any {
     try {
       return JSON.parse(this.break_pattern_string || '[]');
@@ -192,14 +243,15 @@ export class GolfShotEntryComponent implements OnInit {
       // a) club resolve
       const selected = this.golferClubs.find(gc => gc.id === this.newShot.club_id);
       if (!selected) {
-        console.error('No golfer club for id', this.newShot.club_id);
+        this.notificationService.showError('Please select a club for this shot.');
         return;
       }
       this.newShot.club_name = `${selected.number} ${selected.category}`.trim();
   
       // b) normalize JSON + penalties
-      try { this.newShot.break_pattern = JSON.parse(this.break_pattern_string || '[]'); }
-      catch { this.newShot.break_pattern = []; }
+      const arr = this.normalizeBreak(this.break_pattern_string);
+      this.newShot.break_pattern = arr;
+      
       this.newShot.penalty_strokes = this.getPenaltyStrokes(this.newShot.penalty);
   
       // c) find existing played row
@@ -214,7 +266,8 @@ export class GolfShotEntryComponent implements OnInit {
           strokes: 1, // ✅ satisfies the CHECK constraint
         });
         if (error || !created?.length) {
-          console.error('Error: played_golf_hole was not created.', error);
+          const errorMsg = this.notificationService.getErrorMessage(error);
+          this.notificationService.showError(errorMsg || 'Unable to create hole entry. Please try again.');
           return;
         }
         playedHoleId = created[0].id;
@@ -230,7 +283,10 @@ export class GolfShotEntryComponent implements OnInit {
   
       // g) insert shot
       const inserted = await this.supabaseService.addGolfShot(this.newShot);
-      if (!inserted) return;
+      if (!inserted) {
+        this.notificationService.showError('Unable to save shot. Please try again.');
+        return;
+      }
   
       // h) update strokes on played hole to nextStroke
       await this.supabaseService.updatePlayedHoleStrokes(playedHoleId!, nextStroke);
@@ -239,26 +295,52 @@ export class GolfShotEntryComponent implements OnInit {
       this.playedHoleId = playedHoleId!;
       await this.tryLoadExistingPlayedHoleAndShots(); // refresh list
   
+      this.notificationService.showSuccess('Shot saved successfully!');
+  
       if (this.newShot.result === 'Made') {
         this.moveToNextHole();
       } else {
         this.resetNewShot(); // keep hole_id prefilled below
       }
     } catch (err) {
+      const errorMsg = this.notificationService.getErrorMessage(err);
+      this.notificationService.showError(errorMsg);
       console.error('Error adding shot:', err);
     }
   }
-  
+
+
   private resetNewShot(): void {
     this.newShot = {
       hole_id: this.playedHoleId || '', // keep it if we have it
       club_id: '',
       distance: 0,
       shot_type: 'Tee Shot',
-      lie: 'Fairway',
-      result: 'Fairway',
+      lie: 'Light Rough',
+      result: '',
       stroke_number: (this.shots?.length ?? 0) + 1,
     };
+
+    if (this.prevShot == null){
+      return;
+    }
+
+    let shotType = "Tee Shot";
+    if (this.prevShot.result == "Green") {
+      shotType = "Putt";
+    } else if (this.prevShot.result == "Fringe"){
+      shotType = "Chip";
+    } else if (["Fairway", "Light Rough", "Thick Rough", "Bunker"].includes(this.prevShot.result)) {
+      shotType = "Approach";
+    }
+    console.log(shotType);
+
+    this.newShot.shot_type = shotType;
+    this.newShot.lie = this.prevShot.result;
+
+    console.log(this.newShot);
+
+
   }
   
 
@@ -301,20 +383,19 @@ export class GolfShotEntryComponent implements OnInit {
       hole_id: shot.hole_id,
     };
 
-    // Text field expects a string
-    this.break_pattern_string = JSON.stringify(shot.break_pattern ?? []);
+    const arr = this.normalizeBreak(shot.break_pattern);
+    this.break_pattern_string = JSON.stringify(arr);
+    this.newShot.break_pattern = arr;
   }
 
   private normalizeBeforeSave() {
-    // ensure club_name, penalties, and break_pattern
     const selected = this.golferClubs.find(gc => gc.id === this.newShot.club_id);
     if (selected) {
       this.newShot.club_name = `${selected.number} ${selected.category}`.trim();
     }
-
-    try { this.newShot.break_pattern = JSON.parse(this.break_pattern_string || '[]'); }
-    catch { this.newShot.break_pattern = []; }
-
+  
+    const arr = this.normalizeBreak(this.break_pattern_string);
+    this.newShot.break_pattern = arr;
     this.newShot.penalty_strokes = this.getPenaltyStrokes(this.newShot.penalty);
   }
 

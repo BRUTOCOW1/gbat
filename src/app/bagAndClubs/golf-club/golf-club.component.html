@@ -19,6 +19,11 @@
     </button>
   </div>
 
+  <!-- Seed Database Button -->
+  <div class="seed-db">
+    <button class="btn btn-secondary" (click)="seedDatabase()">Seed Club Database</button>
+  </div>
+
   <!-- Maker Loop -->
   <div class="maker-level" *ngFor="let group of nestedClubs">
     <!-- Maker Header -->
@@ -47,15 +52,12 @@
             <ul class="club-list" *ngIf="categoryOpen[group.maker]?.[setEntry.key]?.[catEntry.key]">
               <li *ngFor="let club of catEntry.value" class="club-item">
                 <div class="club-row">
-                  <input
-                    type="checkbox"
-                    [checked]="selectedClubIds.has(club.id)"
-                    (click)="toggleClubSelection(club.id, $event)"
-                  />
+                  <input type="checkbox" [checked]="selectedClubIds.has(club.id)"
+                    (click)="toggleClubSelection(club.id, $event)" />
                   <strong>{{ club.number }}</strong>
                 </div>
                 <div class="club-details">
-                  Loft: {{ club.loft }}°, Length: {{ club.length }}" Offset: {{ club.club_offset }}" 
+                  Loft: {{ club.loft }}°, Length: {{ club.length }}" Offset: {{ club.club_offset }}"
                   Lie: {{ club.lie_angle }}°
                 </div>
               </li>

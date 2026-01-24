@@ -89,7 +89,16 @@ export class GolfShotComponent implements OnInit {
         return 0;
     }
   }
+  // inside class GolfShotComponent
+  get clubName(): string | null {
+    if (!this.shot) return null as any;
+    if (this.shot.club_name) return this.shot.club_name;
+    const name = this.getClubName(this.shot.club_id || '');
+    return name === 'Unknown Club' ? null : name;
+  }
+
   
+
   
   private async tryLoadExistingPlayedHoleAndShots(): Promise<void> {
     const ph = await this.supabaseService.getPlayedHole(this.roundId, this.holeId);

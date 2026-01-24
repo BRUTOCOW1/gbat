@@ -4,12 +4,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
-import { RouterOutlet, RouterModule, RouterLink, RouterLinkActive} from '@angular/router';
+import { RouterOutlet, RouterModule, RouterLink, RouterLinkActive } from '@angular/router';
 
 // BAG AND CLUBS 
 import { CreateGolfBagComponent } from './bagAndClubs/create-golf-bag/create-golf-bag.component';
-import { GolfBagComponent } from './bagAndClubs//golf-bag/golf-bag.component';
-import { GolfClubComponent } from './bagAndClubs//golf-club/golf-club.component';
+import { GolfBagComponent } from './bagAndClubs/golf-bag/golf-bag.component';
+import { GolfClubComponent } from './bagAndClubs/golf-club/golf-club.component';
 
 // COURSE 
 import { GolfCourseComponent } from './course/golf-course/golf-course.component';
@@ -28,6 +28,7 @@ import { NewRoundComponent } from './round/new-round/new-round.component';
 // SHARED 
 import { BlogComponent } from './shared/blog/blog.component';
 import { NavbarComponent } from './shared/navbar/navbar.component';
+import { NotificationComponent } from './shared/components/notification/notification.component';
 
 // USER OPS 
 import { LoginComponent } from './userOps/login/login.component';
@@ -58,7 +59,8 @@ import { routes } from './app.routes'
     NavbarComponent,
     CreateGolfBagComponent,
     ProfileComponent,
-    NewRoundComponent
+    NewRoundComponent,
+    NotificationComponent
 
   ],
   imports: [
@@ -66,9 +68,9 @@ import { routes } from './app.routes'
     HttpClientModule,
     ReactiveFormsModule,
     FormsModule,
-    CommonModule, 
-    RouterOutlet, 
-    RouterLink, 
+    CommonModule,
+    RouterOutlet,
+    RouterLink,
     RouterLinkActive,
     RouterModule,
     RouterModule.forRoot(routes)

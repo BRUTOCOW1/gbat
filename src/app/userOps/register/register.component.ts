@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SupabaseService } from '../../services/supabase.service';
+import { NotificationService } from '../../shared/services/notification.service';
 
 @Component({
   selector: 'app-register',
@@ -16,7 +17,8 @@ export class RegisterComponent {
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private supabaseService: SupabaseService
+    private supabaseService: SupabaseService,
+    private notificationService: NotificationService
   ) {
     this.registerForm = this.fb.group({
       username: ['', [Validators.required, Validators.minLength(3)]],
@@ -26,7 +28,6 @@ export class RegisterComponent {
   }
 
   async onSubmit(): Promise<void> {
-    console.log('beet')
     if (this.registerForm.valid) {
       const { username, email, password } = this.registerForm.value;
   
@@ -35,7 +36,9 @@ export class RegisterComponent {
   
         if (error) {
           this.successMessage = null;
-          this.errorMessage = error.message || 'An error occurred during registration.';
+          const errorMsg = this.notificationService.getErrorMessage(error);
+          this.errorMessage = errorMsg;
+          this.notificationService.showError(errorMsg);
         } else if (data && data.user) {
           // Only proceed if data.user is not null
           const profile = {
@@ -51,10 +54,13 @@ export class RegisterComponent {
   
           if (profileResponse.error) {
             console.error('Error creating profile:', profileResponse.error.message);
-            this.errorMessage = 'Registration successful, but profile creation failed.';
+            const errorMsg = 'Registration successful, but profile creation failed.';
+            this.errorMessage = errorMsg;
+            this.notificationService.showWarning(errorMsg);
           } else {
             this.successMessage = 'Registration successful! Redirecting...';
             this.errorMessage = null;
+            this.notificationService.showSuccess('Registration successful! Redirecting to login...');
   
             // Redirect to the login page after a delay
             setTimeout(() => {
@@ -63,13 +69,21 @@ export class RegisterComponent {
           }
         } else {
           this.successMessage = null;
-          this.errorMessage = 'Unexpected error: User data is null.';
+          const errorMsg = 'Unexpected error: User data is null.';
+          this.errorMessage = errorMsg;
+          this.notificationService.showError(errorMsg);
         }
       } catch (error) {
         this.successMessage = null;
-        this.errorMessage = 'Unexpected error occurred. Please try again.';
+        const errorMsg = this.notificationService.getErrorMessage(error);
+        this.errorMessage = errorMsg;
+        this.notificationService.showError(errorMsg);
         console.error('Registration error:', error);
       }
+    } else {
+      const errorMsg = 'Please fill in all required fields correctly.';
+      this.errorMessage = errorMsg;
+      this.notificationService.showWarning(errorMsg);
     }
   }
   

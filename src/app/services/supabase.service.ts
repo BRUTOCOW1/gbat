@@ -10,22 +10,23 @@ import { GolfCourse, GolfHole } from '../shared/models/golf-course.model';
 import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { map, catchError } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
+
 @Injectable({
   providedIn: 'root',
 })
 
 export class SupabaseService {
-  private apiUrl = 'https://mgpgbijsyiwkappxedfu.supabase.co';
-  private apiKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ncGdiaWpzeWl3a2FwcHhlZGZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzYyMDY4NDQsImV4cCI6MjA1MTc4Mjg0NH0.IkpfzHy9xE00p7GjbSyhg30H_5hZ7_4zHFJoXhBTdmY' // Replace with your Supabase Anon Key
+  private readonly apiUrl = environment.supabase.url;
+  private readonly apiKey = environment.supabase.anonKey;
 
   private supabase: SupabaseClient;
   private authStateSubject = new BehaviorSubject<boolean>(false);
   authState$ = this.authStateSubject.asObservable();
 
   constructor(private http: HttpClient) {
-    // TODO: Move these to environment variables
     this.supabase = createClient(
-      this.apiUrl, 
+      this.apiUrl,
       this.apiKey
     );
     this.initializeAuthListener();
@@ -160,28 +161,37 @@ export class SupabaseService {
       return { data: null, error };
     }
   }
+
+  async upsertClubs(clubs: GolfClub[]) {
+    try {
+      const { data, error } = await this.supabase.from('golfclub').upsert(clubs, { onConflict: 'id' }).select();
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error: any) {
+      this.handleError('upsertClubs', error);
+      return { data: null, error };
+    }
+  }
   // Fetch golf clubs for the authenticated user
   getGolfClubs(): Observable<GolfClub[]> {
     const headers = {
       'Content-Type': 'application/json',
       'apikey': this.apiKey,
-      'Authorization': `Bearer ${this.apiKey}`,
-      'Access-Control-Allow-Origin': '*',  // 👈 Add this
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',  // 👈 Ensure OPTIONS is allowed
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization', 
+      'Authorization': `Bearer ${this.apiKey}`
     };
 
-    this.apiUrl += '/rest/v1/golfclub';
+    // Use local variable to avoid mutating instance property
+    const restApiUrl = `${this.apiUrl}/rest/v1/golfclub`;
 
-  
-    return this.http.get<GolfClub[]>(`${this.apiUrl}?select=*`, { headers }).pipe(      map((response) => response || []),
+    return this.http.get<GolfClub[]>(`${restApiUrl}?select=*`, { headers }).pipe(
+      map((response) => response || []),
       catchError((error) => {
-        console.error('CORS Error:', error);
+        console.error('Error fetching golf clubs:', error);
         throw error;
       })
     );
   }
-  
+
   async searchClubs(maker?: string, category?: string): Promise<{ data: GolfClub[] | null; error: any }> {
     try {
       let query = this.supabase.from('golfclub').select('*');
@@ -209,10 +219,10 @@ export class SupabaseService {
   async getClubsByBagId(bagId: string, userId: string) {
     try {
       return await this.supabase
-      .from('golfer_club')
-      .select('id, club_id')  // ✅ include the PK id!
-      .eq('cur_bag_id', bagId)
-      .eq('golfer_id', userId);    
+        .from('golfer_club')
+        .select('id, club_id')  // ✅ include the PK id!
+        .eq('cur_bag_id', bagId)
+        .eq('golfer_id', userId);
     } catch (error: any) {
       this.handleError('getClubsByBagId', error);
       return { data: null, error };
@@ -231,18 +241,18 @@ export class SupabaseService {
   async get_golferci_from_golfci(golfer_club_id: string) {
     var club_id = null
     try {
-          return await this.supabase
-          .from('golfclub')
-          .select('number, category')
-          .eq('id', golfer_club_id);
+      return await this.supabase
+        .from('golfclub')
+        .select('number, category')
+        .eq('id', golfer_club_id);
     } catch (error: any) {
       this.handleError('get_golferci_from_golfci', error);
       return { data: null, error };
     }
   }
-  
-  
-  
+
+
+
 
   // ==================== GOLF COURSE METHODS ====================
 
@@ -289,7 +299,7 @@ export class SupabaseService {
       return [];
     }
   }
-  
+
   async getGolfCourseNameById(courseId: string) {
     try {
       const { data, error } = await this.supabase
@@ -321,30 +331,30 @@ export class SupabaseService {
         .insert([course])
         .select()
         .single();
-  
+
       if (courseError) throw courseError;
       const course_id = insertedCourse.id;
-  
+
       // Insert the holes, attaching the course_id
       const holesWithCourseId = holes.map(hole => ({
         ...hole,
         course_id,
         id: crypto.randomUUID() // if your DB expects this
       }));
-  
+
       const { error: holesError } = await this.supabase
         .from('golf_holes')
         .insert(holesWithCourseId);
-  
+
       if (holesError) throw holesError;
-  
+
       return insertedCourse;
     } catch (error: any) {
       this.handleError('insertGolfCourseWithHoles', error);
       throw error;
     }
   }
-  
+
   // ==================== GOLF ROUND METHODS ====================
 
   async getGolfRoundsByUser(userId: string) {
@@ -475,22 +485,38 @@ export class SupabaseService {
     }
   }
 
+  async getShotCountForPlayedHole(played_hole_id: string) {
+    try {
+      const { data, error } = await this.supabase
+        .from('golf_shot')
+        .select('*', { count: 'exact' })
+        .eq('hole_id', played_hole_id)
+      if (error) throw error;
+      return data;
+    } catch (error: any) {
+      this.handleError('getShotsForPlayedHole', error);
+      return null;
+    }
+  }
+
+
   async getShotForPlayedHole(played_hole_id: string, shot_num: number): Promise<GolfShot | null> {
     try {
       const { data, error } = await this.supabase
-      .from('golf_shot')
-      .select('*')
-      .eq('hole_id', played_hole_id)
-      .eq('stroke_number', shot_num)
-      .maybeSingle();
-    if (error) throw error;
-    return data as GolfShot | null;
+        .from('golf_shot')
+        .select('*')
+        .eq('hole_id', played_hole_id)
+        .eq('stroke_number', shot_num)
+        .maybeSingle();
+      if (error) throw error;
+      return data as GolfShot | null;
     } catch (error: any) {
       this.handleError('getShotForPlayedHole', error); // (typo fixed)
       return null;
     }
   }
-  
+
+
 
   // ==================== OPTIONAL: ADVANCED QUERIES (EXAMPLE) ====================
 
@@ -529,39 +555,53 @@ export class SupabaseService {
 
 
   // Update by id (preferred)
-async updateGolfShotById(id: string, patch: Partial<GolfShot>) {
-  const { data, error } = await this.supabase
-    .from('golf_shot')
-    .update(patch)
-    .eq('id', id)
-    .select()
-    .maybeSingle();
-  if (error) throw error;
-  return data;
-}
+  async updateGolfShotById(id: string, patch: Partial<GolfShot>) {
+    const { data, error } = await this.supabase
+      .from('golf_shot')
+      .update(patch)
+      .eq('id', id)
+      .select()
+      .maybeSingle();
+    if (error) throw error;
+    return data;
+  }
 
-// Update by (played_hole_id, stroke_number)
-async updateGolfShotByPlayedHoleAndStroke(played_hole_id: string, stroke_number: number, patch: Partial<GolfShot>) {
-  const { data, error } = await this.supabase
-    .from('golf_shot')
-    .update(patch)
-    .eq('hole_id', played_hole_id)
-    .eq('stroke_number', stroke_number)
-    .select()
-    .maybeSingle();
-  if (error) throw error;
-  return data;
-}
+  // Update by (played_hole_id, stroke_number)
+  async updateGolfShotByPlayedHoleAndStroke(played_hole_id: string, stroke_number: number, patch: Partial<GolfShot>) {
+    const { data, error } = await this.supabase
+      .from('golf_shot')
+      .update(patch)
+      .eq('hole_id', played_hole_id)
+      .eq('stroke_number', stroke_number)
+      .select()
+      .maybeSingle();
+    if (error) throw error;
+    return data;
+  }
 
-// Delete by (played_hole_id, stroke_number) if needed
-async deleteShotByPlayedHoleAndStroke(played_hole_id: string, stroke_number: number) {
-  const { error } = await this.supabase
-    .from('golf_shot')
-    .delete()
-    .eq('hole_id', played_hole_id)
-    .eq('stroke_number', stroke_number);
-  if (error) throw error;
-}
+  // Delete by (played_hole_id, stroke_number) if needed
+  async deleteShotByPlayedHoleAndStroke(played_hole_id: string, stroke_number: number) {
+    const { error } = await this.supabase
+      .from('golf_shot')
+      .delete()
+      .eq('hole_id', played_hole_id)
+      .eq('stroke_number', stroke_number);
+    if (error) throw error;
+  }
 
+  // ==================== BLOG METHODS ====================
+
+  async getBlogPosts() {
+    try {
+      const { data, error } = await this.supabase
+        .from('post')
+        .select('*');
+      if (error) throw error;
+      return data;
+    } catch (error: any) {
+      this.handleError('getBlogPosts', error);
+      return null;
+    }
+  }
 
 }

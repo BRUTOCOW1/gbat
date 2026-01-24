@@ -1,44 +1,129 @@
-<div class="golf-hole-container">
-  <h1>Hole {{ holeNumber }}</h1>
-
-  <!-- Hole Overview -->
-  <div class="hole-info">
-    <p><strong>Par:</strong> {{ holeDetails?.par }} |
-       <strong>HCP:</strong> {{ holeDetails?.handicap }}</p>
-    <div class="tee-yardages">
-      <span class="black">Black: {{ holeDetails?.tee_box_black }}y</span>
-      <span class="blue">Blue: {{ holeDetails?.tee_box_blue }}y</span>
-      <span class="white">White: {{ holeDetails?.tee_box_white }}y</span>
-      <span class="red">Red: {{ holeDetails?.tee_box_red }}y</span>
+<div class="hole-card">
+  <!-- Header -->
+  <header class="hole-header">
+    <div class="hole-breadcrumb">
+      <span class="crumb">Round</span>
+      <span class="sep">•</span>
+      <span class="crumb">Hole {{ holeNumber }}</span>
     </div>
-  </div>
+    <h1 class="hole-title">Hole {{ holeNumber }}</h1>
 
-  <!-- Shot Trail -->
-  <div *ngIf="shots.length > 0; else noShots" class="shot-list">
-    <h3>Shots Taken ({{ shots.length }})</h3>
-    <div *ngFor="let shot of shots; index as i" class="shot-item">
-      <div>
-        <strong>#{{ i + 1 }}</strong> 
-        <span class="club"> {{ shot.club_name }}</span> 
-        → <span class="distance">{{ shot.distance }}y</span>, 
-        <span class="lie">{{ shot.lie }}</span>
-      </div>
-      <div class="result">{{ shot.result }}</div>
-      <button class="edit-shot-btn" (click)="goToShot(i+1)">Shot Details</button>
+    <!-- Context pills -->
+    <div class="hole-pills">
+      <span class="pill pill--par" *ngIf="holeDetails?.par">Par {{ holeDetails?.par }}</span>
+      <span class="pill pill--hcp" *ngIf="holeDetails?.handicap">HCP {{ holeDetails?.handicap }}</span>
+
+      <!-- Tee yardages -->
+      <ng-container *ngFor="let t of teeChips">
+        <span class="pill pill--tee"
+              [class.tee--black]="t.key==='black'"
+              [class.tee--blue]="t.key==='blue'"
+              [class.tee--white]="t.key==='white'"
+              [class.tee--red]="t.key==='red'">
+          {{ t.label }} {{ t.yards }}y
+        </span>
+      </ng-container>
+
+      <!-- Live score vs par (only when shots exist) -->
+      <span class="pill pill--score"
+            *ngIf="hasStrokes && holeDetails?.par"
+            [ngClass]="scoreClass">
+        {{ strokesTotal }} strokes ({{ scoreRelative }})
+      </span>
     </div>
-  </div>
-  <ng-template #noShots>
-    <p>No shots recorded yet. Let’s tee off.</p>
+  </header>
+
+  <section *ngIf="shots?.length; else empty" class="timeline-wrap">
+    <h2 class="section-title">Shots ({{ shots.length }})</h2>
+  
+    <ol class="timeline">
+      <li class="timeline-item" *ngFor="let s of shots; index as i" (click)="goToShot(i + 1)">
+        <!-- Primary row -->
+        <div class="timeline-row">
+          <span class="kicker">#{{ i + 1 }}</span>
+  
+          <span class="pill pill--club">
+            {{ s.club_name || getClubNameSafe(s.club_id) || 'Club' }}
+          </span>
+  
+          <span class="pill pill--shot-type" *ngIf="s.shot_type">{{ s.shot_type }}</span>
+  
+          <span class="pill pill--distance" *ngIf="!isPutt(s) && s.distance">
+            {{ s.distance }} yds
+          </span>
+  
+          <span class="arrow" aria-hidden="true" *ngIf="s.result">→</span>
+          <span class="pill pill--result" *ngIf="s.result">{{ s.result }}</span>
+  
+          <span class="pill pill--penalty" *ngIf="penaltyLabel(s.penalty)">
+            {{ penaltyLabel(s.penalty) }}
+          </span>
+        </div>
+  
+        <!-- Secondary meta (full swing) -->
+        <div class="meta-grid" *ngIf="!isPutt(s)">
+          <span class="tag" *ngIf="s.lie"><strong>Lie:</strong> {{ s.lie }}</span>
+          <span class="tag" *ngIf="s.shot_intent"><strong>Intent:</strong> {{ s.shot_intent }}</span>
+          <span class="tag" *ngIf="s.trajectory"><strong>Trajectory:</strong> {{ s.trajectory }}</span>
+          <span class="tag" *ngIf="s.shape"><strong>Shape:</strong> {{ s.shape }}</span>
+          <span class="tag" *ngIf="s.impact_location"><strong>Impact:</strong> {{ s.impact_location }}</span>
+        </div>
+  
+        <!-- Contact meter -->
+        <div class="contact-wrap" *ngIf="s.contact || s.contact_severity !== undefined">
+          <div class="detail-head">
+            <span class="label">Contact</span>
+            <span class="value">
+              {{ s.contact || '—' }}
+              <small *ngIf="s.contact_severity !== undefined">({{ s.contact_severity }}%)</small>
+            </span>
+          </div>
+          <div
+            class="meter"
+            role="progressbar"
+            [attr.aria-valuenow]="s.contact_severity || 0"
+            aria-valuemin="0"
+            aria-valuemax="100">
+            <div class="meter__bar" [style.width.%]="s.contact_severity || 0"></div>
+          </div>
+        </div>
+  
+        <!-- PUTT specifics -->
+        <div class="putt-grid" *ngIf="isPutt(s)">
+          <span class="pill pill--putt" *ngIf="s.putt_length !== undefined">Putt {{ s.putt_length }} ft</span>
+          <span class="tag" *ngIf="s.slope"><strong>Slope:</strong> {{ s.slope }}</span>
+          <span class="tag" *ngIf="s.grain_direction"><strong>Grain:</strong> {{ s.grain_direction }}</span>
+          <span class="tag" *ngIf="s.green_speed !== undefined"><strong>Stimp:</strong> {{ s.green_speed }}</span>
+          <span class="tag" *ngIf="s.read_quality"><strong>Read:</strong> {{ s.read_quality }}</span>
+  
+          <!-- Break pattern chips -->
+          <div class="break-row" *ngIf="breakChips(s)?.length">
+            <span class="label">Break:</span>
+            <span class="chip" *ngFor="let b of breakChips(s)">
+              {{ b.direction }}<small *ngIf="b.severity !== undefined">·{{ b.severity }}</small>
+            </span>
+          </div>
+        </div>
+  
+        <!-- Notes -->
+        <div class="timeline-notes" *ngIf="s.notes">{{ s.notes }}</div>
+      </li>
+    </ol>
+  </section>
+  
+
+  <ng-template #empty>
+    <div class="empty">
+      <p>No shots yet — tee it high and let it fly.</p>
+    </div>
   </ng-template>
 
-  <!-- Call to Action -->
-  <button class="enter-shot-btn" (click)="goToShotEntry()">+ Enter Shot</button>
-  <div *ngIf="holeNumber > 1">
-    <button class="previous-hole-btn" (click)="goToPreviousHole()">Hole {{holeNumber - 1}}</button>
-  </div>
-  <div *ngIf="holeNumber < numHoles">
-      <button class="next-hole-btn" (click)="goToNextHole()">Hole {{holeNumber + 1}}</button>
-  </div>
-  <button class="to-round-btn" (click)="goToRound()">Back To Round</button>
-
+  <!-- Actions -->
+  <footer class="hole-actions">
+    <button class="btn btn--primary" (click)="goToShotEntry()">+ Enter Shot</button>
+    <span class="spacer"></span>
+    <button class="btn btn--ghost" *ngIf="holeNumber > 1" (click)="goToPreviousHole()">← Hole {{ holeNumber - 1 }}</button>
+    <button class="btn btn--ghost" *ngIf="holeNumber < numHoles" (click)="goToNextHole()">Hole {{ holeNumber + 1 }} →</button>
+    <button class="btn btn--ghost" (click)="goToRound()">Back to Round</button>
+  </footer>
 </div>
