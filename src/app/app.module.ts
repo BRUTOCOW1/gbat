@@ -10,6 +10,7 @@ import { RouterOutlet, RouterModule, RouterLink, RouterLinkActive } from '@angul
 import { CreateGolfBagComponent } from './bagAndClubs/create-golf-bag/create-golf-bag.component';
 import { GolfBagComponent } from './bagAndClubs/golf-bag/golf-bag.component';
 import { GolfClubComponent } from './bagAndClubs/golf-club/golf-club.component';
+import { AddGolfClubComponent } from './bagAndClubs/add-golf-club/add-golf-club.component';
 
 // COURSE 
 import { GolfCourseComponent } from './course/golf-course/golf-course.component';
@@ -51,6 +52,7 @@ import { routes } from './app.routes'
     GolfShotEntryComponent,
     GolfHoleComponent,
     GolfClubComponent,
+    AddGolfClubComponent,
     GolfCourseComponent,
     GolfRoundComponent,
     GolfRoundsComponent,

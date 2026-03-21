@@ -13,9 +13,13 @@
 }
 
 .summary-header h1 {
-  color: #00bfff;
+  color: var(--primary-color);
   font-size: 2.5rem;
   margin-bottom: 10px;
+}
+
+body.dark-mode .summary-header h1 {
+  color: var(--accent-color);
 }
 
 .round-info h2 {
@@ -48,12 +52,17 @@
 
 .stat-card:hover {
   transform: translateY(-2px);
-  border-color: #00bfff;
+  border-color: var(--accent-color);
+  box-shadow: var(--shadow-golf);
 }
 
 .stat-card.primary {
-  border-color: #00bfff;
-  background: linear-gradient(135deg, #1a3a4a 0%, #2a2a2a 100%);
+  border-color: var(--accent-color);
+  background: linear-gradient(135deg, rgba(42, 74, 22, 0.3) 0%, var(--card-bg-dark) 100%);
+}
+
+body:not(.dark-mode) .stat-card.primary {
+  background: linear-gradient(135deg, rgba(42, 74, 22, 0.1) 0%, var(--card-bg-light) 100%);
 }
 
 .stat-label {
@@ -65,10 +74,14 @@
 }
 
 .stat-value {
-  color: #00bfff;
+  color: var(--primary-color);
   font-size: 2.5rem;
   font-weight: bold;
   margin-bottom: 5px;
+}
+
+body.dark-mode .stat-value {
+  color: var(--accent-color);
 }
 
 .stat-subtitle {
@@ -85,9 +98,13 @@
 }
 
 .score-breakdown h3 {
-  color: #00bfff;
+  color: var(--primary-color);
   margin-bottom: 15px;
   font-size: 1.5rem;
+}
+
+body.dark-mode .score-breakdown h3 {
+  color: var(--accent-color);
 }
 
 .breakdown-grid {
@@ -148,9 +165,13 @@
 }
 
 .hole-breakdown h3 {
-  color: #00bfff;
+  color: var(--primary-color);
   margin-bottom: 15px;
   font-size: 1.5rem;
+}
+
+body.dark-mode .hole-breakdown h3 {
+  color: var(--accent-color);
 }
 
 .hole-table {
@@ -165,12 +186,12 @@
 }
 
 .table-header > div {
-  background: #1a1a1a;
+  background: var(--primary-color);
   padding: 12px;
   font-weight: bold;
-  color: #00bfff;
+  color: white;
   text-align: center;
-  border-bottom: 2px solid #444;
+  border-bottom: 2px solid var(--accent-color);
 }
 
 .table-row {
@@ -192,12 +213,12 @@
 }
 
 .table-footer > div {
-  background: #1a1a1a;
+  background: var(--primary-color);
   padding: 12px;
   font-weight: bold;
-  color: #00bfff;
+  color: white;
   text-align: center;
-  border-top: 2px solid #444;
+  border-top: 2px solid var(--accent-color);
   margin-top: 5px;
 }
 
@@ -250,13 +271,13 @@
 }
 
 .btn-primary {
-  background-color: #00bfff;
+  background-color: var(--primary-color);
   color: white;
 }
 
 .btn-primary:hover {
-  background-color: #0086cc;
-  transform: scale(1.05);
+  background-color: var(--primary-hover);
+  transform: translateY(-1px);
 }
 
 .btn-secondary {

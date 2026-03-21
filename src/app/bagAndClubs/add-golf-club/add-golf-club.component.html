@@ -1,0 +1,144 @@
+<div class="add-club-container">
+  <h2>Add New Golf Club</h2>
+  
+  <form [formGroup]="clubForm" (ngSubmit)="onSubmit()" class="club-form">
+    <div class="form-row">
+      <div class="form-group">
+        <label for="maker">Maker *</label>
+        <input 
+          type="text" 
+          id="maker" 
+          formControlName="maker" 
+          placeholder="e.g., Titleist, Callaway"
+          class="form-control"
+        />
+        <span class="error-message" *ngIf="clubForm.get('maker')?.touched && clubForm.get('maker')?.invalid">
+          Maker is required
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="set">Set *</label>
+        <input 
+          type="text" 
+          id="set" 
+          formControlName="set" 
+          placeholder="e.g., T200, Apex"
+          class="form-control"
+        />
+        <span class="error-message" *ngIf="clubForm.get('set')?.touched && clubForm.get('set')?.invalid">
+          Set is required
+        </span>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="number">Number *</label>
+        <input 
+          type="text" 
+          id="number" 
+          formControlName="number" 
+          placeholder="e.g., 7, PW, 56"
+          class="form-control"
+        />
+        <span class="error-message" *ngIf="clubForm.get('number')?.touched && clubForm.get('number')?.invalid">
+          Number is required
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="category">Category *</label>
+        <select id="category" formControlName="category" class="form-control">
+          <option value="">Select Category</option>
+          <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+        </select>
+        <span class="error-message" *ngIf="clubForm.get('category')?.touched && clubForm.get('category')?.invalid">
+          Category is required
+        </span>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="loft">Loft (degrees) *</label>
+        <input 
+          type="number" 
+          id="loft" 
+          formControlName="loft" 
+          placeholder="e.g., 34"
+          step="0.5"
+          class="form-control"
+        />
+        <span class="error-message" *ngIf="clubForm.get('loft')?.touched && clubForm.get('loft')?.invalid">
+          Loft is required
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="length">Length (inches) *</label>
+        <input 
+          type="number" 
+          id="length" 
+          formControlName="length" 
+          placeholder="e.g., 37.5"
+          step="0.1"
+          class="form-control"
+        />
+        <span class="error-message" *ngIf="clubForm.get('length')?.touched && clubForm.get('length')?.invalid">
+          Length is required
+        </span>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="lie_angle">Lie Angle (degrees)</label>
+        <input 
+          type="number" 
+          id="lie_angle" 
+          formControlName="lie_angle" 
+          placeholder="e.g., 62"
+          step="0.5"
+          class="form-control"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="club_offset">Offset (inches)</label>
+        <input 
+          type="number" 
+          id="club_offset" 
+          formControlName="club_offset" 
+          placeholder="e.g., 0.1"
+          step="0.01"
+          class="form-control"
+        />
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="bounce">Bounce (degrees)</label>
+        <input 
+          type="number" 
+          id="bounce" 
+          formControlName="bounce" 
+          placeholder="e.g., 10"
+          step="0.5"
+          class="form-control"
+        />
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn btn-secondary" (click)="cancel()" [disabled]="isSubmitting">
+        Cancel
+      </button>
+      <button type="submit" class="btn btn-primary" [disabled]="clubForm.invalid || isSubmitting">
+        <span *ngIf="!isSubmitting">Add Club</span>
+        <span *ngIf="isSubmitting">Adding...</span>
+      </button>
+    </div>
+  </form>
+</div>

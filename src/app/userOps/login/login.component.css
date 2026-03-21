@@ -17,10 +17,11 @@ body.dark-mode {
   max-width: 400px;
   margin: 100px auto;
   padding: 30px;
-  border-radius: 15px;
-  background-color: #ffffff;
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-  transition: background-color 0.3s, color 0.3s;
+  border-radius: var(--radius-xl);
+  background-color: var(--card-bg-light);
+  box-shadow: var(--shadow-lg);
+  border: 2px solid var(--accent-color);
+  transition: background-color var(--transition-base), color var(--transition-base);
 }
 
 body.dark-mode .login-container {
@@ -83,14 +84,14 @@ body.dark-mode .login-form input {
 
 .login-form input:focus {
   outline: none;
-  border-color: #007bff;
-  background-color: #fff;
-  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  border-color: var(--primary-color);
+  background-color: var(--card-bg-light);
+  box-shadow: 0 0 5px rgba(42, 74, 22, 0.3);
 }
 
 body.dark-mode .login-form input:focus {
-  background-color: #333;
-  border-color: #007bff;
+  background-color: var(--card-bg-dark);
+  border-color: var(--primary-color);
 }
 
 /* Error Message */
@@ -112,19 +113,16 @@ body.dark-mode .error-message {
   font-weight: bold;
   text-align: center;
   color: white;
-  background: linear-gradient(135deg, #007bff, #0056b3);
+  background: var(--primary-color);
   border: none;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   cursor: pointer;
-  transition: background-color 0.3s, box-shadow 0.3s;
+  transition: background-color var(--transition-base), box-shadow var(--transition-base), transform var(--transition-fast);
 }
 
 .login-form .btn-submit:hover {
-  background: linear-gradient(135deg, #0056b3, #003f7f);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-}
-
-body.dark-mode .btn-submit {
-  background: linear-gradient(135deg, #0056b3, #007bff);
+  background: var(--primary-hover);
+  box-shadow: var(--shadow-golf);
+  transform: translateY(-1px);
 }
 

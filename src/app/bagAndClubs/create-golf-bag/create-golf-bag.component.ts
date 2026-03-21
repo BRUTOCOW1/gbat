@@ -106,13 +106,13 @@ export class CreateGolfBagComponent implements OnInit {
       return;
     }
 
-    // Success – navigate to the newly created bag view
+    // Success – move to step 2 for club selection
     const newBagId = data[0].id;
     this.newBagId = newBagId;
-    this.golfBagForm.reset();
     this.notificationService.showSuccess(`Golf bag "${name}" created successfully!`);
-    this.router.navigate([`/golf-bag/${newBagId}`]);
     this.step = 2;
+    // Load clubs for selection
+    await this.loadClubs();
   }
 
   /** Load all clubs for selection */

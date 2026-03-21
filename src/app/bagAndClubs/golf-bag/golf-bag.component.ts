@@ -107,4 +107,8 @@ export class GolfBagComponent implements OnInit {
   navigateTocreateBag() {
     this.router.navigate(['/new-bag']);
   }
+  
+  navigateToAddClub() {
+    this.router.navigate(['/add-club']);
+  }
 }

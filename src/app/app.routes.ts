@@ -3,6 +3,7 @@ import { Routes } from '@angular/router';
 import { CreateGolfBagComponent } from './bagAndClubs/create-golf-bag/create-golf-bag.component';
 import { GolfBagComponent } from './bagAndClubs//golf-bag/golf-bag.component';
 import { GolfClubComponent } from './bagAndClubs//golf-club/golf-club.component';
+import { AddGolfClubComponent } from './bagAndClubs/add-golf-club/add-golf-club.component';
 
 // COURSE 
 import { GolfCourseComponent } from './course/golf-course/golf-course.component';
@@ -49,6 +50,7 @@ export const routes: Routes = [
 
 
     { path: 'add-clubs', component: GolfClubComponent },
+    { path: 'add-club', component: AddGolfClubComponent },
     // { path: 'golf-shot/:holeId/:userId/:golfBagId', component: GolfShotComponent },
     { path: 'login', component: LoginComponent },
     { path: 'new-bag', component: CreateGolfBagComponent },

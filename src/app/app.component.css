@@ -1,155 +1,116 @@
-:root {
-  /* Global color and spacing variables */
-  --bg-color-light: #F9F9EE;
-  --bg-color-dark: #1A1A1A;
-  --text-color-light: #2B2B2B;
-  --text-color-dark: #DDDDDD;
-  --primary-color: #2A4A16;
-  --secondary-color: #3B6E23;
-  --accent-color: #C2A935;
-  --spacing-1: 8px;
-  --spacing-2: 16px;
-  /* etc... */
-}
-
 /* Global button styles */
 .btn {
   display: inline-block;
   padding: 0.6rem 1rem;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: background-color 0.2s, transform 0.2s;
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
   font-weight: 500;
   color: #fff;
+  font-family: var(--font-family-base);
 }
 
 .btn-primary {
   background-color: var(--primary-color);
 }
+
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
 .btn-secondary {
   background-color: var(--secondary-color);
+  color: #fff;
 }
+
+.btn-secondary:hover {
+  background-color: var(--secondary-hover);
+  transform: translateY(-1px);
+}
+
 .btn-accent {
   background-color: var(--accent-color);
   color: #000;
 }
 
-/* Global card styles */
-.card {
-  background-color: var(--card-bg-light, #fff);
-  color: var(--text-color-light);
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  padding: var(--spacing-2);
+.btn-accent:hover {
+  background-color: var(--accent-hover);
+  transform: translateY(-1px);
 }
 
-/* Global utility classes, dark-mode overrides, etc. */
-body.dark-mode {
-  background-color: var(--bg-color-dark);
+/* Global card styles */
+.card {
+  background-color: var(--card-bg-light);
+  color: var(--text-color-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: var(--spacing-2);
+  transition: box-shadow var(--transition-base);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+body.dark-mode .card {
+  background: var(--card-bg-dark);
   color: var(--text-color-dark);
 }
 
-/* -------------------------------
-   Global Base Styles
----------------------------------*/
-body {
-  margin: 0;
-  padding: 0;
-  font-family: var(--font-family-base);
-  background-color: var(--bg-color-light);
+.profile-container {
+  background-color: var(--card-bg-light);
   color: var(--text-color-light);
-  transition: background-color 0.3s, color 0.3s;
+  padding: var(--spacing-3);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  transition: background-color var(--transition-base), color var(--transition-base);
 }
 
+body.dark-mode .profile-container {
+  background-color: var(--card-bg-dark);
+  color: var(--text-color-dark);
+}
 
+.profile-container p {
+  font-size: 1rem;
+  margin-bottom: var(--spacing-2);
+}
 
-  .profile-container {
-    background-color: var(--card-bg-light);
-    color: var(--text-color-light);
-    padding: var(--spacing-3);
-    border-radius: 12px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    transition: background-color 0.3s, color 0.3s;
-  }
-  
-  /* In dark mode, update profile container colors */
-  body.dark-mode .profile-container {
-    background-color: var(--card-bg-dark);
-    color: var(--text-color-dark);
-  }
-  
-  /* You may also adjust the color of paragraphs inside the profile */
-  .profile-container p {
-    font-size: 1rem;
-    margin-bottom: var(--spacing-2);
-  }
-  
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+  margin-top: var(--spacing-2);
+  margin-bottom: var(--spacing-1);
+  line-height: var(--heading-line-height);
+  font-weight: 600;
+  color: var(--primary-color);
+}
 
-  /* Headings */
-  h1, h2, h3, h4, h5, h6 {
-    margin-top: var(--spacing-2);
-    margin-bottom: var(--spacing-1);
-    line-height: var(--heading-line-height);
-    font-weight: 600;
-  }
-  
-  
-  .card:hover {
-    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-  }
-  
-  body.dark-mode .card {
-    background: var(--card-bg-dark);
-    color: var(--text-color-dark);
-  }
-  
-  /* Common Button Style */
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode h5,
+body.dark-mode h6 {
+  color: var(--accent-color);
+}
 
-  
-  .btn:hover {
-    transform: translateY(-1px);
-  }
-  
+/* Golf-inspired Horizontal Divider */
+.divider {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+  margin: var(--spacing-2) 0;
+  opacity: 0.8;
+  border-radius: var(--radius-sm);
+}
 
-  
-  .btn-primary:hover {
-    background-color: #215012;
-  }
-  
+/* Utility Classes */
+.text-center {
+  text-align: center;
+}
 
-  .btn-accent:hover {
-    background-color: #FFC400;
-  }
-  
-  /* Secondary Buttons */
-  .btn-secondary {
-    background-color: var(--secondary-color);
-    color: #fff;
-  }
-  .btn-secondary:hover {
-    background-color: #2A4A16;
-  }
-  
-  /* Golf-inspired Horizontal Divider */
-  .divider {
-    height: 1px;
-    background-color: var(--accent-color);
-    margin: var(--spacing-2) 0;
-    opacity: 0.7;
-  }
-  
-  /* Subtle "grass" background in certain sections (optional)
-  .section-grass {
-    background: url('assets/grass-texture.png') repeat; 
-    padding: var(--spacing-3);
-    border-radius: 12px;
-  } */
-  
-  /* Utility Classes */
-  .text-center {
-    text-align: center;
-  }
-  .mt-2 { margin-top: var(--spacing-2); }
-  .mb-2 { margin-bottom: var(--spacing-2); }
-  
+.mt-2 { margin-top: var(--spacing-2); }
+.mb-2 { margin-bottom: var(--spacing-2); }
+.mt-3 { margin-top: var(--spacing-3); }
+.mb-3 { margin-bottom: var(--spacing-3); }

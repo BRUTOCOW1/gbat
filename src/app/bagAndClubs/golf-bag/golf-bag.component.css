@@ -10,7 +10,7 @@ h2 {
   font-size: 28px;
   font-weight: bold;
   margin-bottom: 20px;
-  color: #00bfff; /* Bright blue for clarity */
+  color: var(--primary-color);
 }
 
 /* Empty State */
@@ -21,16 +21,16 @@ h2 {
 }
 
 .no-bags .btn-primary {
-  background: #00bfff;
-  color: black;
+  background: var(--primary-color);
+  color: white;
   font-size: 16px;
   padding: 12px 18px;
-  border-radius: 6px;
-  transition: 0.3s;
+  border-radius: var(--radius-md);
+  transition: var(--transition-base);
 }
 
 .no-bags .btn-primary:hover {
-  background: #009acd;
+  background: var(--primary-hover);
 }
 
 /* Golf Bags Grid */
@@ -45,60 +45,77 @@ h2 {
 .golf-bag-card {
   width: 320px;
   padding: 18px;
-  background: linear-gradient(145deg, #1e1e1e, #2a2a2a);
-  border-radius: 12px;
-  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
-  transition: all 0.3s ease-in-out;
+  background: var(--card-bg-dark);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  border: 2px solid transparent;
+  transition: all var(--transition-base);
   text-align: center;
   cursor: pointer;
   position: relative;
 }
 
+body.dark-mode .golf-bag-card {
+  background: var(--card-bg-dark);
+}
+
+body:not(.dark-mode) .golf-bag-card {
+  background: var(--card-bg-light);
+}
+
 .golf-bag-card:hover {
-  transform: scale(1.03);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-golf);
+  border-color: var(--accent-color);
 }
 
 /* Bag Title */
 .bag-title {
   font-size: 20px;
   font-weight: bold;
-  color: #00bfff;
+  color: var(--primary-color);
   margin-bottom: 10px;
 }
 
 /* Add Clubs Button */
 .btn-secondary {
-  background: #007bff;
+  background: var(--secondary-color);
   color: white;
   padding: 8px 12px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   border: none;
   cursor: pointer;
   font-size: 14px;
-  transition: 0.3s;
+  transition: var(--transition-base);
   margin-bottom: 10px;
 }
 
 .btn-secondary:hover {
-  background: #0056b3;
+  background: var(--secondary-hover);
 }
 
 /* Clubs List */
 .club-sections {
-  background: #2a2a2a;
+  background: rgba(42, 74, 22, 0.1);
   padding: 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
   font-size: 14px;
-  color: #ddd;
+  color: var(--text-color-dark);
   margin-top: 10px;
+  border: 1px solid var(--border-color-dark);
+}
+
+body:not(.dark-mode) .club-sections {
+  background: rgba(42, 74, 22, 0.05);
+  color: var(--text-color-light);
+  border-color: var(--border-color-light);
 }
 
 .club-sections h4 {
   font-size: 16px;
   font-weight: bold;
-  color: #00bfff;
-  border-bottom: 2px solid #007bff;
+  color: var(--accent-color);
+  border-bottom: 2px solid var(--accent-color);
   padding-bottom: 5px;
   text-align: left;
 }
@@ -114,38 +131,26 @@ h2 {
   padding: 8px;
   font-size: 15px;
   font-weight: bold;
-  background: #333;
+  background: rgba(59, 110, 35, 0.2);
   margin-bottom: 5px;
-  border-radius: 5px;
+  border-radius: var(--radius-md);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  border-left: 3px solid var(--secondary-color);
 }
 
 /* Light Mode Support */
 @media (prefers-color-scheme: light) {
-  body {
-    background-color: #f5f5f5;
-    color: #333;
-  }
-
   .golf-bag-card {
-    background: white;
-    color: #333;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background: var(--card-bg-light);
+    color: var(--text-color-light);
+    box-shadow: var(--shadow-md);
   }
 
   .club-sections {
-    background: #f0f0f0;
-    color: #333;
-  }
-
-  .btn-secondary {
-    background: #0056b3;
-  }
-
-  .btn-secondary:hover {
-    background: #004099;
+    background: var(--bg-color-light);
+    color: var(--text-color-light);
   }
 }
 
@@ -161,11 +166,14 @@ h2 {
 .bags-title {
   margin-bottom: 1rem;
   font-size: 2rem;
-  color: var(--accent-color, #FFD700);
+  color: var(--primary-color);
 }
 
 /* Actions row (e.g., "Create New Bag" button) */
 .bags-actions {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
   margin-bottom: 2rem;
 }
 
@@ -179,31 +187,43 @@ h2 {
 
 /* Individual Bag Card */
 .bag-card {
-  background-color: var(--card-bg-light, #2c2c2c);
-  color: var(--text-color-light, #fff);
-  border-radius: 12px;
+  background-color: var(--card-bg-light);
+  color: var(--text-color-light);
+  border-radius: var(--radius-xl);
   padding: 1.25rem;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  box-shadow: var(--shadow-md);
+  border: 2px solid transparent;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
   position: relative;
+}
+
+body.dark-mode .bag-card {
+  background-color: var(--card-bg-dark);
+  color: var(--text-color-dark);
 }
 
 .bag-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+  box-shadow: var(--shadow-golf);
+  border-color: var(--accent-color);
 }
 
 /* Highlight the selected bag card */
 .bag-card.selected {
-  border: 2px solid var(--accent-color, #FFD700);
+  border: 2px solid var(--accent-color);
+  box-shadow: var(--shadow-golf);
 }
 
 /* Bag name styling */
 .bag-name {
   margin-top: 0;
   font-size: 1.25rem;
-  color: var(--secondary-color, #3B6E23);
+  color: var(--primary-color);
+}
+
+body.dark-mode .bag-name {
+  color: var(--accent-color);
 }
 
 /* "Add Clubs" button displayed in selected bag */
@@ -221,7 +241,7 @@ h2 {
 .club-list h4 {
   margin: 0 0 0.5rem;
   font-size: 1.1rem;
-  color: var(--accent-color, #FFD700);
+  color: var(--accent-color);
 }
 
 .club-list ul {

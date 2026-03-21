@@ -34,9 +34,15 @@ export class GolfClubComponent implements OnInit {
 
   // Optional category filter
   categoryFilter: string = '';
+  
+  // Search filter
+  searchTerm: string = '';
 
   // Current bag ID (passed from route or state)
   currentBagId: string | null = null;
+  
+  // View mode: 'nested' or 'list'
+  viewMode: 'nested' | 'list' = 'list';
 
   constructor(
     private supabaseService: SupabaseService,
@@ -70,14 +76,32 @@ export class GolfClubComponent implements OnInit {
   }
 
   applyFilter() {
+    let filtered = [...this.allClubs];
+    
+    // Apply category filter
     if (this.categoryFilter) {
-      this.filteredClubs = this.allClubs.filter(
+      filtered = filtered.filter(
         c => c.category?.toUpperCase() === this.categoryFilter.toUpperCase()
       );
-    } else {
-      this.filteredClubs = [...this.allClubs];
     }
+    
+    // Apply search filter
+    if (this.searchTerm) {
+      const searchLower = this.searchTerm.toLowerCase();
+      filtered = filtered.filter(c => 
+        c.maker?.toLowerCase().includes(searchLower) ||
+        c.set?.toLowerCase().includes(searchLower) ||
+        c.number?.toLowerCase().includes(searchLower) ||
+        c.category?.toLowerCase().includes(searchLower)
+      );
+    }
+    
+    this.filteredClubs = filtered;
     this.groupClubs();
+  }
+  
+  onSearchChange() {
+    this.applyFilter();
   }
 
   // Group clubs by maker -> set -> category
@@ -220,6 +244,14 @@ export class GolfClubComponent implements OnInit {
       const errorMsg = this.notificationService.getErrorMessage(error);
       this.notificationService.showError(`Error loading club catalog: ${errorMsg}`);
     });
+  }
+  
+  toggleViewMode() {
+    this.viewMode = this.viewMode === 'nested' ? 'list' : 'nested';
+  }
+  
+  navigateToAddClub() {
+    this.router.navigate(['/add-club']);
   }
 }
 

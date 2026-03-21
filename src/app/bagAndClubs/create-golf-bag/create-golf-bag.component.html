@@ -17,20 +17,40 @@
   <!-- Step 2 – Club selection -->
   <section *ngIf="step === 2" class="club-picker">
     <h3>Select clubs for "{{ golfBagForm.get('name')?.value }}"</h3>
-    <div *ngIf="allClubs.length === 0">Loading clubs…</div>
-    <div *ngIf="allClubs.length > 0" class="club-list">
-      <div *ngFor="let club of allClubs; let $index = index" class="club-item">
-        <input type="checkbox" [id]="'club-' + (club.id ?? $index)"
-          (change)="toggleClubSelection(club.id ?? $index, false)" />
-        <label [for]="'club-' + club.id">
-          {{ club.maker }} {{ club.set }} {{ club.number }} ({{ club.category }})
-        </label>
+    <div *ngIf="allClubs.length === 0" class="loading-message">Loading clubs…</div>
+    <div *ngIf="allClubs.length > 0" class="club-selection-container">
+      <div class="club-grid">
+        <div *ngFor="let club of allClubs" class="club-selection-card">
+          <input 
+            type="checkbox" 
+            [id]="'club-' + club.id"
+            [checked]="selectedClubIds.has(club.id)"
+            (change)="toggleClubSelection(club.id, $any($event.target).checked)" 
+            class="club-checkbox"
+          />
+          <label [for]="'club-' + club.id" class="club-label">
+            <div class="club-name">
+              <strong>{{ club.maker }} {{ club.set }}</strong>
+              <span class="club-number">{{ club.number }}</span>
+            </div>
+            <div class="club-category">{{ club.category }}</div>
+            <div class="club-specs">
+              <span *ngIf="club.loft">Loft: {{ club.loft }}°</span>
+              <span *ngIf="club.length">Length: {{ club.length }}"</span>
+            </div>
+          </label>
+        </div>
+      </div>
+      <div class="selection-summary" *ngIf="selectedClubIds.size > 0">
+        <strong>{{ selectedClubIds.size }}</strong> club(s) selected
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" (click)="goBack()">Back</button>
+        <button type="button" class="btn btn-success" (click)="saveClubs()" [disabled]="selectedClubIds.size === 0">
+          Save Clubs &amp; Finish
+        </button>
       </div>
     </div>
-    <button class="btn btn-secondary" (click)="goBack()">Back</button>
-    <button class="btn btn-success" (click)="saveClubs()" [disabled]="selectedClubIds.size === 0">
-      Save Clubs &amp; Finish
-    </button>
   </section>
 
   <!-- Global error message -->

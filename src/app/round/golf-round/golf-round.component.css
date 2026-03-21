@@ -18,9 +18,13 @@
 }
 
 .header-content h1 {
-  color: #00bfff;
+  color: var(--primary-color);
   font-size: 2.5rem;
   margin: 0 0 5px 0;
+}
+
+body.dark-mode .header-content h1 {
+  color: var(--accent-color);
 }
 
 .round-date {
@@ -53,12 +57,17 @@
 
 .stat-card:hover {
   transform: translateY(-2px);
-  border-color: #00bfff;
+  border-color: var(--accent-color);
+  box-shadow: var(--shadow-golf);
 }
 
 .stat-card.primary {
-  border-color: #00bfff;
-  background: linear-gradient(135deg, #1a3a4a 0%, #2a2a2a 100%);
+  border-color: var(--accent-color);
+  background: linear-gradient(135deg, rgba(42, 74, 22, 0.3) 0%, var(--card-bg-dark) 100%);
+}
+
+body:not(.dark-mode) .stat-card.primary {
+  background: linear-gradient(135deg, rgba(42, 74, 22, 0.1) 0%, var(--card-bg-light) 100%);
 }
 
 .stat-label {
@@ -70,10 +79,14 @@
 }
 
 .stat-value {
-  color: #00bfff;
+  color: var(--primary-color);
   font-size: 2.5rem;
   font-weight: bold;
   margin-bottom: 5px;
+}
+
+body.dark-mode .stat-value {
+  color: var(--accent-color);
 }
 
 .stat-subtitle {
@@ -91,9 +104,13 @@
 }
 
 .weather-widget h3 {
-  color: #00bfff;
+  color: var(--primary-color);
   margin: 0 0 15px 0;
   font-size: 1.2rem;
+}
+
+body.dark-mode .weather-widget h3 {
+  color: var(--accent-color);
 }
 
 .weather-grid {
@@ -125,9 +142,13 @@
 }
 
 .holes-section h2 {
-  color: #00bfff;
+  color: var(--primary-color);
   margin-bottom: 20px;
   font-size: 1.8rem;
+}
+
+body.dark-mode .holes-section h2 {
+  color: var(--accent-color);
 }
 
 .holes-grid {
@@ -147,13 +168,18 @@
 
 .hole-card:hover {
   transform: translateY(-3px);
-  border-color: #00bfff;
-  box-shadow: 0 4px 12px rgba(0, 191, 255, 0.3);
+  border-color: var(--accent-color);
+  box-shadow: var(--shadow-golf);
 }
 
 .hole-card.selected {
-  border-color: #00bfff;
-  background: #1a3a4a;
+  border-color: var(--accent-color);
+  background: rgba(42, 74, 22, 0.2);
+  box-shadow: var(--shadow-golf);
+}
+
+body:not(.dark-mode) .hole-card.selected {
+  background: rgba(42, 74, 22, 0.1);
 }
 
 .hole-card.played {
@@ -168,9 +194,13 @@
 }
 
 .hole-number {
-  color: #00bfff;
+  color: var(--primary-color);
   font-weight: bold;
   font-size: 1.1rem;
+}
+
+body.dark-mode .hole-number {
+  color: var(--accent-color);
 }
 
 .hole-par {
@@ -250,11 +280,16 @@
 
 /* Selected Hole Details */
 .selected-hole-details {
-  background: #2a2a2a;
-  border-radius: 12px;
+  background: var(--card-bg-dark);
+  border-radius: var(--radius-xl);
   padding: 25px;
   margin-top: 30px;
-  border: 2px solid #00bfff;
+  border: 2px solid var(--accent-color);
+  box-shadow: var(--shadow-golf);
+}
+
+body:not(.dark-mode) .selected-hole-details {
+  background: var(--card-bg-light);
 }
 
 .details-header {
@@ -267,9 +302,13 @@
 }
 
 .details-header h3 {
-  color: #00bfff;
+  color: var(--primary-color);
   margin: 0;
   font-size: 1.5rem;
+}
+
+body.dark-mode .details-header h3 {
+  color: var(--accent-color);
 }
 
 .btn-close {
@@ -334,9 +373,13 @@
 
 /* Shots Timeline */
 .shots-timeline h4 {
-  color: #00bfff;
+  color: var(--primary-color);
   margin: 0 0 15px 0;
   font-size: 1.2rem;
+}
+
+body.dark-mode .shots-timeline h4 {
+  color: var(--accent-color);
 }
 
 .shots-list {
@@ -346,16 +389,20 @@
 }
 
 .shot-item {
-  background: #333;
+  background: var(--card-bg-dark);
   padding: 15px;
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
   display: flex;
   gap: 15px;
-  border-left: 4px solid #00bfff;
+  border-left: 4px solid var(--accent-color);
+}
+
+body:not(.dark-mode) .shot-item {
+  background: var(--card-bg-light);
 }
 
 .shot-number {
-  background: #00bfff;
+  background: var(--primary-color);
   color: white;
   width: 35px;
   height: 35px;
@@ -382,11 +429,11 @@
 }
 
 .shot-club {
-  background: #444;
+  background: var(--secondary-color);
   padding: 4px 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   font-weight: bold;
-  color: #00bfff;
+  color: white;
 }
 
 .shot-type {
@@ -444,13 +491,13 @@
 }
 
 .btn-primary {
-  background-color: #00bfff;
+  background-color: var(--primary-color);
   color: white;
 }
 
 .btn-primary:hover {
-  background-color: #0086cc;
-  transform: scale(1.05);
+  background-color: var(--primary-hover);
+  transform: translateY(-1px);
 }
 
 .btn-secondary {

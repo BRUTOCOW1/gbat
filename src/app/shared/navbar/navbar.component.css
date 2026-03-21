@@ -1,47 +1,49 @@
 /* General Button Styling */
 .navbar button, 
 .navbar a {
-  display: inline-flex; /* Ensure consistent alignment */
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 8px 12px; /* Equal padding for all buttons */
-  font-size: 14px; /* Match font size */
-  height: 40px; /* Consistent height */
-  line-height: 1; /* Prevent text alignment issues */
-  border-radius: 5px; /* Rounded corners */
-  border: none; /* Remove borders */
-  text-decoration: none; /* For links styled as buttons */
+  padding: 8px 12px;
+  font-size: 14px;
+  height: 40px;
+  line-height: 1;
+  border-radius: var(--radius-md);
+  border: none;
+  text-decoration: none;
   cursor: pointer;
-  transition: background-color 0.3s, color 0.3s;
+  transition: background-color var(--transition-base), color var(--transition-base);
+  font-family: var(--font-family-base);
 }
 
-
-.navbar button:hover {
-  background-color: #0056b3;
+.navbar button:hover,
+.navbar a:hover {
+  background-color: var(--primary-color);
+  color: white;
 }
 
 /* Logout Button */
 .logout-button {
-  background-color: #007bff; /* Same style as other buttons */
+  background-color: var(--primary-color);
   color: white;
 }
 
 .logout-button:hover {
-  background-color: #0056b3;
+  background-color: var(--primary-hover);
 }
 
 /* Dark Mode Button */
 .toggle-dark-mode {
-  background-color: #444;
+  background-color: var(--secondary-color);
   color: white;
 }
 
 body.dark-mode .toggle-dark-mode {
-  background-color: #555;
+  background-color: var(--secondary-color);
 }
 
 .toggle-dark-mode:hover {
-  background-color: #666;
+  background-color: var(--secondary-hover);
 }
 
 /* Responsive Styles for Navbar */
@@ -76,6 +78,7 @@ body.dark-mode .toggle-dark-mode {
   justify-content: space-between;
   padding: 0 var(--spacing-2);
   z-index: 1000;
+  border-bottom: 2px solid var(--accent-color);
 }
 
 .top-nav ul {
@@ -91,8 +94,8 @@ body.dark-mode .toggle-dark-mode {
   text-decoration: none;
   font-size: 1rem;
   padding: 8px 12px;
-  border-radius: 4px;
-  transition: background-color 0.3s;
+  border-radius: var(--radius-sm);
+  transition: background-color var(--transition-base);
 }
 
 .top-nav a:hover {

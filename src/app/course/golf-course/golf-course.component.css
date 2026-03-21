@@ -16,42 +16,48 @@
   flex: 1;
   padding: 12px 16px;
   font-size: 16px;
-  border-radius: 8px;
-  border: 1px solid #444;
-  background-color: #222;
-  color: white;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color-dark);
+  background-color: var(--card-bg-dark);
+  color: var(--text-color-dark);
+  transition: border-color var(--transition-base);
+}
+
+body:not(.dark-mode) .search-bar {
+  border-color: var(--border-color-light);
+  background-color: var(--card-bg-light);
+  color: var(--text-color-light);
 }
 
 .search-bar:focus {
   outline: none;
-  border-color: #888;
-  background-color: #2b2b2b;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(42, 74, 22, 0.1);
 }
 
 .search-button {
   padding: 12px 16px;
-  background-color: #444;
+  background-color: var(--secondary-color);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
   cursor: pointer;
-  transition: background-color 0.2s ease;
-
+  transition: background-color var(--transition-fast);
   display: flex;
   align-items: center;
   justify-content: center;
+}
 
-  .material-icons {
-    font-size: 20px;
-  }
+.search-button .material-icons {
+  font-size: 20px;
+}
 
-  &:hover {
-    background-color: #666;
-  }
+.search-button:hover {
+  background-color: var(--secondary-hover);
+}
 
-  &:active {
-    background-color: #888;
-  }
+.search-button:active {
+  background-color: var(--primary-color);
 }
 
 .no-results {
@@ -71,8 +77,12 @@
 .course-list h3 {
   width: 100%;
   margin-bottom: 0.5rem;
-  color: #00ffcc;
+  color: var(--primary-color);
   text-align: center;
+}
+
+body.dark-mode .course-list h3 {
+  color: var(--accent-color);
 }
 
 .courses-subtitle {
@@ -84,22 +94,30 @@
 }
 
 .course-card {
-  background: linear-gradient(145deg, #1e1e1e, #2a2a2a);
+  background: var(--card-bg-dark);
   padding: 15px;
   width: 280px;
-  border-radius: 12px;
+  border-radius: var(--radius-xl);
   text-align: center;
   cursor: pointer;
-  transition: transform 0.2s ease-in-out;
+  transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
   border: 2px solid transparent;
+  box-shadow: var(--shadow-md);
+}
 
-  &:hover {
-    transform: scale(1.05);
-  }
+body:not(.dark-mode) .course-card {
+  background: var(--card-bg-light);
+}
 
-  &.selected {
-    border-color: #00ffcc;
-  }
+.course-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-golf);
+  border-color: var(--accent-color);
+}
+
+.course-card.selected {
+  border-color: var(--accent-color);
+  box-shadow: var(--shadow-golf);
 }
 
 .course-details {
@@ -123,21 +141,24 @@
 .hole-bubble {
   width: 40px;
   height: 40px;
-  background-color: #444;
+  background-color: var(--secondary-color);
   border-radius: 50%;
   text-align: center;
   line-height: 40px;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: background var(--transition-fast), transform var(--transition-fast);
+  color: white;
+}
 
-  &.active {
-    background-color: #00ffcc;
-    color: #000;
-  }
+.hole-bubble.active {
+  background-color: var(--accent-color);
+  color: #000;
+  transform: scale(1.1);
+}
 
-  &:hover {
-    background-color: #666;
-  }
+.hole-bubble:hover {
+  background-color: var(--secondary-hover);
+  transform: scale(1.05);
 }
 
 .hole-info {
@@ -150,16 +171,22 @@
 .nav-link {
   text-align: right;
   margin-bottom: 1rem;
+}
 
-  a {
-    color: #42a5f5;
-    text-decoration: none;
-    font-weight: bold;
+.nav-link a {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: bold;
+  transition: color var(--transition-base);
+}
 
-    &:hover {
-      text-decoration: underline;
-    }
-  }
+body.dark-mode .nav-link a {
+  color: var(--accent-color);
+}
+
+.nav-link a:hover {
+  color: var(--secondary-color);
+  text-decoration: underline;
 }
 
 /* Search Mode Toggle */
@@ -180,9 +207,9 @@
 }
 
 .search-mode-toggle button.active {
-  background: #00ffcc;
+  background: var(--accent-color);
   color: #000;
-  border-color: #00ffcc;
+  border-color: var(--accent-color);
   font-weight: bold;
 }
 
@@ -202,15 +229,17 @@
 
 .import-btn {
   margin-top: 10px;
-  background-color: #42a5f5;
+  background-color: var(--primary-color);
   color: white;
   border: none;
   padding: 8px 12px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   font-weight: bold;
+  transition: background-color var(--transition-base), transform var(--transition-fast);
 }
 
 .import-btn:hover {
-  background-color: #2196f3;
+  background-color: var(--primary-hover);
+  transform: translateY(-1px);
 }

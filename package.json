@@ -32,6 +32,7 @@
     "@angular/core": "^17.3.12",
     "@angular/localize": "^17.3.12",
     "@types/jasmine": "~5.1.0",
+    "baseline-browser-mapping": "^2.9.18",
     "jasmine-core": "~5.1.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",

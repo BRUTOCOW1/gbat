@@ -1,12 +1,18 @@
 /* General Container Styling */
 .register-container {
     max-width: 400px;
-    margin: 50px auto; /* Added top margin to avoid overlapping the navbar */
+    margin: 50px auto;
     padding: 30px;
-    border-radius: 15px;
-    background: linear-gradient(145deg, #ffffff, #f3f3f3);
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-    font-family: 'Poppins', sans-serif;
+    border-radius: var(--radius-xl);
+    background: var(--card-bg-light);
+    box-shadow: var(--shadow-lg);
+    border: 2px solid var(--accent-color);
+    font-family: var(--font-family-base);
+    transition: background-color var(--transition-base), color var(--transition-base);
+  }
+
+  body.dark-mode .register-container {
+    background: var(--card-bg-dark);
   }
   
   /* Heading Styling */
@@ -41,12 +47,12 @@
     transition: all 0.3s ease-in-out;
   }
   
-  .register-form input:focus {
-    outline: none;
-    border-color: #007bff;
-    background-color: #fff;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
-  }
+.register-form input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  background-color: var(--card-bg-light);
+  box-shadow: 0 0 5px rgba(42, 74, 22, 0.3);
+}
   
   /* Error Message Styling */
   .error-message {
@@ -56,28 +62,29 @@
   }
   
   /* Submit Button Styling */
-  .register-form .btn-submit {
-    padding: 12px;
-    font-size: 16px;
-    font-weight: bold;
-    text-align: center;
-    color: white;
-    background: linear-gradient(135deg, #007bff, #0056b3);
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.3s ease-in-out;
-  }
-  
-  .register-form .btn-submit:hover {
-    background: linear-gradient(135deg, #0056b3, #003f7f);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  }
-  
-  .register-form .btn-submit:active {
-    background: linear-gradient(135deg, #003f7f, #0056b3);
-    transform: scale(0.98);
-  }
+.register-form .btn-submit {
+  padding: 12px;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  color: white;
+  background: var(--primary-color);
+  border: none;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.register-form .btn-submit:hover {
+  background: var(--primary-hover);
+  box-shadow: var(--shadow-golf);
+  transform: translateY(-1px);
+}
+
+.register-form .btn-submit:active {
+  background: var(--primary-hover);
+  transform: translateY(0);
+}
   
   /* Responsive Styling */
   @media (max-width: 500px) {

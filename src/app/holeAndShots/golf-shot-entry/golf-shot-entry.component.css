@@ -48,9 +48,14 @@
 
 /* Section Titles */
 h2, h3 {
-  color: #00bfff;
+  color: var(--primary-color);
   font-size: 22px;
   margin-bottom: 10px;
+}
+
+body.dark-mode h2,
+body.dark-mode h3 {
+  color: var(--accent-color);
 }
 
 /* Shot List */
@@ -81,10 +86,11 @@ h2, h3 {
   font-weight: bold;
 }
 
-.club { color: #00bfff; }
-.distance { color: #28a745; }
-.lie { color: #ffc107; }
-.result { color: #dc3545; }
+.club { color: var(--primary-color); }
+body.dark-mode .club { color: var(--accent-color); }
+.distance { color: var(--success-color); }
+.lie { color: var(--warning-color); }
+.result { color: var(--error-color); }
 
 /* Delete Button */
 .btn-delete {
@@ -133,8 +139,8 @@ select {
 input:focus,
 select:focus {
   outline: none;
-  border-color: #00bfff;
-  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 5px rgba(42, 74, 22, 0.3);
 }
 
 /* Submit Button */
@@ -145,19 +151,19 @@ select:focus {
 }
 
 .btn-primary {
-  background-color: #00bfff;
+  background-color: var(--primary-color);
   color: white;
   border: none;
   padding: 12px 18px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-size: 16px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--transition-base);
 }
 
 .btn-primary:hover {
-  background-color: #0086cc;
-  transform: scale(1.05);
+  background-color: var(--primary-hover);
+  transform: translateY(-1px);
 }
 
 .form-row {
@@ -187,7 +193,11 @@ select:focus {
   font-weight: bold;
 }
 .shot-number {
-  color: #00bfff;
+  color: var(--primary-color);
+}
+
+body.dark-mode .shot-number {
+  color: var(--accent-color);
 }
 .distance-tag, .lie-tag, .result-tag {
   background: #444;
@@ -250,8 +260,8 @@ textarea {
 
 textarea:focus {
   outline: none;
-  border-color: #00bfff;
-  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 5px rgba(42, 74, 22, 0.3);
 }
 
 input[type="checkbox"] {
@@ -320,8 +330,8 @@ small {
 .segment-field select:focus,
 .segment-field input:focus {
   outline: none;
-  border-color: #00bfff;
-  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 5px rgba(42, 74, 22, 0.3);
 }
 
 .btn-remove-segment {
