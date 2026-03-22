@@ -1,6 +1,6 @@
 {
   "pipeline": [
-    "REPLACE_WITH_INPUT.laz",
+    "/home/ben-brutocao/Documents/USGS_LPC_TX_Central_B1_2017_stratmap17_50cm_3097424b3_LAS_2019.laz.cropped.cropped.cropped.laz",
     {
       "type": "filters.smrf",
       "cell": 1.0,
@@ -14,7 +14,7 @@
     },
     {
       "type": "writers.gdal",
-      "filename": "REPLACE_WITH_OUTPUT.tif",
+      "filename": "/home/ben-brutocao/Documents/pimp.tif",
       "resolution": 1.0,
       "output_type": "all",
       "dimension": "Z",

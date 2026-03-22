@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, Renderer2 } from '@angular/core';
 import { SupabaseService } from '../../services/supabase.service';
 import { Subscription } from 'rxjs';
-import { Router } from '@angular/router';
+import { skip } from 'rxjs/operators';
 
 @Component({
   selector: 'app-navbar',
@@ -9,33 +9,27 @@ import { Router } from '@angular/router';
   styleUrls: ['./navbar.component.css'],
 })
 export class NavbarComponent implements OnInit, OnDestroy {
-  isLoggedIn: boolean = false; // Track login state
+  isLoggedIn: boolean = false;
   private authSubscription: Subscription | undefined;
   isDarkMode: boolean = false;
-  constructor(private supabaseService: SupabaseService, private renderer: Renderer2, private router: Router ) {}
+  constructor(private supabaseService: SupabaseService, private renderer: Renderer2) {}
 
-  
-  
   ngOnInit(): void {
     const storedMode = localStorage.getItem('darkMode');
     this.isDarkMode = storedMode === 'true';
     if (this.isDarkMode) {
       this.renderer.addClass(document.body, 'dark-mode');
     }
-    this.isLoggedIn2();
-    this.isLoggedIn = this.isLoggedIn; // Update login state
-
+    void this.syncLoginState();
+    this.authSubscription = this.supabaseService.authState$
+      .pipe(skip(1))
+      .subscribe(() => void this.syncLoginState());
   }
-  async isLoggedIn2() : Promise<boolean>{
-    const user = await this.supabaseService.getUser();
 
-    if (!user) {
-      console.warn('No user is authenticated.');
-      this.router.navigate(['/login']);
-      return false;
-    }
-    this.isLoggedIn = true;
-    return true;
+  /** Reflect session in the navbar without redirecting — public routes must stay reachable (e.g. /register). */
+  private async syncLoginState(): Promise<void> {
+    const user = await this.supabaseService.getUser();
+    this.isLoggedIn = !!user;
   }
 
   toggleDarkMode(): void {
@@ -62,7 +56,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   async logout() {
     await this.supabaseService.signOut();
-    this.isLoggedIn = false; // Update login state
+    this.isLoggedIn = false;
   }
 
 

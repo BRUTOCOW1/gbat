@@ -31,6 +31,8 @@ export interface GolfShot {
 
   // New fields for improved shot entry
   result_location?: string; // Where the ball ended up (Fairway, Green, Thick Rough, etc.)
+  /** Relative to hole / fairway: left, center, or right (e.g. right rough). */
+  landing_lateral?: 'Left' | 'Center' | 'Right' | '';
   result_direction?: string; // Direction miss (Missed Left, Missed Right, Short, Long, etc.)
   result_quality?: string; // Quality of result (Still on Green, etc.)
   putt_speed_quality?: number; // Speed quality gauge for putts (0-100)

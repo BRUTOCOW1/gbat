@@ -22,10 +22,13 @@ export class SupabaseService {
   authState$ = this.authStateSubject.asObservable();
 
   constructor() {
-    this.supabase = createClient(
-      this.apiUrl,
-      this.apiKey
-    );
+    // Avoid Navigator LockManager + Zone.js "immediate lock failed" (see supabase-js #936).
+    // Single-tab SPA: run auth ops without cross-tab locks; acceptable for this app.
+    this.supabase = createClient(this.apiUrl, this.apiKey, {
+      auth: {
+        lock: async <R>(_name: string, _acquireTimeout: number, fn: () => Promise<R>) => await fn(),
+      },
+    });
     this.initializeAuthListener();
   }
 
@@ -427,6 +430,34 @@ export class SupabaseService {
     }
   }
 
+  /** Latest stimp on this round (by hole order, then stroke), in two queries — avoids N+1 per hole. */
+  async getLastPuttGreenSpeedForRound(roundId: string): Promise<number | undefined> {
+    try {
+      const { data: playedHoles, error } = await this.getPlayedHolesForRound(roundId);
+      if (error || !playedHoles?.length) return undefined;
+      const holeOrder = playedHoles.map((h: { id: string }) => h.id);
+      const { data: shots, error: shotsErr } = await this.supabase
+        .from('golf_shot')
+        .select('hole_id, stroke_number, shot_type, green_speed')
+        .in('hole_id', holeOrder);
+      if (shotsErr || !shots?.length) return undefined;
+      const putts = (shots as any[]).filter(
+        (s) => s.shot_type === 'Putt' && s.green_speed != null && s.green_speed !== ''
+      );
+      if (!putts.length) return undefined;
+      putts.sort((a, b) => {
+        const ai = holeOrder.indexOf(a.hole_id);
+        const bi = holeOrder.indexOf(b.hole_id);
+        if (ai !== bi) return ai - bi;
+        return (a.stroke_number || 0) - (b.stroke_number || 0);
+      });
+      return putts[putts.length - 1].green_speed as number;
+    } catch (error: any) {
+      this.handleError('getLastPuttGreenSpeedForRound', error);
+      return undefined;
+    }
+  }
+
   async createPlayedHole(entry: { round_id: string; hole_id: string; strokes: number }) {
     try {
       return await this.supabase
@@ -487,6 +518,26 @@ export class SupabaseService {
       return data as GolfShot[] | null;
     } catch (error: any) {
       this.handleError('getShotsForPlayedHole', error);
+      return null;
+    }
+  }
+
+  /** Rolling average carry distance for this golfer_club (excludes putts). */
+  async getAverageDistanceForGolferClub(golferClubId: string): Promise<number | null> {
+    try {
+      const { data, error } = await this.supabase
+        .from('golf_shot')
+        .select('distance')
+        .eq('club_id', golferClubId)
+        .neq('shot_type', 'Putt')
+        .neq('shot_type', 'Penalty')
+        .gt('distance', 0);
+      if (error) throw error;
+      if (!data?.length) return null;
+      const sum = data.reduce((acc, row: { distance: number | null }) => acc + (Number(row.distance) || 0), 0);
+      return Math.round(sum / data.length);
+    } catch (error: any) {
+      this.handleError('getAverageDistanceForGolferClub', error);
       return null;
     }
   }

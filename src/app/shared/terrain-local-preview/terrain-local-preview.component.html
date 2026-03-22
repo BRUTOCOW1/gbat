@@ -1,0 +1,11 @@
+<div class="wrap">
+  <header class="bar">
+    <h1>Local terrain (GLB)</h1>
+    <p class="hint" *ngIf="!error">{{ status }}</p>
+    <p class="err" *ngIf="error">
+      {{ error }} — copy your GLB to <code>src/assets/terrain/lions_course.glb</code> and restart
+      <code>ng serve</code>.
+    </p>
+  </header>
+  <canvas #canvas class="canvas"></canvas>
+</div>

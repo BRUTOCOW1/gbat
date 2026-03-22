@@ -1,0 +1,24 @@
+<div class="penalty-entry" *ngIf="ready">
+  <h2>Hole {{ holeNumber }} · Penalty stroke</h2>
+  <p class="lede">
+    Log a penalty without filling out a full swing. Your next actual shot stays on the quick add-shot screen.
+  </p>
+
+  <div class="card">
+    <label class="field-label" for="penalty-type">Rule / procedure</label>
+    <select id="penalty-type" class="field" [(ngModel)]="penaltyType" name="penaltyType">
+      <option value="stroke_only">Stroke only (+1)</option>
+      <option value="stroke_and_distance">Stroke &amp; distance (+2)</option>
+      <option value="drop">Drop (+1)</option>
+      <option value="unplayable">Unplayable lie (+1)</option>
+    </select>
+    <p class="hint">{{ penaltyDescription() }}</p>
+
+    <div class="actions">
+      <button type="button" class="btn primary" [disabled]="saving" (click)="savePenalty()">
+        {{ saving ? 'Saving…' : 'Record penalty' }}
+      </button>
+      <button type="button" class="btn ghost" [disabled]="saving" (click)="cancel()">Back to add shot</button>
+    </div>
+  </div>
+</div>

@@ -20,6 +20,7 @@ import { CourseBuilderComponent } from './course/course-builder/course-builder.c
 import { GolfHoleComponent } from './holeAndShots/golf-hole/golf-hole.component';
 import { GolfShotComponent } from './holeAndShots/golf-shot/golf-shot.component';
 import { GolfShotEntryComponent } from './holeAndShots/golf-shot-entry/golf-shot-entry.component';
+import { PenaltyShotEntryComponent } from './holeAndShots/penalty-shot-entry/penalty-shot-entry.component';
 
 // ROUND 
 import { GolfRoundComponent } from './round/golf-round/golf-round.component';
@@ -31,6 +32,7 @@ import { RoundSummaryComponent } from './round/round-summary/round-summary.compo
 import { BlogComponent } from './shared/blog/blog.component';
 import { NavbarComponent } from './shared/navbar/navbar.component';
 import { NotificationComponent } from './shared/components/notification/notification.component';
+import { TerrainLocalPreviewComponent } from './shared/terrain-local-preview/terrain-local-preview.component';
 
 // USER OPS 
 import { LoginComponent } from './userOps/login/login.component';
@@ -50,6 +52,7 @@ import { routes } from './app.routes'
     CourseBuilderComponent,
     GolfShotComponent,
     GolfShotEntryComponent,
+    PenaltyShotEntryComponent,
     GolfHoleComponent,
     GolfClubComponent,
     AddGolfClubComponent,
@@ -64,7 +67,8 @@ import { routes } from './app.routes'
     CreateGolfBagComponent,
     ProfileComponent,
     NewRoundComponent,
-    NotificationComponent
+    NotificationComponent,
+    TerrainLocalPreviewComponent
 
   ],
   imports: [

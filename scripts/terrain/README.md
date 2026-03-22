@@ -57,6 +57,29 @@ From `scripts/terrain` with venv activated:
 python3 dem_to_glb.py /tmp/lions_dem_1m.tif --out lions_course.glb --sidecar lions_course_meta.json
 ```
 
+**Performance:** full 1 m DEMs over a course can be millions of triangles. Use **`--stride N`** (default **2**) to subsample the grid (~1/N² triangles). Try **`--stride 4`** if the preview is still slow.
+
+**Smoothing:** **`--smooth-sigma`** (default **1.35**) applies a Gaussian blur in DEM space before meshing to reduce the “minecraft” block look. Use **`0`** to disable. Increase slightly (e.g. **2.0**) if it still looks stair-stepped.
+
+**Holes / “missing” ground:** LiDAR ground grids often have **nodata** (trees, buildings). Previously we **skipped any quad with a missing corner**, which made holes look huge. Now:
+
+- **`--hole-fill-radius`** (default **22** native DEM pixels) interpolates nodata **only near** real samples (won’t invent terrain in the middle of a giant gap). Set **`0`** to disable.
+- **`--hole-fill-sigma`** controls how smooth that interpolation is.
+- **Partial quads:** if **three** of four corners have data, we still emit **one triangle** so edges stitch better.
+
+**Stride vs “throwing away” data:** **`--stride N`** (default **2**) uses every *N*th cell — that **does** reduce horizontal resolution for performance. For maximum detail use **`--stride 1`** (heavier GLB / slower in the browser).
+
+**Relief (like CloudCompare shaded view):**
+
+- **In the browser:** the terrain preview now uses **`MeshStandardMaterial`** with **recomputed normals**, **oblique directional + fill lights**, **ACES tone mapping**, and **`flatShading: true`** so triangles catch light (similar idea to faceted hillshade).
+- **In the GLB:** **`--hillshade-strength`** (default **0.55**) multiplies the height colors by a **Lambert term** from mesh normals (baked “sun” direction). Use **`0`** to rely only on real-time lighting; increase toward **1** for stronger contrast.
+
+**Z scale:** If the course still looks flat, raise **`--vertical-exaggeration`** (e.g. **1.25–1.6**) — real golf elevation change is often only a few meters over hundreds of meters.
+
+**True EDL** (Eye Dome Lighting) is a **screen-space edge darkening** pass; Three.js doesn’t include it out of the box. The combo above is the usual web substitute; a future step would be an `EffectComposer` + custom shader if you need CC-identical rims.
+
+**Color:** height ramp + optional hillshade bake; re-export after script changes.
+
 This writes a **GLB** with **small coordinates** (centered) and a **JSON** sidecar with `origin_x/y/z` and CRS so you can map taps back to real coordinates in app code.
 
 ## 6. Upload and wire the app

@@ -21,6 +21,7 @@
     "@supabase/supabase-js": "^2.44.2",
     "rxjs": "~7.8.0",
     "supabase": "^1.178.2",
+    "three": "^0.160.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.14.3"
   },
@@ -32,6 +33,7 @@
     "@angular/core": "^17.3.12",
     "@angular/localize": "^17.3.12",
     "@types/jasmine": "~5.1.0",
+    "@types/three": "^0.160.0",
     "baseline-browser-mapping": "^2.9.18",
     "jasmine-core": "~5.1.0",
     "karma": "~6.4.0",

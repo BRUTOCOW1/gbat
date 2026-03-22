@@ -65,6 +65,54 @@ export class GolfShotEntryComponent implements OnInit {
 
   lastGreenSpeed?: number; // Track last green speed for autofill
 
+  /** When false, only essential fields are shown (faster in-round entry). */
+  advancedShotFields = false;
+
+  /** Carry distance from your history for the selected club (non-putt). */
+  averageDistanceYds: number | null = null;
+
+  readonly flightRows = ['Low', 'Normal', 'High'] as const;
+  readonly flightCols = ['Draw', 'Straight', 'Fade'] as const;
+
+  /** Strike: contact (row) × impact on face (column). */
+  readonly contactRows = ['Flush', 'Thin', 'Heavy'] as const;
+  readonly impactCols = ['Toe', 'Heel', 'Center', 'Top', 'Sky'] as const;
+
+  /** Discrete strike quality (replaces messy slider). */
+  readonly severitySteps = [
+    { value: 12, label: 'Thin' },
+    { value: 35, label: 'Weak' },
+    { value: 55, label: 'OK' },
+    { value: 75, label: 'Solid' },
+    { value: 92, label: 'Pure' },
+  ] as const;
+
+  readonly intentOptions = [
+    'Standard',
+    'Pin-seeking',
+    'Safe target (middle)',
+    'Lay-up',
+    'Escape only',
+  ] as const;
+
+  readonly missBiasOptions = [
+    'On line',
+    'Missed Left',
+    'Missed Right',
+    'Short',
+    'Long',
+  ] as const;
+
+  readonly puttOutcomeOptions = ['Green', 'Made', 'Fringe'] as const;
+
+  readonly puttSpeedQualitySteps = [
+    { value: 15, label: 'Hard' },
+    { value: 40, label: 'Slow' },
+    { value: 55, label: 'OK' },
+    { value: 75, label: 'Good' },
+    { value: 92, label: 'Pure' },
+  ] as const;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -131,6 +179,228 @@ export class GolfShotEntryComponent implements OnInit {
 
     this.formReady = true;
 
+    if (this.isEditMode) {
+      this.advancedShotFields = true;
+    } else {
+      const stored = localStorage.getItem('gbat-shot-entry-advanced');
+      if (stored !== null) {
+        this.advancedShotFields = stored === 'true';
+      }
+    }
+  }
+
+  setAdvancedShotFields(value: boolean): void {
+    this.advancedShotFields = value;
+    localStorage.setItem('gbat-shot-entry-advanced', String(value));
+  }
+
+  /** First stroke of the hole: tee shot + lie are fixed. */
+  get teeShotLocked(): boolean {
+    return !this.isEditMode && this.shots.length === 0;
+  }
+
+  pickFlight(row: (typeof this.flightRows)[number], col: (typeof this.flightCols)[number]): void {
+    this.newShot.trajectory = row;
+    this.newShot.shape = col;
+  }
+
+  isFlightCellActive(row: (typeof this.flightRows)[number], col: (typeof this.flightCols)[number]): boolean {
+    const t = this.newShot.trajectory || 'Normal';
+    const s = this.newShot.shape || 'Straight';
+    return t === row && s === col;
+  }
+
+  pickContactImpact(
+    row: (typeof this.contactRows)[number],
+    col: (typeof this.impactCols)[number]
+  ): void {
+    this.newShot.contact = row;
+    this.newShot.impact_location = col;
+  }
+
+  isContactImpactCellActive(
+    row: (typeof this.contactRows)[number],
+    col: (typeof this.impactCols)[number]
+  ): boolean {
+    const c = this.newShot.contact || 'Flush';
+    const i = this.newShot.impact_location || 'Center';
+    return c === row && i === col;
+  }
+
+  /** Short label for strike grid cells (avoid Toe/Top both “T”). */
+  impactShort(col: (typeof this.impactCols)[number]): string {
+    const map: Record<(typeof this.impactCols)[number], string> = {
+      Toe: 'Toe',
+      Heel: 'Heel',
+      Center: 'Mid',
+      Top: 'High',
+      Sky: 'Sky',
+    };
+    return map[col];
+  }
+
+  pickSeverity(value: number): void {
+    this.newShot.contact_severity = value;
+  }
+
+  isSeverityChipActive(value: number): boolean {
+    return this.nearestSeverityValue(this.newShot.contact_severity ?? 55) === value;
+  }
+
+  private nearestSeverityValue(c: number): number {
+    const steps = this.severitySteps.map((s) => s.value);
+    return steps.reduce((a, b) => (Math.abs(b - c) < Math.abs(a - c) ? b : a));
+  }
+
+  async onClubChanged(): Promise<void> {
+    if (!this.newShot.club_id || this.newShot.shot_type === 'Putt') {
+      this.averageDistanceYds = null;
+      return;
+    }
+    this.averageDistanceYds = await this.supabaseService.getAverageDistanceForGolferClub(this.newShot.club_id);
+    if (this.averageDistanceYds != null) {
+      this.newShot.distance = this.averageDistanceYds;
+    }
+  }
+
+  navigateToPenaltyShot(): void {
+    this.router.navigate([`/golf-shot/${this.holeNumber}/penalty`], {
+      state: {
+        userId: this.userId,
+        golfBagId: this.golfBagId,
+        holeId: this.holeId,
+        roundId: this.roundId,
+      },
+    });
+  }
+
+  onShotTypeChanged(): void {
+    this.applyDefaultResultForContext();
+    if (this.newShot.shot_type === 'Putt') {
+      this.averageDistanceYds = null;
+      this.newShot.distance = 0;
+    } else {
+      void this.onClubChanged();
+    }
+  }
+
+  adjustDistance(delta: number): void {
+    const cur = Number(this.newShot.distance);
+    const base = Number.isFinite(cur) ? cur : 0;
+    const next = Math.max(0, Math.min(400, Math.round(base + delta)));
+    this.newShot.distance = next;
+  }
+
+  adjustPuttLength(delta: number): void {
+    const cur = Number(this.newShot.putt_length);
+    const base = Number.isFinite(cur) ? cur : 0;
+    const next = Math.max(0, Math.min(120, Math.round(base + delta)));
+    this.newShot.putt_length = next;
+  }
+
+  pickPuttOutcome(value: string): void {
+    this.newShot.result_location = value;
+  }
+
+  isPuttOutcomeActive(value: string): boolean {
+    return (this.newShot.result_location || 'Green') === value;
+  }
+
+  toggleKickIn(): void {
+    this.newShot.is_kick_in = !this.newShot.is_kick_in;
+  }
+
+  pickPuttSpeedQuality(value: number): void {
+    this.newShot.putt_speed_quality = value;
+  }
+
+  isPuttSpeedQualityActive(value: number): boolean {
+    return this.nearestPuttSpeedStep(this.newShot.putt_speed_quality ?? 55) === value;
+  }
+
+  private nearestPuttSpeedStep(c: number): number {
+    const steps = this.puttSpeedQualitySteps.map((s) => s.value);
+    return steps.reduce((a, b) => (Math.abs(b - c) < Math.abs(a - c) ? b : a));
+  }
+
+  setLandingLateral(side: 'Left' | 'Center' | 'Right'): void {
+    this.newShot.landing_lateral = side;
+  }
+
+  pickIntent(value: string): void {
+    this.newShot.shot_intent = value;
+  }
+
+  isIntentActive(value: string): boolean {
+    return (this.newShot.shot_intent || 'Standard') === value;
+  }
+
+  pickMissBias(value: string): void {
+    this.newShot.result_direction = value;
+  }
+
+  isMissBiasActive(value: string): boolean {
+    return (this.newShot.result_direction || 'On line') === value;
+  }
+
+  isLandingLateralActive(side: 'Left' | 'Center' | 'Right'): boolean {
+    const v = this.newShot.landing_lateral;
+    if (side === 'Center') return !v || v === 'Center';
+    return v === side;
+  }
+
+  /** One-line preview, e.g. “Right · Light Rough”. */
+  landingSummary(): string {
+    if (this.newShot.shot_type === 'Putt') {
+      return this.newShot.result_location || '';
+    }
+    const loc = this.newShot.result_location || '';
+    const side = this.newShot.landing_lateral;
+    if (!loc) return '';
+    if (!side || side === 'Center') return loc;
+    return `${side} · ${loc}`;
+  }
+
+  /**
+   * `golf_shot.result` has a legacy CHECK — surface values only (matches `result_location`).
+   * Do not store `landingSummary()` here; lateral is on `landing_lateral`.
+   */
+  private resultValueForDatabase(): string {
+    if (this.newShot.shot_type === 'Putt') {
+      return this.newShot.result_location || 'Green';
+    }
+    return this.newShot.result_location || 'Fairway';
+  }
+
+  /** Sensible defaults so blank “Result” fields are rare. */
+  private applyDefaultResultForContext(): void {
+    if (this.newShot.shot_type === 'Putt') {
+      this.newShot.result_location = 'Green';
+      this.newShot.result_direction = 'On line';
+      this.newShot.landing_lateral = 'Center';
+      if (this.newShot.putt_length == null) {
+        this.newShot.putt_length = 8;
+      }
+      if (this.newShot.putt_speed_quality == null) {
+        this.newShot.putt_speed_quality = 55;
+      }
+      return;
+    }
+    if (this.newShot.shot_type === 'Tee Shot') {
+      this.newShot.result_location = 'Fairway';
+      this.newShot.result_direction = 'On line';
+      this.newShot.landing_lateral = 'Center';
+      return;
+    }
+    if (['Chip', 'Approach', 'Layup'].includes(this.newShot.shot_type)) {
+      this.newShot.result_location = 'Green';
+      this.newShot.result_direction = 'On line';
+      this.newShot.landing_lateral = 'Center';
+      return;
+    }
+    this.newShot.result_location = 'Fairway';
+    this.newShot.result_direction = 'On line';
+    this.newShot.landing_lateral = 'Center';
   }
 
     // Tolerant JSON parse: handles string or double-encoded string
@@ -196,26 +466,9 @@ export class GolfShotEntryComponent implements OnInit {
 
   private async loadLastGreenSpeed(): Promise<void> {
     try {
-      // Get all played holes for this round
-      const { data: playedHoles } = await this.supabaseService.getPlayedHolesForRound(this.roundId);
-      if (!playedHoles || playedHoles.length === 0) return;
-
-      const playedHoleIds = playedHoles.map(h => h.id);
-      
-      // Get all shots from this round
-      const allShots: GolfShot[] = [];
-      for (const holeId of playedHoleIds) {
-        const shots = await this.supabaseService.getShotsForPlayedHole(holeId);
-        if (shots) {
-          allShots.push(...shots);
-        }
-      }
-
-      // Find the last putt with a green speed
-      const putts = allShots.filter(s => s.shot_type === 'Putt' && s.green_speed);
-      if (putts.length > 0) {
-        const lastPutt = putts[putts.length - 1];
-        this.lastGreenSpeed = lastPutt.green_speed;
+      const speed = await this.supabaseService.getLastPuttGreenSpeedForRound(this.roundId);
+      if (speed != null) {
+        this.lastGreenSpeed = speed;
       }
     } catch (error) {
       console.error('Error loading last green speed:', error);
@@ -258,10 +511,6 @@ export class GolfShotEntryComponent implements OnInit {
     }
   }
 
-  onPenaltyChange(): void {
-    this.newShot.penalty_strokes = this.getPenaltyStrokes(this.newShot.penalty);
-  }
-  
   getClubName(clubId: string): string {
     const club = this.golferClubs.find(c => c.id === clubId);
     return club ? `${club.number} (${club.category})` : 'Unknown Club';
@@ -270,6 +519,10 @@ export class GolfShotEntryComponent implements OnInit {
 
   async addShot() {
     try {
+      if (!this.isEditMode) {
+        this.newShot.penalty = 'none';
+        this.newShot.penalty_strokes = 0;
+      }
       // Handle kick-in putt - minimal entry
       if (this.newShot.is_kick_in && this.newShot.shot_type === 'Putt') {
         // Set minimal required fields for kick-in
@@ -304,15 +557,11 @@ export class GolfShotEntryComponent implements OnInit {
         this.newShot.break_pattern = arr;
       }
       
-      this.newShot.penalty_strokes = this.getPenaltyStrokes(this.newShot.penalty);
+      this.newShot.penalty_strokes = 0;
       
-      // Set result field for backward compatibility - use result_location as primary value
-      // The check constraint expects single values, not combined strings
-      if (this.newShot.result_location) {
-        this.newShot.result = this.newShot.result_location;
-      } else if (!this.newShot.result) {
-        // If no result_location and no existing result, set to empty string
-        this.newShot.result = '';
+      // Legacy `result` column = surface only; kick-in already set Made above
+      if (!(this.newShot.is_kick_in && this.newShot.shot_type === 'Putt')) {
+        this.newShot.result = this.resultValueForDatabase();
       }
       
       // For putts, remove distance if putt_length is set (avoid dual distance)
@@ -408,6 +657,15 @@ export class GolfShotEntryComponent implements OnInit {
       result: '',
       stroke_number: nextStrokeNumber,
       is_kick_in: false,
+      penalty: 'none',
+      penalty_strokes: 0,
+      shot_intent: 'Standard',
+      trajectory: 'Normal',
+      shape: 'Straight',
+      contact: 'Flush',
+      impact_location: 'Center',
+      contact_severity: 55,
+      landing_lateral: 'Center',
     };
 
     // Smart inference based on context
@@ -427,6 +685,9 @@ export class GolfShotEntryComponent implements OnInit {
         this.inferShotFromPrevious(lastShot);
       }
     }
+
+    this.applyDefaultResultForContext();
+    void this.onClubChanged();
 
     // Clear break pattern for new shots
     this.break_pattern_string = '';
@@ -508,6 +769,7 @@ export class GolfShotEntryComponent implements OnInit {
       this.newShot.shot_type = 'Approach';
       this.newShot.lie = location || prevLie || 'Fairway';
     }
+    this.applyDefaultResultForContext();
   }
 
   /**
@@ -699,6 +961,9 @@ export class GolfShotEntryComponent implements OnInit {
       // Make sure we keep FK to played hole if required by schema
       hole_id: shot.hole_id,
     };
+    if (this.newShot.shot_type !== 'Putt' && (this.newShot.landing_lateral === undefined || this.newShot.landing_lateral === null)) {
+      this.newShot.landing_lateral = 'Center';
+    }
 
     const arr = this.normalizeBreak(shot.break_pattern);
     this.break_pattern_string = JSON.stringify(arr);
@@ -715,6 +980,7 @@ export class GolfShotEntryComponent implements OnInit {
     } else {
       this.breakSegments = [];
     }
+    void this.onClubChanged();
   }
 
   private normalizeBeforeSave() {
@@ -730,7 +996,14 @@ export class GolfShotEntryComponent implements OnInit {
       const arr = this.normalizeBreak(this.break_pattern_string);
       this.newShot.break_pattern = arr;
     }
-    this.newShot.penalty_strokes = this.getPenaltyStrokes(this.newShot.penalty);
+    if (!this.isEditMode) {
+      this.newShot.penalty = 'none';
+      this.newShot.penalty_strokes = 0;
+    } else {
+      this.newShot.penalty_strokes = this.getPenaltyStrokes(this.newShot.penalty);
+    }
+
+    this.newShot.result = this.resultValueForDatabase();
   }
 
   async onSubmit() {

@@ -13,6 +13,7 @@ import { CourseBuilderComponent } from './course/course-builder/course-builder.c
 import { GolfHoleComponent } from './holeAndShots/golf-hole/golf-hole.component';
 import { GolfShotComponent } from './holeAndShots/golf-shot/golf-shot.component';
 import { GolfShotEntryComponent } from './holeAndShots/golf-shot-entry/golf-shot-entry.component';
+import { PenaltyShotEntryComponent } from './holeAndShots/penalty-shot-entry/penalty-shot-entry.component';
 
 // ROUND 
 import { GolfRoundComponent } from './round/golf-round/golf-round.component';
@@ -23,6 +24,7 @@ import { RoundSummaryComponent } from './round/round-summary/round-summary.compo
 // SHARED 
 import { BlogComponent } from './shared/blog/blog.component';
 import { NavbarComponent } from './shared/navbar/navbar.component';
+import { TerrainLocalPreviewComponent } from './shared/terrain-local-preview/terrain-local-preview.component';
 import { AuthGuard } from './shared/guards/auth.guard';
 
 // USER OPS 
@@ -46,6 +48,8 @@ export const routes: Routes = [
     // app.routes.ts
     { path: 'golf-shot/:holeNumber/:shotNumber/edit', component: GolfShotEntryComponent },
     { path: 'golf-shot/:holeNumber/newShot',         component: GolfShotEntryComponent },
+    /** Must be before :shotNumber so "penalty" is not parsed as a stroke index */
+    { path: 'golf-shot/:holeNumber/penalty',       component: PenaltyShotEntryComponent },
     { path: 'golf-shot/:holeNumber/:shotNumber',     component: GolfShotComponent },
 
 
@@ -58,7 +62,9 @@ export const routes: Routes = [
     { path: 'register', component: RegisterComponent },
     { path: 'new-round', component: NewRoundComponent},
     { path: 'new-course', component: CourseBuilderComponent},
-  
+    /** Local GLB preview (no Supabase); place file under src/assets/terrain/ */
+    { path: 'dev/terrain-local', component: TerrainLocalPreviewComponent },
+
     // ✅ Organized Redirects
     { path: 'blog-component/golf-component', redirectTo: 'golf-component' },
     { path: 'golf-component/blog-component', redirectTo: 'blog-component' },

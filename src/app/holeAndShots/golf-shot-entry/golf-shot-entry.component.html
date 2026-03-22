@@ -15,6 +15,14 @@
       </span>
     </div>
   </div>
+
+  <div class="entry-mode-bar" *ngIf="formReady && !isEditMode">
+    <span class="entry-mode-label">Entry mode</span>
+    <div class="entry-mode-toggle" role="group" aria-label="Shot entry detail level">
+      <button type="button" class="btn-mode" [class.active]="!advancedShotFields" (click)="setAdvancedShotFields(false)">Quick</button>
+      <button type="button" class="btn-mode" [class.active]="advancedShotFields" (click)="setAdvancedShotFields(true)">All details</button>
+    </div>
+  </div>
   
   <!-- Add New Shot Form -->
   <form class="golf-shot-form" *ngIf="formReady"
@@ -22,314 +30,429 @@
 
   <h3>{{ isEditMode ? 'Edit Shot' : 'Add Shot' }}</h3>
 
-    <!-- Club and Shot -->
-    <div class="form-row">
-      <div class="form-group">
-        <label>Club:</label>
-        <select [(ngModel)]="newShot.club_id" name="club_id" required>
-          <option *ngFor="let club of golferClubs" [value]="club.id">
-            {{ club.number }} – {{ club.category }}
-          </option>
-        </select>
-        
-        
-        
-      </div>
-      
-      
-      <div class="form-group">
-        <label>Shot Type:</label>
-        <select [(ngModel)]="newShot.shot_type" name="shot_type" required>
-          <option>Tee Shot</option>
-          <option>Approach</option>
-          <option>Layup</option>
-          <option>Recovery</option>
-          <option>Punchout</option>
-          <option>Chip</option>
-          <option>Putt</option>
-        </select>
-      </div>
-      <!-- Penalty Selection -->
-      <div class="form-group">
-        <label>Penalty:</label>
-        <select [(ngModel)]="newShot.penalty" name="penalty" (change)="onPenaltyChange()">
-          <option value="none">None</option>
-          <option value="stroke_only">Stroke Only</option>
-          <option value="stroke_and_distance">Stroke and Distance</option>
-          <option value="drop">Drop</option>
-          <option value="unplayable">Unplayable Lie</option>
-        </select>
-      </div>
-
-    </div>
-
-    <!-- Distance, Lie, Result -->
-    <div class="form-row">
-      <div class="form-group" *ngIf="newShot.shot_type !== 'Putt'">
-        <label>Distance (yds):</label>
-        <input type="number" [(ngModel)]="newShot.distance" name="distance">
-      </div>
-      <div class="form-group">
-        <label>Lie:</label>
-        <select [(ngModel)]="newShot.lie" name="lie">
-          <option *ngIf="newShot.shot_type === 'Tee Shot'">Tee Box</option>
-          <option>Fairway</option>
-          <option>Light Rough</option>
-          <option>Thick Rough</option>
-          <option>Bunker</option>
-          <option>Trees</option>
-          <option>Fringe</option>
-          <option>Green</option>
-          <option>Water</option>
-          <option>OB</option>
-        </select>
-      </div>
-      <!-- Separated Result Fields -->
-      <div class="form-group" *ngIf="newShot.shot_type !== 'Putt'">
-        <label>Result Location:</label>
-        <select [(ngModel)]="newShot.result_location" name="result_location">
-          <option value="">-- Select --</option>
-          <option>Fairway</option>
-          <option>Light Rough</option>
-          <option>Thick Rough</option>
-          <option>Bunker</option>
-          <option>Fringe</option>
-          <option>Green</option>
-          <option>Water</option>
-          <option>OB</option>
-          <option>Made</option>
-        </select>
-      </div>
-      <div class="form-group" *ngIf="newShot.shot_type !== 'Putt'">
-        <label>Result Direction:</label>
-        <select [(ngModel)]="newShot.result_direction" name="result_direction">
-          <option value="">-- None --</option>
-          <option>Missed Left</option>
-          <option>Missed Right</option>
-          <option>Short</option>
-          <option>Long</option>
-        </select>
-      </div>
-      <div class="form-group" *ngIf="newShot.shot_type !== 'Putt'">
-        <label>Result Quality:</label>
-        <select [(ngModel)]="newShot.result_quality" name="result_quality">
-          <option value="">-- None --</option>
-          <option>Still on Green</option>
-          <option>In Play</option>
-        </select>
-      </div>
-    </div>
-    
-    <!-- Penalty Strokes Display -->
-    <div class="form-row" *ngIf="newShot.penalty && newShot.penalty !== 'none'">
-      <div class="form-group">
-        <label>Penalty Strokes: <strong>{{ newShot.penalty_strokes || getPenaltyStrokes(newShot.penalty) }}</strong></label>
-      </div>
-    </div>
-
-    <!-- Intent + Trajectory + Shape (hide for putts) -->
-    <div class="form-row" *ngIf="newShot.shot_type !== 'Putt'">
-      <div class="form-group">
-        <label>Intent:</label>
-        <select [(ngModel)]="newShot.shot_intent" name="shot_intent">
-          <option>Aggressive</option>
-          <option>Smart</option>
-          <option>Layup</option>
-          <option>Punchout</option>
-          <option>Escape</option>
-          <option>Hero</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>Trajectory:</label>
-        <select [(ngModel)]="newShot.trajectory" name="trajectory">
-          <option>Normal</option>
-          <option>Low</option>
-          <option>High</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>Shot Shape:</label>
-        <select [(ngModel)]="newShot.shape" name="shape">
-          <option>Straight</option>
-          <option>Draw</option>
-          <option>Fade</option>
-          <option>Hook</option>
-          <option>Slice</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Contact + Location -->
-    <div class="form-row">
-      <div class="form-group">
-        <label>Contact Quality:</label>
-        <select [(ngModel)]="newShot.contact" name="contact">
-          <option>Flush</option>
-          <option>Thin</option>
-          <option>Heavy</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Severity: {{ newShot.contact_severity ?? 50 }}%</label>
-        <input type="range" min="0" max="100" [(ngModel)]="newShot.contact_severity" name="contact_severity">
-      </div>
-      <div class="form-group">
-        <label>Impact Location:</label>
-        <select [(ngModel)]="newShot.impact_location" name="impact_location">
-          <option>Center</option>
-          <option>Toe</option>
-          <option>Heel</option>
-          <option>Top</option>
-          <option>Sky</option>
-        </select>
-      </div>
-    </div>
-    <!-- Kick-in Putt Option -->
-    <div *ngIf="newShot.shot_type === 'Putt'" class="form-row">
-      <div class="form-group">
-        <label>
-          <input type="checkbox" [(ngModel)]="newShot.is_kick_in" name="is_kick_in">
-          Kick-in Putt (skip detailed entry)
-        </label>
-      </div>
-    </div>
-    
-    <div *ngIf="newShot.shot_type === 'Putt' && !newShot.is_kick_in" class="putt-section">
-      <div class="form-row">
-        <div class="form-group">
-          <label>Putt Length (ft):</label>
-          <input type="number" [(ngModel)]="newShot.putt_length" name="putt_length">
-        </div>
-        
-        <div class="form-group">
-          <label>Result Location:</label>
-          <select [(ngModel)]="newShot.result_location" name="result_location">
-            <option value="">-- Select --</option>
-            <option>Green</option>
-            <option>Made</option>
-            <option>Fringe</option>
+    <section class="panel-card">
+      <div class="panel-card-head">Club &amp; shot</div>
+      <div class="panel-card-body panel-card-body--club">
+        <div class="panel-field">
+          <label class="field-label-min" for="club_id">Club</label>
+          <select id="club_id" [(ngModel)]="newShot.club_id" name="club_id" required (ngModelChange)="onClubChanged()" class="select-compact">
+            <option *ngFor="let club of golferClubs" [value]="club.id">
+              {{ club.number }} – {{ club.category }}
+            </option>
           </select>
         </div>
-        
-        <div class="form-group">
-          <label>Result Direction:</label>
-          <select [(ngModel)]="newShot.result_direction" name="result_direction">
-            <option value="">-- None --</option>
-            <option>Missed Left</option>
-            <option>Missed Right</option>
-            <option>Short</option>
-            <option>Long</option>
+        <div class="panel-field" *ngIf="!teeShotLocked">
+          <label class="field-label-min" for="shot_type">Shot type</label>
+          <select id="shot_type" [(ngModel)]="newShot.shot_type" name="shot_type" required (ngModelChange)="onShotTypeChanged()" class="select-compact">
+            <option>Tee Shot</option>
+            <option>Approach</option>
+            <option>Layup</option>
+            <option>Recovery</option>
+            <option>Punchout</option>
+            <option>Chip</option>
+            <option>Putt</option>
           </select>
         </div>
-        
-        <div class="form-group">
-          <label>Result Quality:</label>
-          <select [(ngModel)]="newShot.result_quality" name="result_quality">
-            <option value="">-- None --</option>
-            <option>Still on Green</option>
-          </select>
+        <div class="panel-field tee-locked" *ngIf="teeShotLocked">
+          <span class="field-label-min">Shot</span>
+          <div class="locked-pills" aria-live="polite">
+            <span class="pill">Tee shot</span>
+            <span class="pill">Tee box</span>
+          </div>
         </div>
       </div>
-    
-      <div class="form-row">
-        <div class="form-group">
-          <label>Slope:</label>
-          <select [(ngModel)]="newShot.slope" name="slope">
+    </section>
+
+    <p class="penalty-link-row" *ngIf="!isEditMode">
+      <button type="button" class="link-like" (click)="navigateToPenaltyShot()">Log a penalty stroke…</button>
+    </p>
+
+    <section class="panel-card" *ngIf="newShot.shot_type !== 'Putt'">
+      <div class="panel-card-head">Carry &amp; landing</div>
+      <p class="panel-card-lede">Tap yards to adjust; use exact only if you need a specific number.</p>
+      <div class="basics-grid">
+        <div class="basics-col basics-col--distance">
+          <span class="field-label-min">Carry (yds)</span>
+          <div class="distance-hero">
+            <span class="distance-readout" aria-live="polite">{{ newShot.distance }}</span>
+            <input
+              type="number"
+              class="distance-input-compact"
+              [(ngModel)]="newShot.distance"
+              name="distance"
+              min="0"
+              max="400"
+              inputmode="numeric"
+              title="Exact yards"
+              aria-label="Exact yards"
+            />
+          </div>
+          <div class="distance-steps" role="group" aria-label="Adjust distance in yards">
+            <button type="button" class="step-btn minus" (click)="adjustDistance(-10)">−10</button>
+            <button type="button" class="step-btn minus" (click)="adjustDistance(-5)">−5</button>
+            <button type="button" class="step-btn minus" (click)="adjustDistance(-1)">−1</button>
+            <span class="distance-steps-gap" aria-hidden="true"></span>
+            <button type="button" class="step-btn plus" (click)="adjustDistance(1)">+1</button>
+            <button type="button" class="step-btn plus" (click)="adjustDistance(5)">+5</button>
+            <button type="button" class="step-btn plus" (click)="adjustDistance(10)">+10</button>
+          </div>
+          <small *ngIf="averageDistanceYds != null" class="dist-hint">Avg this club: ~{{ averageDistanceYds }} yds</small>
+          <small *ngIf="averageDistanceYds == null && newShot.club_id" class="dist-hint muted">No history yet — steps only, or type exact yds</small>
+        </div>
+
+        <div class="basics-col basics-col--landing">
+          <div class="panel-field" *ngIf="!teeShotLocked">
+            <label class="field-label-min" for="lie">Lie (before)</label>
+            <select id="lie" [(ngModel)]="newShot.lie" name="lie" class="select-compact">
+              <option *ngIf="newShot.shot_type === 'Tee Shot'">Tee Box</option>
+              <option>Fairway</option>
+              <option>Light Rough</option>
+              <option>Thick Rough</option>
+              <option>Bunker</option>
+              <option>Trees</option>
+              <option>Fringe</option>
+              <option>Green</option>
+              <option>Water</option>
+              <option>OB</option>
+            </select>
+          </div>
+          <div class="panel-field">
+            <label class="field-label-min" for="result_location">Surface (where it ended)</label>
+            <select id="result_location" [(ngModel)]="newShot.result_location" name="result_location" class="select-compact">
+              <option>Fairway</option>
+              <option>Light Rough</option>
+              <option>Thick Rough</option>
+              <option>Bunker</option>
+              <option>Fringe</option>
+              <option>Green</option>
+              <option>Water</option>
+              <option>OB</option>
+              <option>Made</option>
+            </select>
+          </div>
+          <div class="panel-field">
+            <span class="field-label-min">Side of hole</span>
+            <div class="landing-lateral landing-lateral--grid" role="group" aria-label="Landing side relative to hole">
+              <button type="button" class="lat-btn" [class.active]="isLandingLateralActive('Left')" (click)="setLandingLateral('Left')">Left</button>
+              <button type="button" class="lat-btn" [class.active]="isLandingLateralActive('Center')" (click)="setLandingLateral('Center')">Center</button>
+              <button type="button" class="lat-btn" [class.active]="isLandingLateralActive('Right')" (click)="setLandingLateral('Right')">Right</button>
+            </div>
+            <p class="landing-preview">{{ landingSummary() || '—' }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel-card" *ngIf="newShot.shot_type !== 'Putt'">
+      <div class="panel-card-head">Plan</div>
+      <div class="plan-block">
+        <span class="field-label-min">Intent</span>
+        <div class="chip-row" role="group" aria-label="Shot intent">
+          <button
+            type="button"
+            class="opt-chip"
+            *ngFor="let opt of intentOptions"
+            [class.active]="isIntentActive(opt)"
+            (click)="pickIntent(opt)"
+          >
+            {{ opt }}
+          </button>
+        </div>
+      </div>
+      <div class="plan-block" *ngIf="advancedShotFields">
+        <span class="field-label-min">Vs target (miss)</span>
+        <div class="chip-row" role="group" aria-label="Miss relative to target line">
+          <button
+            type="button"
+            class="opt-chip"
+            *ngFor="let opt of missBiasOptions"
+            [class.active]="isMissBiasActive(opt)"
+            (click)="pickMissBias(opt)"
+          >
+            {{ opt }}
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Flight + strike: same card language as above -->
+    <div class="swing-maps-panel panel-card-continuation" *ngIf="newShot.shot_type !== 'Putt'">
+      <div class="swing-maps-head">
+        <span class="swing-maps-title">Flight &amp; strike</span>
+        <span class="swing-maps-hint" *ngIf="advancedShotFields">Air shape · face at impact · feel</span>
+        <span class="swing-maps-hint" *ngIf="!advancedShotFields">Air shape (add details for strike)</span>
+      </div>
+      <div
+        class="swing-maps-cols"
+        [class.swing-maps-cols--split]="advancedShotFields"
+      >
+        <div class="swing-map-block">
+          <span class="swing-map-block-label">Flight path</span>
+          <div class="flight-grid flight-grid--in-panel" role="grid" aria-label="Trajectory and shot shape">
+            <div class="flight-corner" aria-hidden="true"></div>
+            <div class="flight-col-head" *ngFor="let c of flightCols">{{ c }}</div>
+            <ng-container *ngFor="let row of flightRows">
+              <div class="flight-row-head">{{ row }}</div>
+              <button
+                type="button"
+                class="flight-cell"
+                *ngFor="let col of flightCols"
+                [class.active]="isFlightCellActive(row, col)"
+                (click)="pickFlight(row, col)"
+                [attr.aria-pressed]="isFlightCellActive(row, col)"
+                [attr.aria-label]="row + ' ' + col"
+              >
+                <span class="flight-abbr">{{ row.charAt(0) }}{{ col.charAt(0) }}</span>
+              </button>
+            </ng-container>
+          </div>
+        </div>
+
+        <div class="swing-map-block" *ngIf="advancedShotFields">
+          <span class="swing-map-block-label">Strike face</span>
+          <div class="strike-grid strike-grid--in-panel" role="grid" aria-label="Contact and impact location">
+            <div class="strike-corner" aria-hidden="true"></div>
+            <div class="strike-col-head" *ngFor="let ic of impactCols">{{ impactShort(ic) }}</div>
+            <ng-container *ngFor="let row of contactRows">
+              <div class="strike-row-head">{{ row }}</div>
+              <button
+                type="button"
+                class="strike-cell"
+                *ngFor="let col of impactCols"
+                [class.active]="isContactImpactCellActive(row, col)"
+                (click)="pickContactImpact(row, col)"
+                [attr.aria-pressed]="isContactImpactCellActive(row, col)"
+                [attr.aria-label]="row + ' contact, ' + col + ' impact'"
+              >
+                <span class="strike-cell-dot" *ngIf="isContactImpactCellActive(row, col)">⛳</span>
+                <span class="strike-cell-dot dim" *ngIf="!isContactImpactCellActive(row, col)">·</span>
+              </button>
+            </ng-container>
+          </div>
+          <div class="severity-chips">
+            <span class="severity-chips-label">Feel</span>
+            <div class="severity-chips-row" role="group" aria-label="Strike quality">
+              <button
+                type="button"
+                class="severity-chip"
+                *ngFor="let step of severitySteps"
+                [class.active]="isSeverityChipActive(step.value)"
+                (click)="pickSeverity(step.value)"
+              >
+                {{ step.label }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Putting -->
+    <section class="panel-card panel-card--kickin" *ngIf="newShot.shot_type === 'Putt'">
+      <div class="panel-card-head">Tap-in</div>
+      <p class="panel-card-lede">Gimme or tap-in — skips length and green details.</p>
+      <button
+        type="button"
+        class="kickin-toggle"
+        [class.active]="newShot.is_kick_in"
+        (click)="toggleKickIn()"
+        [attr.aria-pressed]="newShot.is_kick_in"
+      >
+        {{ newShot.is_kick_in ? 'Kick-in on — minimal save' : 'Kick-in off — full entry' }}
+      </button>
+    </section>
+
+    <section class="panel-card putt-length-card" *ngIf="newShot.shot_type === 'Putt' && !newShot.is_kick_in">
+      <div class="panel-card-head">Length &amp; outcome</div>
+      <p class="panel-card-lede">Tap feet to adjust; type exact length if you need it.</p>
+      <div class="basics-grid">
+        <div class="basics-col basics-col--distance">
+          <span class="field-label-min">Length (ft)</span>
+          <div class="distance-hero">
+            <span class="distance-readout" aria-live="polite">{{ newShot.putt_length != null ? newShot.putt_length : 0 }}</span>
+            <input
+              type="number"
+              class="distance-input-compact"
+              [(ngModel)]="newShot.putt_length"
+              name="putt_length"
+              min="0"
+              max="120"
+              inputmode="numeric"
+              title="Putt length in feet"
+              aria-label="Putt length in feet"
+            />
+          </div>
+          <div class="distance-steps" role="group" aria-label="Adjust putt length in feet">
+            <button type="button" class="step-btn minus" (click)="adjustPuttLength(-5)">−5</button>
+            <button type="button" class="step-btn minus" (click)="adjustPuttLength(-3)">−3</button>
+            <button type="button" class="step-btn minus" (click)="adjustPuttLength(-1)">−1</button>
+            <span class="distance-steps-gap" aria-hidden="true"></span>
+            <button type="button" class="step-btn plus" (click)="adjustPuttLength(1)">+1</button>
+            <button type="button" class="step-btn plus" (click)="adjustPuttLength(3)">+3</button>
+            <button type="button" class="step-btn plus" (click)="adjustPuttLength(5)">+5</button>
+          </div>
+        </div>
+        <div class="basics-col basics-col--landing">
+          <div class="panel-field">
+            <span class="field-label-min">Where it ended</span>
+            <div class="chip-row" role="group" aria-label="Putt result">
+              <button
+                type="button"
+                class="opt-chip"
+                *ngFor="let opt of puttOutcomeOptions"
+                [class.active]="isPuttOutcomeActive(opt)"
+                (click)="pickPuttOutcome(opt)"
+              >
+                {{ opt }}
+              </button>
+            </div>
+          </div>
+          <div class="panel-field plan-block plan-block--flush">
+            <span class="field-label-min">Vs line</span>
+            <div class="chip-row" role="group" aria-label="Miss relative to your line">
+              <button
+                type="button"
+                class="opt-chip"
+                *ngFor="let opt of missBiasOptions"
+                [class.active]="isMissBiasActive(opt)"
+                (click)="pickMissBias(opt)"
+              >
+                {{ opt }}
+              </button>
+            </div>
+          </div>
+          <p class="landing-preview" *ngIf="landingSummary()">{{ landingSummary() }}</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel-card" *ngIf="newShot.shot_type === 'Putt' && !newShot.is_kick_in && advancedShotFields">
+      <div class="panel-card-head">Green &amp; pace</div>
+      <div class="putt-advanced-grid">
+        <div class="panel-field">
+          <label class="field-label-min" for="slope_putt">Slope</label>
+          <select id="slope_putt" [(ngModel)]="newShot.slope" name="slope" class="select-compact">
             <option>Flat</option>
             <option>Uphill</option>
             <option>Downhill</option>
           </select>
         </div>
-    
-        <div class="form-group">
-          <label>Grain Direction:</label>
-          <select [(ngModel)]="newShot.grain_direction" name="grain_direction">
+        <div class="panel-field">
+          <label class="field-label-min" for="grain_putt">Grain</label>
+          <select id="grain_putt" [(ngModel)]="newShot.grain_direction" name="grain_direction" class="select-compact">
             <option>With</option>
             <option>Against</option>
             <option>Cross</option>
           </select>
         </div>
-    
-        <div class="form-group">
-          <label>Green Speed (stimp):</label>
-          <input type="number" step="0.1" [(ngModel)]="newShot.green_speed" name="green_speed">
-          <small *ngIf="lastGreenSpeed && !newShot.green_speed" class="autofill-hint">
-            (Last: {{ lastGreenSpeed }})
+        <div class="panel-field putt-stimp-field">
+          <label class="field-label-min" for="green_speed_putt">Stimp</label>
+          <input
+            id="green_speed_putt"
+            type="number"
+            step="0.1"
+            [(ngModel)]="newShot.green_speed"
+            name="green_speed"
+            class="input-compact"
+          />
+          <small *ngIf="lastGreenSpeed != null && newShot.green_speed == null" class="dist-hint muted">
+            Last round: {{ lastGreenSpeed }}
           </small>
         </div>
-      </div>
-    
-      <div class="form-row">
-        <div class="form-group">
-          <label>Read Quality:</label>
-          <select [(ngModel)]="newShot.read_quality" name="read_quality">
+        <div class="panel-field">
+          <label class="field-label-min" for="read_quality_putt">Read</label>
+          <select id="read_quality_putt" [(ngModel)]="newShot.read_quality" name="read_quality" class="select-compact">
             <option>Good</option>
             <option>Misread</option>
             <option>Guess</option>
           </select>
         </div>
-        
-        <div class="form-group">
-          <label>Speed Quality: {{ newShot.putt_speed_quality ?? 50 }}%</label>
-          <input type="range" min="0" max="100" [(ngModel)]="newShot.putt_speed_quality" name="putt_speed_quality">
-        </div>
       </div>
-    
-      <div class="form-group break-pattern-group">
-        <label>Break Pattern:</label>
-        <div class="break-segments-container">
-          <div class="break-segment" *ngFor="let segment of breakSegments; let i = index">
-            <div class="segment-row">
-              <div class="segment-field">
-                <label>Direction:</label>
-                <select [(ngModel)]="segment.direction" [name]="'break_direction_' + i">
-                  <option value="">-- Select --</option>
-                  <option>L→R</option>
-                  <option>R→L</option>
-                  <option>Straight</option>
-                  <option>L→R→L</option>
-                  <option>R→L→R</option>
-                </select>
-              </div>
-              
-              <div class="segment-field">
-                <label>Severity (1-5):</label>
-                <input type="number" min="1" max="5" [(ngModel)]="segment.severity" [name]="'break_severity_' + i">
-              </div>
-              
-              <div class="segment-field">
-                <label>Start (ft):</label>
-                <input type="number" min="0" [(ngModel)]="segment.distance_start" [name]="'break_start_' + i">
-              </div>
-              
-              <div class="segment-field">
-                <label>End (ft):</label>
-                <input type="number" min="0" [(ngModel)]="segment.distance_end" [name]="'break_end_' + i">
-              </div>
-              
-              <button type="button" class="btn-remove-segment" (click)="removeBreakSegment(i)" title="Remove segment">
-                ×
-              </button>
-            </div>
-          </div>
-          
-          <button type="button" class="btn-add-segment" (click)="addBreakSegment()">
-            + Add Break Segment
+      <div class="plan-block putt-pace-block">
+        <span class="field-label-min">Pace</span>
+        <div class="severity-chips-row" role="group" aria-label="Speed vs read">
+          <button
+            type="button"
+            class="severity-chip"
+            *ngFor="let step of puttSpeedQualitySteps"
+            [class.active]="isPuttSpeedQualityActive(step.value)"
+            (click)="pickPuttSpeedQuality(step.value)"
+          >
+            {{ step.label }}
           </button>
         </div>
-        <small class="help-text">Add multiple segments to break down the putt into sections with different breaks</small>
       </div>
-      
-    </div>
+    </section>
+
+    <section class="panel-card" *ngIf="newShot.shot_type === 'Putt' && !newShot.is_kick_in && advancedShotFields">
+      <div class="panel-card-head">Break segments</div>
+      <p class="panel-card-lede">Optional — multiple turns on long putts.</p>
+      <div class="break-segments-container">
+        <div class="break-segment" *ngFor="let segment of breakSegments; let i = index">
+          <div class="segment-row segment-row--putt">
+            <div class="segment-field">
+              <label class="field-label-min">Direction</label>
+              <select [(ngModel)]="segment.direction" [name]="'break_direction_' + i" class="select-compact">
+                <option value="">—</option>
+                <option>L→R</option>
+                <option>R→L</option>
+                <option>Straight</option>
+                <option>L→R→L</option>
+                <option>R→L→R</option>
+              </select>
+            </div>
+            <div class="segment-field segment-field--narrow">
+              <label class="field-label-min">Severity</label>
+              <input
+                type="number"
+                min="1"
+                max="5"
+                [(ngModel)]="segment.severity"
+                [name]="'break_severity_' + i"
+                class="input-compact"
+              />
+            </div>
+            <div class="segment-field segment-field--narrow">
+              <label class="field-label-min">Start (ft)</label>
+              <input
+                type="number"
+                min="0"
+                [(ngModel)]="segment.distance_start"
+                [name]="'break_start_' + i"
+                class="input-compact"
+              />
+            </div>
+            <div class="segment-field segment-field--narrow">
+              <label class="field-label-min">End (ft)</label>
+              <input
+                type="number"
+                min="0"
+                [(ngModel)]="segment.distance_end"
+                [name]="'break_end_' + i"
+                class="input-compact"
+              />
+            </div>
+            <button type="button" class="btn-remove-segment" (click)="removeBreakSegment(i)" title="Remove segment" aria-label="Remove segment">
+              ×
+            </button>
+          </div>
+        </div>
+        <button type="button" class="btn-add-segment btn-add-segment--subtle" (click)="addBreakSegment()">
+          + Add segment
+        </button>
+      </div>
+    </section>
     
     <!-- Notes -->
-    <div class="form-group">
-      <label>Notes:</label>
-      <input type="text" [(ngModel)]="newShot.notes" name="notes" placeholder="e.g. uphill, tree trouble, flyer">
-    </div>
+    <section class="panel-card panel-card--notes">
+      <div class="panel-card-head">Notes (optional)</div>
+      <input
+        type="text"
+        class="notes-input"
+        [(ngModel)]="newShot.notes"
+        name="notes"
+        placeholder="e.g. uphill, wind, flyer"
+      />
+    </section>
 
     <div class="btn-group">
       <button type="submit" class="btn btn-primary">
