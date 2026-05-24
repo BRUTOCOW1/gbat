@@ -1,45 +1,134 @@
 <main class="profile-container">
   <div *ngIf="isLoading" class="loading">Loading...</div>
 
+  <header class="profile-hero">
     <h1>Your Profile</h1>
-    <p>Welcome! Use the options below to manage your golf-related details.</p>
-    <div class="profile-grid">
-      <!-- Manage Bags -->
-      <div class="profile-card" (click)="navigateTo('golf-bags')">
-        <h2>Bags</h2>
-        <p>View or manage your golf bags.</p>
-      </div>
-  
-      <!-- Manage Rounds -->
-      <div class="profile-card" (click)="navigateTo('round')">
-        <h2>Rounds</h2>
-        <p>Track your past rounds or start a new one.</p>
-      </div>
-  
-      <!-- Manage Clubs -->
-      <div class="profile-card" (click)="navigateTo('golf-clubs')">
-        <h2>Clubs</h2>
-        <p>View and manage your golf clubs.</p>
-      </div>
-  
-      <!-- Personal Info -->
-      <div class="profile-card" (click)="navigateTo('personal-info')">
-        <h2>Personal Info</h2>
-        <p>Update your account details and preferences.</p>
-      </div>
+    <p class="profile-greeting" *ngIf="profile">
+      {{ profile.name }} · {{ profile.email }}
+    </p>
+    <p class="profile-subtitle" *ngIf="!profile && !isLoading">
+      Welcome! Set up your profile and start logging rounds to unlock detailed stats.
+    </p>
+  </header>
+
+  <div class="profile-grid">
+    <div class="profile-card" (click)="navigateTo('golf-bags')">
+      <h2>Bags</h2>
+      <p>View or manage your golf bags.</p>
     </div>
 
-    <div *ngIf="!profile">
-      <p>You don't have a profile yet.</p>
-      <button class="btn btn-primary" (click)="createProfile()">Create Profile</button>
+    <div class="profile-card" (click)="navigateTo('round')">
+      <h2>Rounds</h2>
+      <p>Track your past rounds or start a new one.</p>
     </div>
 
-    <div *ngIf="profile">
-      <h2>Your Profile</h2>
-      <p><strong>Name:</strong> {{ profile.name }}</p>
-      <p><strong>Email:</strong> {{ profile.email }}</p>
-      <p><strong>Height:</strong> {{ profile.height }} cm</p>
-      <p><strong>Weight:</strong> {{ profile.weight }} kg</p>
-      <p><strong>Sex:</strong> {{ profile.sex }}</p>
+    <div class="profile-card" (click)="navigateTo('golf-clubs')">
+      <h2>Clubs</h2>
+      <p>View and manage your golf clubs.</p>
     </div>
-  </main>  
+  </div>
+
+  <div *ngIf="!profile && !isLoading">
+    <p>You don't have a profile yet.</p>
+    <button class="btn btn-primary" (click)="createProfile()">Create Profile</button>
+  </div>
+
+  <section class="player-stats" aria-label="Player statistics">
+    <div class="player-stats-loading" *ngIf="statsLoading">
+      Crunching your numbers…
+    </div>
+
+    <ng-container *ngIf="!statsLoading && playerStats">
+      <div class="player-stats-empty" *ngIf="!playerStats.hasData">
+        <h2>Your stats</h2>
+        <p>Play and log a round to see handicap estimates, approach trends, and more.</p>
+      </div>
+
+      <ng-container *ngIf="playerStats.hasData">
+        <div class="player-stats-header">
+          <h2 class="player-stats-title">Your stats</h2>
+          <p class="player-stats-subtitle">All-time from logged rounds &amp; shots</p>
+        </div>
+
+        <div class="handicap-card">
+          <span class="handicap-label">Estimated handicap</span>
+          <span class="handicap-value">{{ playerStats.estimatedHandicap ?? '—' }}</span>
+          <span class="handicap-hint" *ngIf="playerStats.handicapSampleSize > 0">
+            Based on {{ playerStats.handicapSampleSize }} scored round{{ playerStats.handicapSampleSize === 1 ? '' : 's' }}
+            (WHS-style differential, simplified)
+          </span>
+          <span class="handicap-hint" *ngIf="playerStats.handicapSampleSize === 0">
+            Log total strokes on a round to unlock a handicap estimate
+          </span>
+        </div>
+
+        <div class="player-stats-grid">
+          <div class="stat-block">
+            <span class="stat-block-value">{{ playerStats.totalRounds }}</span>
+            <span class="stat-block-label">Rounds</span>
+          </div>
+          <div class="stat-block">
+            <span class="stat-block-value">{{ playerStats.avgScore ?? '—' }}</span>
+            <span class="stat-block-label">Avg score</span>
+          </div>
+          <div class="stat-block">
+            <span class="stat-block-value">{{ playerStats.bestScore ?? '—' }}</span>
+            <span class="stat-block-label">Best round</span>
+          </div>
+          <div class="stat-block">
+            <span class="stat-block-value">{{ playerStats.avgPutts ?? '—' }}</span>
+            <span class="stat-block-label">Avg putts</span>
+          </div>
+          <div class="stat-block">
+            <span class="stat-block-value">{{ formatPct(playerStats.girPct) }}</span>
+            <span class="stat-block-label">GIR</span>
+          </div>
+          <div class="stat-block">
+            <span class="stat-block-value">{{ formatPct(playerStats.firPct) }}</span>
+            <span class="stat-block-label">FIR</span>
+          </div>
+          <div class="stat-block">
+            <span class="stat-block-value">{{ formatPct(playerStats.scramblingPct) }}</span>
+            <span class="stat-block-label">Scrambling</span>
+          </div>
+          <div class="stat-block">
+            <span class="stat-block-value">{{ playerStats.avgTeeDistance ?? '—' }}</span>
+            <span class="stat-block-label">Avg tee (yds)</span>
+          </div>
+        </div>
+
+        <p class="player-stats-meta">
+          {{ playerStats.totalShotsLogged }} shots logged across {{ playerStats.holesWithShots }} holes
+        </p>
+
+        <section class="approach-section" aria-label="Approach stats by distance">
+          <h3 class="approach-title">Approach by distance</h3>
+          <p class="approach-note">
+            Buckets at 50–200 yds (±12 yds). Avg strokes to hole includes the approach and everything after.
+          </p>
+
+          <div class="approach-table-wrap">
+            <table class="approach-table">
+              <thead>
+                <tr>
+                  <th scope="col">From</th>
+                  <th scope="col">Shots</th>
+                  <th scope="col">Avg to hole</th>
+                  <th scope="col">Green hit</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let d of approachDistances">
+                  <td class="approach-dist">{{ d }} yds</td>
+                  <td>{{ approachStat(d)?.shotCount || '—' }}</td>
+                  <td>{{ approachStat(d)?.avgStrokesToHole ?? '—' }}</td>
+                  <td>{{ formatPct(approachStat(d)?.greenHitPct) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </ng-container>
+    </ng-container>
+  </section>
+</main>

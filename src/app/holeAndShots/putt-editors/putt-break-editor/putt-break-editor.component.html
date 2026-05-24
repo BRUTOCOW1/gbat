@@ -1,0 +1,44 @@
+<div class="putt-editor putt-break-editor">
+  <p class="putt-editor-hint">Top-down — tap the curve to add breakpoints; drag handles to shape the read.</p>
+  <div class="putt-break-toolbar">
+    <button type="button" class="putt-toolbar-btn" (click)="resetLine()">Straight line</button>
+    <button type="button" class="putt-toolbar-btn" (click)="removeLastBreakpoint()" [disabled]="innerPoints().length === 0">
+      Remove last bend
+    </button>
+  </div>
+  <svg
+    #breakSvg
+    class="putt-editor-svg"
+    [attr.viewBox]="'0 0 ' + viewSize + ' ' + viewSize"
+    role="img"
+    aria-label="Putt break path"
+    (pointerdown)="onSvgPointerDown($event, breakSvg)"
+    (pointermove)="onSvgPointerMove($event, breakSvg)"
+    (pointerup)="onSvgPointerUp($event)"
+    (pointercancel)="onSvgPointerUp($event)"
+  >
+    <rect class="putt-green-bg" x="0" y="0" [attr.width]="viewSize" [attr.height]="viewSize" rx="6" />
+    <circle class="putt-cup-flag" [attr.cx]="points[points.length - 1].x" [attr.cy]="points[points.length - 1].y" r="3.5" />
+    <path class="putt-break-path" [attr.d]="curvePath()" />
+    <path class="putt-curve-hit" [attr.d]="curvePath()" />
+    <circle class="putt-ball" [attr.cx]="points[0].x" [attr.cy]="points[0].y" r="4" />
+    <g *ngFor="let pt of innerPoints(); let i = index">
+      <circle
+        class="break-handle"
+        [attr.cx]="pt.x"
+        [attr.cy]="pt.y"
+        r="5"
+        [attr.data-idx]="innerIndex(i)"
+      />
+      <circle class="break-handle-ring" [attr.cx]="pt.x" [attr.cy]="pt.y" r="8" />
+    </g>
+  </svg>
+  <ul class="putt-segment-preview" *ngIf="extrapolated.length">
+    <li *ngFor="let seg of extrapolated">
+      {{ seg.direction || '—' }} · sev {{ seg.severity }} · {{ seg.distance_start }}–{{ seg.distance_end }} ft
+    </li>
+  </ul>
+  <p class="putt-editor-summary putt-editor-summary--muted" *ngIf="!extrapolated.length">
+    Bend the curve or tap it to add breakpoints — sections appear below.
+  </p>
+</div>

@@ -88,19 +88,22 @@
           </div>
           <input type="hidden" [(ngModel)]="newShot.club_id" name="club_id" [required]="golferClubs.length > 0" />
         </div>
-        <div class="panel-field" *ngIf="!teeShotLocked">
-          <label class="field-label-min" for="shot_type">Shot type</label>
-          <select id="shot_type" [(ngModel)]="newShot.shot_type" name="shot_type" required (ngModelChange)="onShotTypeChanged()" class="select-compact">
-            <option>Tee Shot</option>
-            <option>Approach</option>
-            <option>Layup</option>
-            <option>Recovery</option>
-            <option>Punchout</option>
-            <option>Chip</option>
-            <option>Putt</option>
-          </select>
+        <div class="panel-field panel-field--shot-type" *ngIf="!teeShotLocked">
+          <span class="field-label-min">Shot type</span>
+          <div class="chip-row chip-row--shot-type" role="group" aria-label="Shot type">
+            <button
+              type="button"
+              class="opt-chip opt-chip--shot-type"
+              *ngFor="let type of shotTypeOptions"
+              [class.active]="isShotTypeActive(type)"
+              (click)="pickShotType(type)"
+            >
+              {{ type }}
+            </button>
+          </div>
+          <input type="hidden" [(ngModel)]="newShot.shot_type" name="shot_type" required />
         </div>
-        <div class="panel-field tee-locked" *ngIf="teeShotLocked">
+        <div class="panel-field panel-field--shot-type tee-locked" *ngIf="teeShotLocked">
           <span class="field-label-min">Shot</span>
           <div class="locked-pills" aria-live="polite">
             <span class="pill">Tee shot</span>
@@ -116,7 +119,7 @@
 
     <section class="panel-card" *ngIf="newShot.shot_type !== 'Putt'">
       <div class="panel-card-head">Carry &amp; landing</div>
-      <p class="panel-card-lede">Tap yards to adjust; use exact only if you need a specific number.</p>
+      <p class="panel-card-lede" *ngIf="advancedShotFields">Tap yards to adjust; use exact only if you need a specific number.</p>
       <div class="basics-grid">
         <div class="basics-col basics-col--distance">
           <span class="field-label-min">Carry (yds)</span>
@@ -143,12 +146,50 @@
             <button type="button" class="step-btn plus" (click)="adjustDistance(5)">+5</button>
             <button type="button" class="step-btn plus" (click)="adjustDistance(10)">+10</button>
           </div>
-          <small *ngIf="averageDistanceYds != null" class="dist-hint">Avg this club: ~{{ averageDistanceYds }} yds</small>
+          <button
+            type="button"
+            class="quick-preset-btn"
+            *ngIf="!advancedShotFields && averageDistanceYds != null"
+            (click)="applyAverageDistance()"
+          >
+            Use avg · ~{{ averageDistanceYds }} yds
+          </button>
+          <small *ngIf="averageDistanceYds != null && advancedShotFields" class="dist-hint">Avg this club: ~{{ averageDistanceYds }} yds</small>
           <small *ngIf="averageDistanceYds == null && newShot.club_id" class="dist-hint muted">No history yet — steps only, or type exact yds</small>
         </div>
 
         <div class="basics-col basics-col--landing">
-          <div class="panel-field" *ngIf="!teeShotLocked">
+          <div class="panel-field panel-field--compact">
+            <span class="field-label-min">Start line</span>
+            <div class="chip-row chip-row--tight" role="group" aria-label="Pull, straight, or push">
+              <button
+                type="button"
+                class="opt-chip"
+                *ngFor="let opt of startLineOptions"
+                [class.active]="isStartLineActive(opt)"
+                (click)="pickStartLine(opt)"
+              >
+                {{ opt }}
+              </button>
+            </div>
+          </div>
+
+          <div class="panel-field panel-field--compact" *ngIf="!advancedShotFields">
+            <span class="field-label-min">Where it ended</span>
+            <div class="chip-row chip-row--tight" role="group" aria-label="Landing surface">
+              <button
+                type="button"
+                class="opt-chip"
+                *ngFor="let surf of quickSurfaceOptions"
+                [class.active]="isQuickSurfaceActive(surf.value)"
+                (click)="pickQuickSurface(surf.value)"
+              >
+                {{ surf.label }}
+              </button>
+            </div>
+          </div>
+
+          <div class="panel-field" *ngIf="advancedShotFields && !teeShotLocked">
             <label class="field-label-min" for="lie">Lie (before)</label>
             <select id="lie" [(ngModel)]="newShot.lie" name="lie" class="select-compact">
               <option *ngIf="newShot.shot_type === 'Tee Shot'">Tee Box</option>
@@ -163,7 +204,7 @@
               <option>OB</option>
             </select>
           </div>
-          <div class="panel-field">
+          <div class="panel-field" *ngIf="advancedShotFields">
             <label class="field-label-min" for="result_location">Surface (where it ended)</label>
             <select id="result_location" [(ngModel)]="newShot.result_location" name="result_location" class="select-compact">
               <option>Fairway</option>
@@ -177,7 +218,21 @@
               <option>Made</option>
             </select>
           </div>
-          <div class="panel-field">
+          <div class="panel-field panel-field--compact" *ngIf="!advancedShotFields">
+            <span class="field-label-min">Ball flight</span>
+            <div class="chip-row chip-row--tight" role="group" aria-label="Shot shape">
+              <button
+                type="button"
+                class="opt-chip"
+                *ngFor="let shape of quickShapeOptions"
+                [class.active]="isQuickShapeActive(shape)"
+                (click)="pickQuickShape(shape)"
+              >
+                {{ shape }}
+              </button>
+            </div>
+          </div>
+          <div class="panel-field" *ngIf="advancedShotFields">
             <span class="field-label-min">Side of hole</span>
             <div class="landing-lateral landing-lateral--grid" role="group" aria-label="Landing side relative to hole">
               <button type="button" class="lat-btn" [class.active]="isLandingLateralActive('Left')" (click)="setLandingLateral('Left')">Left</button>
@@ -186,11 +241,12 @@
             </div>
             <p class="landing-preview">{{ landingSummary() || '—' }}</p>
           </div>
+          <p class="landing-preview landing-preview--quick" *ngIf="!advancedShotFields">{{ landingSummary() || '—' }}</p>
         </div>
       </div>
     </section>
 
-    <section class="panel-card" *ngIf="newShot.shot_type !== 'Putt'">
+    <section class="panel-card" *ngIf="newShot.shot_type !== 'Putt' && advancedShotFields">
       <div class="panel-card-head">Plan</div>
       <div class="plan-block">
         <span class="field-label-min">Intent</span>
@@ -206,7 +262,7 @@
           </button>
         </div>
       </div>
-      <div class="plan-block" *ngIf="advancedShotFields">
+      <div class="plan-block">
         <span class="field-label-min">Vs target (miss)</span>
         <div class="chip-row" role="group" aria-label="Miss relative to target line">
           <button
@@ -223,7 +279,7 @@
     </section>
 
     <!-- Flight + strike: same card language as above -->
-    <div class="swing-maps-panel panel-card-continuation" *ngIf="newShot.shot_type !== 'Putt'">
+    <div class="swing-maps-panel panel-card-continuation" *ngIf="newShot.shot_type !== 'Putt' && advancedShotFields">
       <div class="swing-maps-head">
         <span class="swing-maps-title">Flight &amp; strike</span>
         <span class="swing-maps-hint" *ngIf="advancedShotFields">Air shape · face at impact · feel</span>
@@ -354,16 +410,30 @@
             </div>
           </div>
           <div class="panel-field plan-block plan-block--flush">
-            <span class="field-label-min">Vs line</span>
-            <div class="chip-row" role="group" aria-label="Miss relative to your line">
+            <span class="field-label-min">Vs your line</span>
+            <div class="chip-row chip-row--tight" role="group" aria-label="Putt miss direction">
               <button
                 type="button"
                 class="opt-chip"
-                *ngFor="let opt of missBiasOptions"
-                [class.active]="isMissBiasActive(opt)"
-                (click)="pickMissBias(opt)"
+                *ngFor="let opt of puttLineMissOptions"
+                [class.active]="isPuttLineMissActive(opt.value)"
+                (click)="pickPuttLineMiss(opt.value)"
               >
-                {{ opt }}
+                {{ opt.label }}
+              </button>
+            </div>
+          </div>
+          <div class="panel-field plan-block plan-block--flush">
+            <span class="field-label-min">Pace</span>
+            <div class="chip-row chip-row--tight" role="group" aria-label="Putt pace">
+              <button
+                type="button"
+                class="opt-chip"
+                *ngFor="let opt of puttPaceOptions"
+                [class.active]="isPuttPaceActive(opt.value)"
+                (click)="pickPuttPace(opt.value)"
+              >
+                {{ opt.label }}
               </button>
             </div>
           </div>
@@ -372,17 +442,31 @@
       </div>
     </section>
 
+    <section class="panel-card putt-visual-card" *ngIf="newShot.shot_type === 'Putt' && !newShot.is_kick_in">
+      <div class="panel-card-head">Elevation (slope)</div>
+      <p class="panel-card-lede">Curved profile — tap the line to add points; sections fill in by distance.</p>
+      <app-putt-slope-editor
+        [slope]="newShot.slope || 'Flat'"
+        [segments]="slopeSegments"
+        [savedPoints]="slopeControlPoints"
+        [puttLength]="newShot.putt_length ?? 0"
+        (slopeChange)="onPuttSlopeFromEditor($event)"
+      ></app-putt-slope-editor>
+    </section>
+
+    <section class="panel-card putt-visual-card" *ngIf="newShot.shot_type === 'Putt' && !newShot.is_kick_in">
+      <div class="panel-card-head">Break path</div>
+      <p class="panel-card-lede">Curved read — tap the line to add breakpoints; break segments extrapolate below.</p>
+      <app-putt-break-editor
+        [segments]="breakSegments"
+        [puttLength]="newShot.putt_length ?? 0"
+        (segmentsChange)="onBreakSegmentsFromEditor($event)"
+      ></app-putt-break-editor>
+    </section>
+
     <section class="panel-card" *ngIf="newShot.shot_type === 'Putt' && !newShot.is_kick_in && advancedShotFields">
       <div class="panel-card-head">Green &amp; pace</div>
       <div class="putt-advanced-grid">
-        <div class="panel-field">
-          <label class="field-label-min" for="slope_putt">Slope</label>
-          <select id="slope_putt" [(ngModel)]="newShot.slope" name="slope" class="select-compact">
-            <option>Flat</option>
-            <option>Uphill</option>
-            <option>Downhill</option>
-          </select>
-        </div>
         <div class="panel-field">
           <label class="field-label-min" for="grain_putt">Grain</label>
           <select id="grain_putt" [(ngModel)]="newShot.grain_direction" name="grain_direction" class="select-compact">
@@ -414,25 +498,11 @@
           </select>
         </div>
       </div>
-      <div class="plan-block putt-pace-block">
-        <span class="field-label-min">Pace</span>
-        <div class="severity-chips-row" role="group" aria-label="Speed vs read">
-          <button
-            type="button"
-            class="severity-chip"
-            *ngFor="let step of puttSpeedQualitySteps"
-            [class.active]="isPuttSpeedQualityActive(step.value)"
-            (click)="pickPuttSpeedQuality(step.value)"
-          >
-            {{ step.label }}
-          </button>
-        </div>
-      </div>
     </section>
 
     <section class="panel-card" *ngIf="newShot.shot_type === 'Putt' && !newShot.is_kick_in && advancedShotFields">
-      <div class="panel-card-head">Break segments</div>
-      <p class="panel-card-lede">Optional — multiple turns on long putts.</p>
+      <div class="panel-card-head">Break segments (table)</div>
+      <p class="panel-card-lede">Fine-tune values from the break editor above.</p>
       <div class="break-segments-container">
         <div class="break-segment" *ngFor="let segment of breakSegments; let i = index">
           <div class="segment-row segment-row--putt">

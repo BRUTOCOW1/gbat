@@ -21,6 +21,8 @@ import { GolfHoleComponent } from './holeAndShots/golf-hole/golf-hole.component'
 import { GolfShotComponent } from './holeAndShots/golf-shot/golf-shot.component';
 import { GolfShotEntryComponent } from './holeAndShots/golf-shot-entry/golf-shot-entry.component';
 import { PenaltyShotEntryComponent } from './holeAndShots/penalty-shot-entry/penalty-shot-entry.component';
+import { PuttSlopeEditorComponent } from './holeAndShots/putt-editors/putt-slope-editor/putt-slope-editor.component';
+import { PuttBreakEditorComponent } from './holeAndShots/putt-editors/putt-break-editor/putt-break-editor.component';
 
 // ROUND 
 import { GolfRoundComponent } from './round/golf-round/golf-round.component';
@@ -53,6 +55,8 @@ import { routes } from './app.routes'
     GolfShotComponent,
     GolfShotEntryComponent,
     PenaltyShotEntryComponent,
+    PuttSlopeEditorComponent,
+    PuttBreakEditorComponent,
     GolfHoleComponent,
     GolfClubComponent,
     AddGolfClubComponent,

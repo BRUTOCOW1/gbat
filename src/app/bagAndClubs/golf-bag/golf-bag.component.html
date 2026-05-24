@@ -1,142 +1,310 @@
-<div class="golf-bags-page">
-  <header class="bags-hero">
-    <p class="bags-eyebrow">Equipment</p>
-    <h1 class="bags-title">Your golf bags</h1>
-    <p class="bags-subtitle">
-      Select a bag to see what’s in play. Expand a club for specs and how often you’ve used it in rounds.
-    </p>
-    <div class="bags-actions">
-      <button type="button" class="btn-bags-cta" (click)="navigateTocreateBag()">
-        <span class="btn-bags-cta-label">New bag</span>
-        <span class="btn-bags-cta-hint" aria-hidden="true">→</span>
-      </button>
-      <button type="button" class="btn-bags-secondary" (click)="navigateToAddClub()">
-        Add custom club
-      </button>
+<div class="bag-workspace">
+  <header class="bag-header">
+    <div class="bag-header-copy">
+      <p class="bag-eyebrow">Equipment</p>
+      <h1 class="bag-title">My Bag</h1>
+      <p class="bag-subtitle">Manage clubs, swap gear, and track how each stick performs in your rounds.</p>
+    </div>
+    <div class="bag-header-actions">
+      <button type="button" class="btn-bag-primary" (click)="navigateTocreateBag()">New bag</button>
+      <button type="button" class="btn-bag-ghost" (click)="navigateToAddClub(selectedBagId ?? undefined)">Custom club</button>
     </div>
   </header>
 
-  <div class="bags-loading" *ngIf="pageLoading">
-    <span class="bags-loading-dot" aria-hidden="true"></span>
-    Loading bags…
+  <div class="bag-loading" *ngIf="pageLoading">
+    <span class="pulse-dot" aria-hidden="true"></span>
+    Loading your bags…
   </div>
 
-  <section class="bags-empty" *ngIf="!pageLoading && golfBags.length === 0">
-    <p>You don’t have any bags yet. Create one, then add clubs from the catalog.</p>
-    <button type="button" class="btn-bags-cta" (click)="navigateTocreateBag()">Create your first bag</button>
+  <section class="bag-empty" *ngIf="!pageLoading && golfBags.length === 0">
+    <div class="bag-empty-icon" aria-hidden="true">⛳</div>
+    <h2>No bags yet</h2>
+    <p>Create a bag, pick clubs from the catalog, and start tracking usage on the course.</p>
+    <button type="button" class="btn-bag-primary" (click)="navigateTocreateBag()">Create your first bag</button>
   </section>
 
-  <div class="bag-list" *ngIf="!pageLoading && golfBags.length > 0">
-    <article
-      class="bag-card"
-      *ngFor="let bag of golfBags"
-      (click)="selectBag(bag.golfbag_id, $event)"
-      [class.selected]="bag.golfbag_id === selectedBagId"
-    >
-      <div class="bag-card-top">
-        <h2 class="bag-name">{{ bag.name }}</h2>
-        <span class="bag-chevron" [class.open]="bag.golfbag_id === selectedBagId" aria-hidden="true">▶</span>
-      </div>
+  <div class="bag-layout" *ngIf="!pageLoading && golfBags.length > 0">
+    <aside class="bag-sidebar" aria-label="Your golf bags">
+      <div class="sidebar-label">Bags</div>
+      <button
+        type="button"
+        class="bag-tab"
+        *ngFor="let bag of golfBags"
+        [class.active]="bag.golfbag_id === selectedBagId"
+        (click)="selectBag(bag.golfbag_id)"
+      >
+        <span class="bag-tab-name">{{ bag.name }}</span>
+        <span class="bag-tab-count">{{ clubCountForBag(bag.golfbag_id) }} clubs</span>
+      </button>
+    </aside>
 
-      <div class="bag-card-actions" *ngIf="bag.golfbag_id === selectedBagId" (click)="$event.stopPropagation()">
-        <button type="button" class="btn-bags-inline" (click)="navigateToAddClubs(bag.golfbag_id, $event)">
-          Add clubs from catalog
-        </button>
-      </div>
-
-      <div class="club-panel" *ngIf="bag.golfbag_id === selectedBagId">
-        <p class="club-panel-hint" *ngIf="clubsByBag[bag.golfbag_id]?.length === 0">
-          No clubs in this bag yet.
-        </p>
-
-        <div class="club-grid" *ngIf="clubsByBag[bag.golfbag_id]?.length">
-          <div class="club-card" *ngFor="let club of clubsByBag[bag.golfbag_id]">
-            <button
-              type="button"
-              class="club-card-toggle"
-              (click)="toggleClubDetails(club, $event)"
-              [attr.aria-expanded]="clubExpanded[club.golferClubId]"
-            >
-              <div class="club-card-head">
-                <div class="club-card-titles">
-                  <span class="club-maker-line">{{ club.maker }} {{ club.set }}</span>
-                  <span class="club-number-line">
-                    <span class="club-number">{{ club.number }}</span>
-                    <span class="club-category-pill">{{ club.category }}</span>
-                    <span [class]="tierBadgeClass(club)">{{ labelForTier(tierOf(club)) }}</span>
-                  </span>
-                </div>
-                <span class="club-chevron" [class.open]="clubExpanded[club.golferClubId]">▶</span>
-              </div>
-            </button>
-
-            <div class="club-detail" *ngIf="clubExpanded[club.golferClubId]">
-              <div class="club-spec-block">
-                <h3 class="club-detail-heading">Specs</h3>
-                <ul class="club-spec-list">
-                  <li *ngIf="club.loft"><span>Loft</span> <strong>{{ club.loft }}°</strong></li>
-                  <li *ngIf="club.length"><span>Length</span> <strong>{{ club.length }}"</strong></li>
-                  <li *ngIf="club.club_offset != null && club.club_offset !== ''">
-                    <span>Offset</span> <strong>{{ club.club_offset }}"</strong>
-                  </li>
-                  <li *ngIf="club.lie_angle"><span>Lie</span> <strong>{{ club.lie_angle }}°</strong></li>
-                  <li *ngIf="club.bounce"><span>Bounce</span> <strong>{{ club.bounce }}°</strong></li>
-                </ul>
-              </div>
-
-              <div class="club-stats-block">
-                <h3 class="club-detail-heading">Round history</h3>
-                <div class="club-stats-loading" *ngIf="statsLoading[club.golferClubId]">
-                  <span class="bags-loading-dot" aria-hidden="true"></span>
-                  Loading stats…
-                </div>
-                <ng-container *ngIf="!statsLoading[club.golferClubId] && clubStats[club.golferClubId] as st">
-                  <ng-container *ngIf="st.totalShots > 0; else clubNoStats">
-                    <div class="club-stats-grid">
-                      <div class="club-stat">
-                        <span class="club-stat-value">{{ st.totalShots }}</span>
-                        <span class="club-stat-label">Total shots</span>
-                      </div>
-                      <div class="club-stat">
-                        <span class="club-stat-value">{{ st.roundsWithClub }}</span>
-                        <span class="club-stat-label">Rounds used</span>
-                      </div>
-                      <div class="club-stat">
-                        <span class="club-stat-value">{{ st.avgShotsPerRound ?? '—' }}</span>
-                        <span class="club-stat-label">Avg / round</span>
-                      </div>
-                      <div class="club-stat">
-                        <span class="club-stat-value">{{ st.avgCarryYds ?? '—' }}</span>
-                        <span class="club-stat-label">Avg carry (yds)</span>
-                      </div>
-                      <div class="club-stat">
-                        <span class="club-stat-value">{{ st.fullSwingCount }}</span>
-                        <span class="club-stat-label">Full swings</span>
-                      </div>
-                      <div class="club-stat">
-                        <span class="club-stat-value">{{ st.puttCount }}</span>
-                        <span class="club-stat-label">Putts logged</span>
-                      </div>
-                      <div class="club-stat club-stat-wide" *ngIf="st.penaltyCount > 0">
-                        <span class="club-stat-value">{{ st.penaltyCount }}</span>
-                        <span class="club-stat-label">Penalty strokes (this club)</span>
-                      </div>
-                    </div>
-                    <p class="club-last-used">
-                      Last used: <strong>{{ formatLastUsed(st.lastUsedDate) }}</strong>
-                    </p>
-                  </ng-container>
-                  <ng-template #clubNoStats>
-                    <p class="club-stats-none">
-                      No recorded shots with this club yet. Stats appear after you log shots in a round.
-                    </p>
-                  </ng-template>
-                </ng-container>
-              </div>
-            </div>
-          </div>
+    <main class="bag-main" *ngIf="selectedBag as bag">
+      <div class="bag-main-header">
+        <div class="bag-main-title-block">
+          <h2 class="bag-main-title">{{ bag.name }}</h2>
+          <p class="bag-main-meta">
+            <span>{{ selectedClubs.length }} clubs</span>
+            <span class="meta-dot" aria-hidden="true">·</span>
+            <span *ngIf="statsLoading">Loading stats…</span>
+            <span *ngIf="!statsLoading">Usage stats from your rounds</span>
+          </p>
+        </div>
+        <div class="bag-main-actions">
+          <button type="button" class="btn-bag-primary btn-add-clubs" (click)="openAddPanel()">
+            + Add clubs
+          </button>
+          <button
+            type="button"
+            class="btn-bag-danger"
+            (click)="deleteBag()"
+            [disabled]="bagDeleting"
+          >
+            {{ bagDeleting ? 'Deleting…' : 'Delete bag' }}
+          </button>
         </div>
       </div>
-    </article>
+
+      <div class="bag-clubs-loading" *ngIf="clubsLoading">
+        <span class="pulse-dot" aria-hidden="true"></span>
+        Loading clubs…
+      </div>
+
+      <section class="bag-empty-clubs" *ngIf="!clubsLoading && selectedClubs.length === 0">
+        <p>This bag is empty. Add clubs from the catalog to fill your 14 slots.</p>
+        <button type="button" class="btn-bag-primary" (click)="openAddPanel()">Browse catalog</button>
+      </section>
+
+      <div class="bag-club-sections" *ngIf="!clubsLoading && selectedClubs.length > 0">
+        <section class="club-section" *ngFor="let group of groupedClubs">
+          <h3 class="club-section-title">{{ categoryLabel(group.category) }}</h3>
+
+          <div class="club-slot-grid">
+            <article
+              class="club-slot"
+              *ngFor="let club of group.clubs"
+              [class.expanded]="expandedClubId === club.golferClubId"
+            >
+              <div class="club-slot-top">
+                <div class="club-slot-identity">
+                  <span class="club-slot-number">{{ club.number }}</span>
+                  <div class="club-slot-names">
+                    <span class="club-slot-maker">{{ club.maker }} {{ club.set }}</span>
+                    <span class="club-slot-specs">
+                      <span *ngIf="club.loft">{{ club.loft }}°</span>
+                      <span *ngIf="club.length">{{ club.length }}"</span>
+                    </span>
+                  </div>
+                </div>
+                <div class="club-slot-top-actions">
+                  <span [class]="tierBadgeClass(club)">{{ labelForTier(tierOf(club)) }}</span>
+                  <button
+                    type="button"
+                    class="club-slot-remove"
+                    (click)="removeClub(club, $event)"
+                    [disabled]="isRemovingClub(club.golferClubId)"
+                    [attr.aria-label]="'Remove ' + club.number + ' from bag'"
+                    title="Remove from bag"
+                  >
+                    {{ isRemovingClub(club.golferClubId) ? '…' : '×' }}
+                  </button>
+                </div>
+              </div>
+
+              <div class="club-slot-stats" *ngIf="clubStats[club.golferClubId] as st">
+                <ng-container *ngIf="st.totalShots > 0; else noUsage">
+                  <div class="stat-chip">
+                    <span class="stat-chip-value">{{ st.totalShots }}</span>
+                    <span class="stat-chip-label">Shots</span>
+                  </div>
+                  <div class="stat-chip">
+                    <span class="stat-chip-value">{{ st.roundsWithClub }}</span>
+                    <span class="stat-chip-label">Rounds</span>
+                  </div>
+                  <div class="stat-chip">
+                    <span class="stat-chip-value">{{ st.avgCarryYds ?? '—' }}</span>
+                    <span class="stat-chip-label">Avg carry</span>
+                  </div>
+                  <div class="stat-chip stat-chip-muted">
+                    <span class="stat-chip-value">{{ formatShortDate(st.lastUsedDate) }}</span>
+                    <span class="stat-chip-label">Last used</span>
+                  </div>
+                </ng-container>
+                <ng-template #noUsage>
+                  <p class="club-no-stats">No shots logged yet</p>
+                </ng-template>
+              </div>
+              <div class="club-slot-stats club-slot-stats-loading" *ngIf="statsLoading && !clubStats[club.golferClubId]">
+                <span class="pulse-dot" aria-hidden="true"></span>
+              </div>
+
+              <div class="club-slot-actions">
+                <button
+                  type="button"
+                  class="btn-slot"
+                  (click)="toggleClubExpand(club.golferClubId, $event)"
+                  [attr.aria-expanded]="expandedClubId === club.golferClubId"
+                >
+                  {{ expandedClubId === club.golferClubId ? 'Less' : 'Details' }}
+                </button>
+                <button type="button" class="btn-slot btn-slot-accent" (click)="openSwapPanel(club, $event)">
+                  Swap
+                </button>
+              </div>
+
+              <div class="club-slot-detail" *ngIf="expandedClubId === club.golferClubId">
+                <div class="detail-specs">
+                  <h4>Specs</h4>
+                  <dl class="spec-grid">
+                    <div *ngIf="club.loft"><dt>Loft</dt><dd>{{ club.loft }}°</dd></div>
+                    <div *ngIf="club.length"><dt>Length</dt><dd>{{ club.length }}"</dd></div>
+                    <div *ngIf="club.lie_angle"><dt>Lie</dt><dd>{{ club.lie_angle }}°</dd></div>
+                    <div *ngIf="club.club_offset"><dt>Offset</dt><dd>{{ club.club_offset }}"</dd></div>
+                    <div *ngIf="club.bounce"><dt>Bounce</dt><dd>{{ club.bounce }}°</dd></div>
+                  </dl>
+                </div>
+
+                <div class="detail-stats" *ngIf="clubStats[club.golferClubId] as st">
+                  <h4>Full stats</h4>
+                  <ng-container *ngIf="st.totalShots > 0; else detailNoStats">
+                    <div class="detail-stat-grid">
+                      <div class="detail-stat">
+                        <span class="detail-stat-value">{{ st.avgShotsPerRound ?? '—' }}</span>
+                        <span class="detail-stat-label">Avg shots / round</span>
+                      </div>
+                      <div class="detail-stat">
+                        <span class="detail-stat-value">{{ st.fullSwingCount }}</span>
+                        <span class="detail-stat-label">Full swings</span>
+                      </div>
+                      <div class="detail-stat">
+                        <span class="detail-stat-value">{{ st.puttCount }}</span>
+                        <span class="detail-stat-label">Putts</span>
+                      </div>
+                      <div class="detail-stat" *ngIf="st.penaltyCount > 0">
+                        <span class="detail-stat-value">{{ st.penaltyCount }}</span>
+                        <span class="detail-stat-label">Penalties</span>
+                      </div>
+                    </div>
+                    <p class="detail-last-used">Last used <strong>{{ formatLastUsed(st.lastUsedDate) }}</strong></p>
+                  </ng-container>
+                  <ng-template #detailNoStats>
+                    <p class="club-no-stats">Log shots in a round to see performance data here.</p>
+                  </ng-template>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+      </div>
+    </main>
   </div>
+
+  <div class="panel-backdrop" *ngIf="panelOpen" (click)="closePanel()" aria-hidden="true"></div>
+  <aside
+    class="catalog-panel"
+    *ngIf="panelOpen"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-label]="panelMode === 'swap' ? 'Swap club' : 'Add clubs to bag'"
+  >
+    <header class="panel-header">
+      <div>
+        <p class="panel-eyebrow">{{ panelMode === 'swap' ? 'Replace club' : 'Add to bag' }}</p>
+        <h2 class="panel-title">
+          <ng-container *ngIf="panelMode === 'swap' && swapTarget">
+            Swap {{ swapTarget.number }}
+          </ng-container>
+          <ng-container *ngIf="panelMode === 'add'">Catalog</ng-container>
+        </h2>
+        <p class="panel-subtitle" *ngIf="panelMode === 'swap' && swapTarget">
+          Pick a replacement {{ swapTarget.category | lowercase }} from the catalog.
+        </p>
+      </div>
+      <button type="button" class="panel-close" (click)="closePanel()" aria-label="Close">×</button>
+    </header>
+
+    <div class="panel-filters">
+      <input
+        type="search"
+        class="panel-search"
+        [(ngModel)]="catalogSearch"
+        placeholder="Search maker, model, number…"
+        aria-label="Search catalog"
+      />
+      <select class="panel-select" [(ngModel)]="catalogCategoryFilter" aria-label="Filter by category">
+        <option value="">All categories</option>
+        <option value="DRIVER">Driver</option>
+        <option value="FAIRWAY WOOD">Fairway wood</option>
+        <option value="HYBRID">Hybrid</option>
+        <option value="IRON">Iron</option>
+        <option value="WEDGE">Wedge</option>
+        <option value="PUTTER">Putter</option>
+      </select>
+      <select class="panel-select" [(ngModel)]="catalogTierFilter" aria-label="Filter by catalog tier">
+        <option value="">All sources</option>
+        <option value="generic">Generic</option>
+        <option value="oem">OEM samples</option>
+        <option value="custom">Custom</option>
+      </select>
+    </div>
+
+    <div class="panel-loading" *ngIf="catalogLoading">
+      <span class="pulse-dot" aria-hidden="true"></span>
+      Loading catalog…
+    </div>
+
+    <div class="panel-empty" *ngIf="!catalogLoading && filteredCatalog.length === 0">
+      <p>No matching clubs. Try a different filter or add your own specs.</p>
+      <button type="button" class="btn-bag-primary" (click)="navigateToAddClubFromPanel()">
+        Add custom club
+      </button>
+    </div>
+
+    <ul class="panel-club-list" *ngIf="!catalogLoading && filteredCatalog.length > 0">
+      <li *ngFor="let club of filteredCatalog">
+        <button
+          type="button"
+          class="panel-club-row"
+          [class.selected]="selectedCatalogIds.has(club.id)"
+          (click)="toggleCatalogSelection(club.id)"
+        >
+          <span class="panel-club-check" aria-hidden="true">
+            {{ selectedCatalogIds.has(club.id) ? '✓' : '' }}
+          </span>
+          <span class="panel-club-info">
+            <span class="panel-club-name">{{ club.maker }} {{ club.set }} · {{ club.number }}</span>
+            <span class="panel-club-meta">
+              {{ club.category }}
+              <ng-container *ngIf="club.loft"> · {{ club.loft }}°</ng-container>
+            </span>
+          </span>
+          <span [class]="tierBadgeClass(club)">{{ labelForTier(tierOf(club)) }}</span>
+        </button>
+      </li>
+    </ul>
+
+    <footer class="panel-footer">
+      <span class="panel-selection-count" *ngIf="panelMode === 'add'">
+        {{ selectedCatalogIds.size }} selected
+      </span>
+      <span class="panel-selection-count" *ngIf="panelMode === 'swap'">
+        {{ selectedCatalogIds.size === 1 ? '1 club selected' : 'Pick one club' }}
+      </span>
+      <div class="panel-footer-actions">
+        <button type="button" class="btn-bag-ghost" (click)="navigateToAddClubFromPanel()">
+          Custom club
+        </button>
+        <button type="button" class="btn-bag-ghost" (click)="closePanel()" [disabled]="panelSaving">
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn-bag-primary"
+          (click)="confirmPanelAction()"
+          [disabled]="panelSaving || selectedCatalogIds.size === 0"
+        >
+          {{ panelSaving ? 'Saving…' : panelMode === 'swap' ? 'Confirm swap' : 'Add to bag' }}
+        </button>
+      </div>
+    </footer>
+  </aside>
 </div>

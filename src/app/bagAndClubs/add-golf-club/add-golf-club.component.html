@@ -1,20 +1,120 @@
 <div class="add-club-container">
-  <h2>Add New Golf Club</h2>
+  <h2>Add custom club</h2>
   <p class="add-club-lede">
-    Enter your own specs for a club that is not in the catalog. These are saved as
-    <strong>custom</strong> clubs (you can filter to them on the Golf Clubs page). For a quick
-    baseline bag, use <strong>Seed catalog</strong> there for generic and OEM sample clubs.
+    Add a club that is not in the bundled catalog. Saved rows show as
+    <strong>custom</strong> on the Golf Clubs page. Use
+    <strong>Seed catalog</strong> there for generic and OEM sample clubs.
   </p>
 
-  <form [formGroup]="clubForm" (ngSubmit)="onSubmit()" class="club-form">
+  <div class="bag-context" *ngIf="bagId">
+    <label class="bag-context-check">
+      <input type="checkbox" [(ngModel)]="addToBagAfterSave" [ngModelOptions]="{ standalone: true }" />
+      Add to my bag after saving
+    </label>
+  </div>
+
+  <div class="mode-tabs">
+    <button
+      type="button"
+      class="mode-tab"
+      [class.active]="entryMode === 'manual'"
+      (click)="setMode('manual')"
+    >
+      Enter manually
+    </button>
+    <button
+      type="button"
+      class="mode-tab"
+      [class.active]="entryMode === 'import'"
+      (click)="setMode('import')"
+    >
+      Import specs
+    </button>
+  </div>
+
+  <section class="import-panel" *ngIf="entryMode === 'import'">
+    <p class="import-help">
+      Copy specs from a manufacturer page and paste below — we’ll fill the form for you.
+      Or paste a product URL if URL import is set up on your backend.
+    </p>
+
+    <div class="import-block">
+      <label for="importPaste">Paste specs</label>
+      <textarea
+        id="importPaste"
+        class="form-control import-textarea"
+        [(ngModel)]="importPaste"
+        [ngModelOptions]="{ standalone: true }"
+        rows="6"
+        placeholder="Example:&#10;Titleist Vokey SM10&#10;Loft: 56°&#10;Bounce: 10°&#10;Lie: 64°&#10;Length: 35.25&quot;"
+        (keydown)="onImportPasteKeydown($event)"
+      ></textarea>
+      <div class="import-actions">
+        <button type="button" class="btn btn-secondary" (click)="parsePaste()">
+          Parse &amp; fill form
+        </button>
+        <button type="button" class="btn btn-link" (click)="fillExamplePaste()">
+          Try example
+        </button>
+        <span class="import-kbd-hint">Ctrl+Enter to parse</span>
+      </div>
+    </div>
+
+    <div class="import-divider">or</div>
+
+    <div class="import-block">
+      <label for="importUrl">Product page URL</label>
+      <div class="url-row">
+        <input
+          type="url"
+          id="importUrl"
+          class="form-control"
+          [(ngModel)]="importUrl"
+          [ngModelOptions]="{ standalone: true }"
+          placeholder="https://www.titleist.com/..."
+        />
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="fetchFromUrl()"
+          [disabled]="isImporting || !importUrl.trim()"
+        >
+          <span *ngIf="!isImporting">Fetch</span>
+          <span *ngIf="isImporting">Fetching…</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section class="parse-preview" *ngIf="parsedFieldEntries.length">
+    <div class="parse-preview-header">
+      <h3 class="parse-preview-title">Detected from import</h3>
+      <button type="button" class="btn btn-link parse-preview-dismiss" (click)="clearParsedPreview()">
+        Dismiss
+      </button>
+    </div>
+    <ul class="parse-preview-list">
+      <li *ngFor="let field of parsedFieldEntries">
+        <span class="parse-preview-label">{{ field.label }}</span>
+        <span class="parse-preview-value">{{ field.value }}</span>
+      </li>
+    </ul>
+    <p class="parse-preview-missing" *ngIf="missingFieldLabels.length">
+      Still need: {{ missingFieldLabels.join(', ') }}
+    </p>
+  </section>
+
+  <form [formGroup]="clubForm" (ngSubmit)="onSubmit()" class="club-form" novalidate id="club-details">
+    <h3 class="form-section-title">Club details</h3>
+
     <div class="form-row">
       <div class="form-group">
         <label for="maker">Maker *</label>
-        <input 
-          type="text" 
-          id="maker" 
-          formControlName="maker" 
-          placeholder="e.g., Titleist, Callaway"
+        <input
+          type="text"
+          id="maker"
+          formControlName="maker"
+          placeholder="Titleist, Callaway, Mizuno…"
           class="form-control"
         />
         <span class="error-message" *ngIf="clubForm.get('maker')?.touched && clubForm.get('maker')?.invalid">
@@ -23,12 +123,12 @@
       </div>
 
       <div class="form-group">
-        <label for="set">Set *</label>
-        <input 
-          type="text" 
-          id="set" 
-          formControlName="set" 
-          placeholder="e.g., T200, Apex"
+        <label for="set">Model / set *</label>
+        <input
+          type="text"
+          id="set"
+          formControlName="set"
+          placeholder="T200, Vokey SM10, JPX 923…"
           class="form-control"
         />
         <span class="error-message" *ngIf="clubForm.get('set')?.touched && clubForm.get('set')?.invalid">
@@ -39,40 +139,41 @@
 
     <div class="form-row">
       <div class="form-group">
-        <label for="number">Number *</label>
-        <input 
-          type="text" 
-          id="number" 
-          formControlName="number" 
-          placeholder="e.g., 7, PW, 56"
+        <label for="number">Club *</label>
+        <input
+          type="text"
+          id="number"
+          formControlName="number"
+          placeholder="7, PW, 56, Driver…"
           class="form-control"
         />
         <span class="error-message" *ngIf="clubForm.get('number')?.touched && clubForm.get('number')?.invalid">
-          Number is required
+          Club number/name is required
         </span>
       </div>
 
       <div class="form-group">
         <label for="category">Category *</label>
         <select id="category" formControlName="category" class="form-control">
-          <option value="">Select Category</option>
+          <option value="">Select category</option>
           <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
         </select>
         <span class="error-message" *ngIf="clubForm.get('category')?.touched && clubForm.get('category')?.invalid">
           Category is required
         </span>
+        <p class="field-hint">Changing category fills typical loft/length if those fields are empty.</p>
       </div>
     </div>
 
     <div class="form-row">
       <div class="form-group">
-        <label for="loft">Loft (degrees) *</label>
-        <input 
-          type="number" 
-          id="loft" 
-          formControlName="loft" 
-          placeholder="e.g., 34"
-          step="0.5"
+        <label for="loft">Loft (°) *</label>
+        <input
+          type="text"
+          inputmode="decimal"
+          id="loft"
+          formControlName="loft"
+          placeholder="34"
           class="form-control"
         />
         <span class="error-message" *ngIf="clubForm.get('loft')?.touched && clubForm.get('loft')?.invalid">
@@ -81,13 +182,13 @@
       </div>
 
       <div class="form-group">
-        <label for="length">Length (inches) *</label>
-        <input 
-          type="number" 
-          id="length" 
-          formControlName="length" 
-          placeholder="e.g., 37.5"
-          step="0.1"
+        <label for="length">Length (in) *</label>
+        <input
+          type="text"
+          inputmode="decimal"
+          id="length"
+          formControlName="length"
+          placeholder="37"
           class="form-control"
         />
         <span class="error-message" *ngIf="clubForm.get('length')?.touched && clubForm.get('length')?.invalid">
@@ -98,51 +199,56 @@
 
     <div class="form-row">
       <div class="form-group">
-        <label for="lie_angle">Lie Angle (degrees)</label>
-        <input 
-          type="number" 
-          id="lie_angle" 
-          formControlName="lie_angle" 
-          placeholder="e.g., 62"
-          step="0.5"
+        <label for="lie_angle">Lie (°)</label>
+        <input
+          type="text"
+          inputmode="decimal"
+          id="lie_angle"
+          formControlName="lie_angle"
+          placeholder="62"
           class="form-control"
         />
       </div>
 
       <div class="form-group">
-        <label for="club_offset">Offset (inches)</label>
-        <input 
-          type="number" 
-          id="club_offset" 
-          formControlName="club_offset" 
-          placeholder="e.g., 0.1"
-          step="0.01"
+        <label for="club_offset">Offset (in)</label>
+        <input
+          type="text"
+          inputmode="decimal"
+          id="club_offset"
+          formControlName="club_offset"
+          placeholder="0.1"
           class="form-control"
         />
       </div>
     </div>
 
-    <div class="form-row">
+    <div class="form-row" *ngIf="showBounce">
       <div class="form-group">
-        <label for="bounce">Bounce (degrees)</label>
-        <input 
-          type="number" 
-          id="bounce" 
-          formControlName="bounce" 
-          placeholder="e.g., 10"
-          step="0.5"
+        <label for="bounce">Bounce (°)</label>
+        <input
+          type="text"
+          inputmode="decimal"
+          id="bounce"
+          formControlName="bounce"
+          placeholder="10"
           class="form-control"
         />
+        <p class="field-hint">Optional — common on sand and lob wedges.</p>
       </div>
     </div>
+
+    <p class="form-validation-hint" *ngIf="clubForm.touched && clubForm.invalid && missingFieldLabels.length">
+      Required: {{ missingFieldLabels.join(', ') }}
+    </p>
 
     <div class="form-actions">
       <button type="button" class="btn btn-secondary" (click)="cancel()" [disabled]="isSubmitting">
         Cancel
       </button>
-      <button type="submit" class="btn btn-primary" [disabled]="clubForm.invalid || isSubmitting">
-        <span *ngIf="!isSubmitting">Add Club</span>
-        <span *ngIf="isSubmitting">Adding...</span>
+      <button type="submit" class="btn btn-primary" [disabled]="isSubmitting">
+        <span *ngIf="!isSubmitting">Save custom club</span>
+        <span *ngIf="isSubmitting">Saving…</span>
       </button>
     </div>
   </form>

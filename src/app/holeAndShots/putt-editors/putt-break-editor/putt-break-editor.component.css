@@ -1,0 +1,86 @@
+.putt-break-path {
+  fill: none;
+  stroke: #7ec8e3;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+.putt-curve-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 16;
+  cursor: crosshair;
+}
+
+.break-handle {
+  fill: #6a9f4a;
+  stroke: #fff;
+  stroke-width: 1.2;
+  cursor: grab;
+}
+
+.break-handle-ring {
+  fill: none;
+  stroke: rgba(106, 159, 74, 0.4);
+  stroke-width: 1;
+  pointer-events: none;
+}
+
+.putt-cup-flag {
+  fill: #1a1a1a;
+  stroke: #eee;
+  stroke-width: 1;
+  pointer-events: none;
+}
+
+.putt-break-toolbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.putt-toolbar-btn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid #555;
+  background: #2c2c2c;
+  color: #ccc;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.putt-toolbar-btn:hover {
+  border-color: #777;
+  color: #fff;
+}
+
+.putt-segment-preview {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  font-size: 0.82rem;
+  color: #aaa;
+}
+
+.putt-segment-preview li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.putt-seg-remove {
+  margin-left: auto;
+  border: none;
+  background: transparent;
+  color: #888;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 0 6px;
+}
+
+.putt-seg-remove:hover {
+  color: #e55;
+}

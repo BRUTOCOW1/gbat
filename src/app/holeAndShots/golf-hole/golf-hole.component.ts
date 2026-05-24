@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SupabaseService } from '../../services/supabase.service';
 import { NotificationService } from '../../shared/services/notification.service';
+import { unpackPuttPattern } from '../putt-editors/putt-editor.utils';
 
 @Component({
   selector: 'app-golf-hole',
@@ -207,10 +208,7 @@ export class GolfHoleComponent implements OnInit {
   }
   
   private normalizeBreak(raw: unknown): Array<{ direction?: string; severity?: number }> {
-    const parsed = this.parseJsonLoose(raw);
-    if (Array.isArray(parsed)) return parsed;
-    if (parsed && typeof parsed === 'object') return [parsed as any];
-    return [];
+    return unpackPuttPattern(raw).break;
   }
   
   breakChips(s: any): { direction?: string; severity?: number }[] {

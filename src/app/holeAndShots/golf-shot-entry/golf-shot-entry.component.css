@@ -149,6 +149,66 @@
   align-items: stretch;
 }
 
+.panel-card-body--club-stack .panel-field {
+  flex: 0 0 auto;
+}
+
+.panel-field--shot-type {
+  margin-top: 2px;
+}
+
+.panel-field--compact {
+  margin-bottom: 10px;
+}
+
+.panel-field--compact:last-child {
+  margin-bottom: 0;
+}
+
+.chip-row--shot-type {
+  gap: 8px;
+}
+
+.chip-row--tight {
+  gap: 6px;
+}
+
+.opt-chip--shot-type {
+  flex: 1 1 calc(33% - 6px);
+  min-width: 4.5rem;
+  padding: 10px 8px;
+  font-size: 0.82rem;
+}
+
+.tee-locked .locked-pills {
+  margin-top: 0;
+}
+
+.quick-preset-btn {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px dashed #555;
+  background: #1e261b;
+  color: #a8d87a;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s;
+}
+
+.quick-preset-btn:hover {
+  border-color: var(--primary-color, #6a9f4a);
+  background: rgba(106, 159, 74, 0.12);
+}
+
+.landing-preview--quick {
+  margin-top: 4px;
+  text-align: center;
+}
+
 .panel-field--club-slider {
   flex: 1 1 100%;
   min-width: 0;
@@ -689,6 +749,15 @@
   font-size: 0.85rem;
   color: #9a9a9a;
   font-style: italic;
+}
+
+/* Putting: visual slope / break editors */
+.putt-visual-card {
+  border-color: #3d5234;
+}
+
+.putt-visual-card .panel-card-lede {
+  margin-bottom: 4px;
 }
 
 /* Putting: tap-in + length/outcome panels */

@@ -4,19 +4,20 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { SupabaseService } from '../../services/supabase.service';
 import { GolfShot } from '../../shared/models/golf-shot.model';
 import { NotificationService } from '../../shared/services/notification.service';
+import {
+  BreakSegment,
+  packPuttPattern,
+  PuttPoint,
+  SlopeSegment,
+  unpackPuttPattern,
+} from '../putt-editors/putt-editor.utils';
+import { PuttSlopeEditorChange } from '../putt-editors/putt-slope-editor/putt-slope-editor.component';
 
 interface GolferClub {
   id: string;             // ✅ golfer_club.id
   club_id: string;        // ✅ golfclub.id (for FK)
   number: string;
   category: string;
-}
-
-interface BreakSegment {
-  direction: string;
-  severity: number;
-  distance_start: number;
-  distance_end: number;
 }
 
 
@@ -38,6 +39,8 @@ export class GolfShotEntryComponent implements OnInit {
   golferClubs: GolferClub[] = [];
   break_pattern_string: string = '';
   breakSegments: BreakSegment[] = [];
+  slopeSegments: SlopeSegment[] = [];
+  slopeControlPoints: PuttPoint[] = [];
   isEditMode = false;
   formReady = false;
 
@@ -96,15 +99,41 @@ export class GolfShotEntryComponent implements OnInit {
     'Escape only',
   ] as const;
 
+  readonly startLineOptions = ['Pull', 'Straight', 'Push'] as const;
+
   readonly missBiasOptions = [
-    'On line',
-    'Missed Left',
-    'Missed Right',
+    'Pull',
+    'Straight',
+    'Push',
     'Short',
     'Long',
   ] as const;
 
+  readonly quickSurfaceOptions = [
+    { label: 'Fairway', value: 'Fairway' },
+    { label: 'Green', value: 'Green' },
+    { label: 'Rough', value: 'Light Rough' },
+    { label: 'Bunker', value: 'Bunker' },
+    { label: 'Made', value: 'Made' },
+  ] as const;
+
+  readonly quickShapeOptions = ['Draw', 'Straight', 'Fade'] as const;
+
   readonly puttOutcomeOptions = ['Green', 'Made', 'Fringe'] as const;
+
+  /** Putt miss vs your start line — stored on `result_direction`. */
+  readonly puttLineMissOptions = [
+    { label: 'Missed left', value: 'Missed Left' },
+    { label: 'On line', value: 'On line' },
+    { label: 'Missed right', value: 'Missed Right' },
+  ] as const;
+
+  /** Putt pace — stored on `putt_speed_quality`. */
+  readonly puttPaceOptions = [
+    { label: 'Left it short', value: 40 },
+    { label: 'OK', value: 55 },
+    { label: 'Hit it hard', value: 15 },
+  ] as const;
 
   readonly puttSpeedQualitySteps = [
     { value: 15, label: 'Hard' },
@@ -278,6 +307,66 @@ export class GolfShotEntryComponent implements OnInit {
     return !this.isEditMode && this.shots.length === 0;
   }
 
+  /** Shot types shown as tap chips (tee shot omitted when locked). */
+  get shotTypeOptions(): readonly string[] {
+    if (this.teeShotLocked) {
+      return ['Tee Shot'];
+    }
+    return ['Approach', 'Chip', 'Putt', 'Layup', 'Recovery', 'Punchout'];
+  }
+
+  pickShotType(type: string): void {
+    this.newShot.shot_type = type;
+    this.onShotTypeChanged();
+  }
+
+  isShotTypeActive(type: string): boolean {
+    return this.newShot.shot_type === type;
+  }
+
+  pickStartLine(value: (typeof this.startLineOptions)[number]): void {
+    this.newShot.result_direction = value === 'Straight' ? 'On line' : value;
+  }
+
+  isStartLineActive(value: (typeof this.startLineOptions)[number]): boolean {
+    const dir = this.newShot.result_direction || 'On line';
+    if (value === 'Straight') {
+      return dir === 'On line' || dir === 'Straight';
+    }
+    if (value === 'Pull') {
+      return dir === 'Pull' || dir === 'Missed Left';
+    }
+    if (value === 'Push') {
+      return dir === 'Push' || dir === 'Missed Right';
+    }
+    return dir === value;
+  }
+
+  pickQuickSurface(value: string): void {
+    this.newShot.result_location = value;
+  }
+
+  isQuickSurfaceActive(value: string): boolean {
+    return (this.newShot.result_location || 'Fairway') === value;
+  }
+
+  pickQuickShape(shape: (typeof this.quickShapeOptions)[number]): void {
+    this.newShot.shape = shape;
+    if (!this.newShot.trajectory) {
+      this.newShot.trajectory = 'Normal';
+    }
+  }
+
+  isQuickShapeActive(shape: (typeof this.quickShapeOptions)[number]): boolean {
+    return (this.newShot.shape || 'Straight') === shape;
+  }
+
+  applyAverageDistance(): void {
+    if (this.averageDistanceYds != null) {
+      this.newShot.distance = this.averageDistanceYds;
+    }
+  }
+
   pickFlight(row: (typeof this.flightRows)[number], col: (typeof this.flightCols)[number]): void {
     this.newShot.trajectory = row;
     this.newShot.shape = col;
@@ -415,6 +504,16 @@ export class GolfShotEntryComponent implements OnInit {
     this.newShot.putt_length = next;
   }
 
+  onPuttSlopeFromEditor(change: PuttSlopeEditorChange): void {
+    this.newShot.slope = change.slope;
+    this.slopeSegments = change.segments.map((s) => ({ ...s }));
+    this.slopeControlPoints = change.points.map((p) => ({ x: p.x, y: p.y }));
+  }
+
+  onBreakSegmentsFromEditor(segments: BreakSegment[]): void {
+    this.breakSegments = segments.map((seg) => ({ ...seg }));
+  }
+
   pickPuttOutcome(value: string): void {
     this.newShot.result_location = value;
   }
@@ -429,6 +528,29 @@ export class GolfShotEntryComponent implements OnInit {
 
   pickPuttSpeedQuality(value: number): void {
     this.newShot.putt_speed_quality = value;
+  }
+
+  pickPuttLineMiss(value: string): void {
+    this.newShot.result_direction = value;
+  }
+
+  isPuttLineMissActive(value: string): boolean {
+    const dir = this.newShot.result_direction || 'On line';
+    if (value === 'Missed Left') {
+      return dir === 'Missed Left' || dir === 'Pull';
+    }
+    if (value === 'Missed Right') {
+      return dir === 'Missed Right' || dir === 'Push';
+    }
+    return dir === 'On line' || dir === 'Straight';
+  }
+
+  pickPuttPace(value: number): void {
+    this.newShot.putt_speed_quality = value;
+  }
+
+  isPuttPaceActive(value: number): boolean {
+    return this.nearestPuttSpeedStep(this.newShot.putt_speed_quality ?? 55) === value;
   }
 
   isPuttSpeedQualityActive(value: number): boolean {
@@ -453,11 +575,21 @@ export class GolfShotEntryComponent implements OnInit {
   }
 
   pickMissBias(value: string): void {
-    this.newShot.result_direction = value;
+    this.newShot.result_direction = value === 'Straight' ? 'On line' : value;
   }
 
   isMissBiasActive(value: string): boolean {
-    return (this.newShot.result_direction || 'On line') === value;
+    const dir = this.newShot.result_direction || 'On line';
+    if (value === 'Straight') {
+      return dir === 'On line' || dir === 'Straight';
+    }
+    if (value === 'Pull') {
+      return dir === 'Pull' || dir === 'Missed Left';
+    }
+    if (value === 'Push') {
+      return dir === 'Push' || dir === 'Missed Right';
+    }
+    return dir === value;
   }
 
   isLandingLateralActive(side: 'Left' | 'Center' | 'Right'): boolean {
@@ -469,7 +601,16 @@ export class GolfShotEntryComponent implements OnInit {
   /** One-line preview, e.g. “Right · Light Rough”. */
   landingSummary(): string {
     if (this.newShot.shot_type === 'Putt') {
-      return this.newShot.result_location || '';
+      const loc = this.newShot.result_location || '';
+      const dir = this.newShot.result_direction || '';
+      const paceVal = this.newShot.putt_speed_quality ?? 55;
+      const paceLabel =
+        this.puttPaceOptions.find((p) => p.value === this.nearestPuttSpeedStep(paceVal))?.label ?? '';
+      const parts: string[] = [];
+      if (loc) parts.push(loc);
+      if (dir && dir !== 'On line') parts.push(dir);
+      if (paceLabel && paceLabel !== 'OK') parts.push(paceLabel);
+      return parts.join(' · ');
     }
     const loc = this.newShot.result_location || '';
     const side = this.newShot.landing_lateral;
@@ -501,6 +642,9 @@ export class GolfShotEntryComponent implements OnInit {
       if (this.newShot.putt_speed_quality == null) {
         this.newShot.putt_speed_quality = 55;
       }
+      if (!this.newShot.slope) {
+        this.newShot.slope = 'Flat';
+      }
       return;
     }
     if (this.newShot.shot_type === 'Tee Shot') {
@@ -531,11 +675,20 @@ export class GolfShotEntryComponent implements OnInit {
     return out;
   }
 
-  private normalizeBreak(raw: unknown): Array<{ direction?: string; severity?: number }> {
-    const parsed = this.parseJsonLoose(raw);
-    if (Array.isArray(parsed)) return parsed;
-    if (parsed && typeof parsed === 'object') return [parsed as any];
-    return [];
+  private normalizeBreak(raw: unknown): BreakSegment[] {
+    return unpackPuttPattern(raw).break;
+  }
+
+  private applyPuttPatternToShot(): void {
+    const breakSegs =
+      this.breakSegments.length > 0
+        ? this.convertBreakSegmentsToJson()
+        : this.normalizeBreak(this.break_pattern_string);
+    this.newShot.break_pattern = packPuttPattern(
+      breakSegs,
+      this.slopeSegments,
+      this.slopeControlPoints
+    );
   }
 
 
@@ -751,12 +904,7 @@ export class GolfShotEntryComponent implements OnInit {
   
       // b) normalize JSON + penalties
       // Use break segments if available, otherwise fall back to string parsing
-      if (this.breakSegments.length > 0) {
-        this.newShot.break_pattern = this.convertBreakSegmentsToJson();
-      } else {
-        const arr = this.normalizeBreak(this.break_pattern_string);
-        this.newShot.break_pattern = arr;
-      }
+      this.applyPuttPatternToShot();
       
       this.newShot.penalty_strokes = 0;
       
@@ -893,6 +1041,8 @@ export class GolfShotEntryComponent implements OnInit {
     // Clear break pattern for new shots
     this.break_pattern_string = '';
     this.breakSegments = [];
+    this.slopeSegments = [];
+    this.slopeControlPoints = [];
     
     // Autofill green speed for putts if available
     if (this.newShot.shot_type === 'Putt' && this.lastGreenSpeed) {
@@ -1158,21 +1308,25 @@ export class GolfShotEntryComponent implements OnInit {
       this.newShot.landing_lateral = 'Center';
     }
 
-    const arr = this.normalizeBreak(shot.break_pattern);
-    this.break_pattern_string = JSON.stringify(arr);
-    this.newShot.break_pattern = arr;
-    
-    // Load break segments from the parsed array
-    if (Array.isArray(arr) && arr.length > 0) {
-      this.breakSegments = arr.map((seg: any) => ({
-        direction: seg.direction || '',
-        severity: seg.severity || 1,
-        distance_start: seg.distance_start ?? 0,
-        distance_end: seg.distance_end ?? 10
-      }));
-    } else {
-      this.breakSegments = [];
-    }
+    const { break: breakSegs, slope: slopeSegs, slopePoints } = unpackPuttPattern(shot.break_pattern);
+    this.break_pattern_string = JSON.stringify(breakSegs);
+    this.breakSegments = breakSegs.map((seg) => ({
+      direction: seg.direction || '',
+      severity: seg.severity || 1,
+      distance_start: seg.distance_start ?? 0,
+      distance_end: seg.distance_end ?? 10,
+    }));
+    this.slopeSegments = slopeSegs.map((seg) => ({
+      slope: seg.slope || 'Flat',
+      distance_start: seg.distance_start ?? 0,
+      distance_end: seg.distance_end ?? 10,
+    }));
+    this.slopeControlPoints = slopePoints.map((p) => ({ x: p.x, y: p.y }));
+    this.newShot.break_pattern = packPuttPattern(
+      this.breakSegments,
+      this.slopeSegments,
+      this.slopeControlPoints
+    );
     void this.onClubChanged();
   }
 
@@ -1183,12 +1337,7 @@ export class GolfShotEntryComponent implements OnInit {
     }
   
     // Use break segments if available, otherwise fall back to string parsing
-    if (this.breakSegments.length > 0) {
-      this.newShot.break_pattern = this.convertBreakSegmentsToJson();
-    } else {
-      const arr = this.normalizeBreak(this.break_pattern_string);
-      this.newShot.break_pattern = arr;
-    }
+    this.applyPuttPatternToShot();
     if (!this.isEditMode) {
       this.newShot.penalty = 'none';
       this.newShot.penalty_strokes = 0;

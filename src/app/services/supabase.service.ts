@@ -5,9 +5,18 @@ import { BehaviorSubject } from 'rxjs';
 import { GolfBag } from '../shared/models/golf-bag.model';
 import { GolfShot } from '../shared/models/golf-shot.model';
 import { GolfClub } from '../shared/models/golf-club.model';
+import { normalizeClubForDb } from '../shared/club-spec';
 import { User } from '../shared/models/user.model';
 import { GolfCourse, GolfHole } from '../shared/models/golf-course.model';
 import { environment } from '../../environments/environment';
+import {
+  computePlayerStats,
+  UserPlayerStats,
+  PlayerStatsRoundRow,
+  PlayerStatsCourseRow,
+  PlayerStatsPlayedHoleRow,
+  PlayerStatsHoleParRow,
+} from '../shared/player-stats';
 
 /** Aggregated shot history for one bag slot (`golfer_club.id` → `golf_shot.club_id`). */
 export interface GolferClubUsageStats {
@@ -166,6 +175,27 @@ export class SupabaseService {
     }
   }
 
+  async deleteGolfBag(bagId: string, userId: string) {
+    try {
+      const { error: clubErr } = await this.supabase
+        .from('golfer_club')
+        .delete()
+        .eq('cur_bag_id', bagId)
+        .eq('golfer_id', userId);
+      if (clubErr) throw clubErr;
+
+      const { error } = await this.supabase
+        .from('golfbag')
+        .delete()
+        .eq('golfbag_id', bagId)
+        .eq('user_id', userId);
+      return { error };
+    } catch (error: any) {
+      this.handleError('deleteGolfBag', error);
+      return { error };
+    }
+  }
+
   // ==================== GOLF CLUB METHODS ====================
 
   async getAllClubs(): Promise<{ data: GolfClub[] | null; error: any }> {
@@ -180,7 +210,11 @@ export class SupabaseService {
 
   async upsertClubs(clubs: GolfClub[]) {
     try {
-      const { data, error } = await this.supabase.from('golfclub').upsert(clubs, { onConflict: 'id' }).select();
+      const rows = clubs.map((club) => normalizeClubForDb(club));
+      const { data, error } = await this.supabase
+        .from('golfclub')
+        .upsert(rows, { onConflict: 'id' })
+        .select();
       if (error) throw error;
       return { data, error: null };
     } catch (error: any) {
@@ -232,6 +266,44 @@ export class SupabaseService {
     } catch (error: any) {
       this.handleError('getClubsFromIds', error);
       return { data: null, error };
+    }
+  }
+
+  async removeGolferClub(golferClubId: string) {
+    try {
+      return await this.supabase.from('golfer_club').delete().eq('id', golferClubId);
+    } catch (error: any) {
+      this.handleError('removeGolferClub', error);
+      return { data: null, error };
+    }
+  }
+
+  /**
+   * Remove a club from its bag. Detaches by clearing `cur_bag_id` when possible
+   * (keeps the row for shot history); falls back to delete when the row has no FK blockers.
+   */
+  async removeGolferClubFromBag(golferClubId: string, userId: string) {
+    try {
+      const { error: detachErr } = await this.supabase
+        .from('golfer_club')
+        .update({ cur_bag_id: null })
+        .eq('id', golferClubId)
+        .eq('golfer_id', userId);
+      if (!detachErr) return { error: null };
+
+      const detachMsg = (detachErr.message || '').toLowerCase();
+      const notNullableSearchable =
+        detachMsg.includes('null value') ||
+        detachMsg.includes('not-null') ||
+        detachMsg.includes('23502');
+      if (!notNullableSearchable) {
+        return { error: detachErr };
+      }
+
+      return await this.removeGolferClub(golferClubId);
+    } catch (error: any) {
+      this.handleError('removeGolferClubFromBag', error);
+      return { error };
     }
   }
 
@@ -818,6 +890,94 @@ export class SupabaseService {
     } catch (error: any) {
       this.handleError('deleteShotByPlayedHoleAndStroke', error);
       throw error;
+    }
+  }
+
+  /** Aggregated player stats from rounds and shot history. */
+  async getUserPlayerStats(userId: string): Promise<UserPlayerStats> {
+    const empty = computePlayerStats([], [], [], [], []);
+
+    try {
+      const { data: rounds, error: roundsErr } = await this.getGolfRoundsByUser(userId);
+      if (roundsErr) {
+        throw roundsErr;
+      }
+      const roundRows = (rounds ?? []) as PlayerStatsRoundRow[];
+      if (!roundRows.length) {
+        return empty;
+      }
+
+      const roundIds = roundRows.map((r) => String(r.id));
+      const courseIds = [...new Set(roundRows.map((r) => String(r.course_id)).filter(Boolean))];
+
+      const playedHoles: PlayerStatsPlayedHoleRow[] = [];
+      const chunkSize = 200;
+
+      for (let i = 0; i < roundIds.length; i += chunkSize) {
+        const slice = roundIds.slice(i, i + chunkSize);
+        const { data, error } = await this.supabase
+          .from('played_golf_hole')
+          .select('id, round_id, hole_id, strokes')
+          .in('round_id', slice);
+        if (error) {
+          throw error;
+        }
+        playedHoles.push(...((data ?? []) as PlayerStatsPlayedHoleRow[]));
+      }
+
+      const playedHoleIds = playedHoles.map((ph) => ph.id);
+      const shots: {
+        hole_id: string;
+        stroke_number: number;
+        shot_type: string | null;
+        distance: number | null;
+        result_location?: string | null;
+        result?: string | null;
+      }[] = [];
+
+      for (let i = 0; i < playedHoleIds.length; i += chunkSize) {
+        const slice = playedHoleIds.slice(i, i + chunkSize);
+        const { data, error } = await this.supabase
+          .from('golf_shot')
+          .select('hole_id, stroke_number, shot_type, distance, result_location, result')
+          .in('hole_id', slice);
+        if (error) {
+          throw error;
+        }
+        shots.push(...(data ?? []));
+      }
+
+      const golfHoleIds = [...new Set(playedHoles.map((ph) => ph.hole_id).filter(Boolean))];
+      const holePars: PlayerStatsHoleParRow[] = [];
+
+      for (let i = 0; i < golfHoleIds.length; i += chunkSize) {
+        const slice = golfHoleIds.slice(i, i + chunkSize);
+        const { data, error } = await this.supabase
+          .from('golf_holes')
+          .select('id, par')
+          .in('id', slice);
+        if (error) {
+          throw error;
+        }
+        holePars.push(...((data ?? []) as PlayerStatsHoleParRow[]));
+      }
+
+      let courses: PlayerStatsCourseRow[] = [];
+      if (courseIds.length) {
+        const { data, error } = await this.supabase
+          .from('golf_courses')
+          .select('id, par, rating, slope')
+          .in('id', courseIds);
+        if (error) {
+          throw error;
+        }
+        courses = (data ?? []) as PlayerStatsCourseRow[];
+      }
+
+      return computePlayerStats(roundRows, courses, playedHoles, shots, holePars);
+    } catch (error: any) {
+      this.handleError('getUserPlayerStats', error);
+      return empty;
     }
   }
 

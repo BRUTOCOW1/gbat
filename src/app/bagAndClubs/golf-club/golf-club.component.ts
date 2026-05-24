@@ -264,7 +264,8 @@ export class GolfClubComponent implements OnInit {
   }
   
   navigateToAddClub() {
-    this.router.navigate(['/add-club']);
+    const queryParams = this.currentBagId ? { bagId: this.currentBagId } : undefined;
+    this.router.navigate(['/add-club'], { queryParams });
   }
 
   tierOf(club: GolfClub): CatalogTier {
@@ -277,6 +278,21 @@ export class GolfClubComponent implements OnInit {
 
   tierBadgeClass(club: GolfClub): string {
     return 'tier-badge tier-' + this.tierOf(club);
+  }
+
+  clubsInSet(setValue: { [category: string]: GolfClub[] }): GolfClub[] {
+    return Object.values(setValue).flat();
+  }
+
+  clubCountInSet(setValue: { [category: string]: GolfClub[] }): number {
+    return this.clubsInSet(setValue).length;
+  }
+
+  makerClubCount(group: NestedClubs): number {
+    return Object.values(group.sets).reduce(
+      (sum, setVal) => sum + this.clubCountInSet(setVal),
+      0
+    );
   }
 }
 

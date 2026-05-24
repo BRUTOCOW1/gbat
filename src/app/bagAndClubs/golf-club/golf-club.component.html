@@ -1,153 +1,200 @@
-<div class="golf-clubs-list">
-  <div class="header-section">
-    <h2>Golf Clubs</h2>
-    <div class="header-actions">
-      <button class="btn btn-primary" (click)="navigateToAddClub()">
-        + Add New Club
+<div class="catalog-workspace">
+  <header class="catalog-header">
+    <div class="catalog-header-copy">
+      <p class="catalog-eyebrow">Equipment</p>
+      <h1 class="catalog-title">Golf Clubs</h1>
+      <p class="catalog-subtitle">
+        Browse the catalog, filter by category, and add clubs to your bag.
+        <span class="catalog-count" *ngIf="filteredClubs.length > 0">{{ filteredClubs.length }} clubs</span>
+      </p>
+    </div>
+    <div class="catalog-header-actions">
+      <button type="button" class="btn-catalog-ghost" (click)="seedDatabase()" title="Load bundled generic + OEM sample clubs">
+        Seed catalog
+      </button>
+      <button type="button" class="btn-catalog-primary" (click)="navigateToAddClub()">
+        + Add custom club
       </button>
     </div>
-  </div>
+  </header>
 
-  <!-- Search and Filter Controls -->
-  <div class="filter-controls">
-    <div class="search-box">
-      <input 
-        type="text" 
-        id="searchTerm" 
-        [(ngModel)]="searchTerm" 
+  <div class="catalog-toolbar">
+    <div class="catalog-search">
+      <input
+        type="text"
+        id="searchTerm"
+        [(ngModel)]="searchTerm"
         (input)="onSearchChange()"
-        placeholder="Search by maker, set, number, or category..."
-        class="search-input"
+        placeholder="Search maker, set, number, category…"
+        class="catalog-input"
       />
     </div>
-    <div class="filter-group">
-      <label for="tierFilter">Catalog:</label>
-      <select id="tierFilter" [(ngModel)]="tierFilter" (change)="applyFilter()" class="filter-select">
-        <option value="">All</option>
-        <option value="generic">Generic</option>
-        <option value="oem">OEM samples</option>
-        <option value="custom">Custom (your entries)</option>
-      </select>
-    </div>
-    <div class="filter-group">
-      <label for="categoryFilter">Category:</label>
-      <select id="categoryFilter" [(ngModel)]="categoryFilter" (change)="applyFilter()" class="filter-select">
-        <option value="">All Categories</option>
-        <option value="DRIVER">DRIVER</option>
-        <option value="FAIRWAY WOOD">FAIRWAY WOOD</option>
-        <option value="HYBRID">HYBRID</option>
-        <option value="IRON">IRON</option>
-        <option value="WEDGE">WEDGE</option>
-        <option value="PUTTER">PUTTER</option>
-      </select>
-    </div>
-    <div class="view-toggle">
-      <button 
-        class="btn btn-icon" 
+    <div class="catalog-filters">
+      <label class="catalog-filter" for="tierFilter">
+        <span class="filter-label">Catalog</span>
+        <select id="tierFilter" [(ngModel)]="tierFilter" (change)="applyFilter()" class="catalog-select">
+          <option value="">All</option>
+          <option value="generic">Generic</option>
+          <option value="oem">OEM samples</option>
+          <option value="custom">Custom</option>
+        </select>
+      </label>
+      <label class="catalog-filter" for="categoryFilter">
+        <span class="filter-label">Category</span>
+        <select id="categoryFilter" [(ngModel)]="categoryFilter" (change)="applyFilter()" class="catalog-select">
+          <option value="">All categories</option>
+          <option value="DRIVER">Driver</option>
+          <option value="FAIRWAY WOOD">Fairway wood</option>
+          <option value="HYBRID">Hybrid</option>
+          <option value="IRON">Iron</option>
+          <option value="WEDGE">Wedge</option>
+          <option value="PUTTER">Putter</option>
+        </select>
+      </label>
+      <button
+        type="button"
+        class="btn-view-toggle"
         (click)="toggleViewMode()"
-        [title]="viewMode === 'list' ? 'Switch to nested view' : 'Switch to list view'"
+        [title]="viewMode === 'list' ? 'Switch to grouped tree view' : 'Switch to card grid'"
       >
-        {{ viewMode === 'list' ? '📁' : '📋' }}
+        {{ viewMode === 'list' ? 'Tree view' : 'Card view' }}
       </button>
     </div>
   </div>
 
-  <!-- Bulk Add Button: only visible if some clubs are selected -->
-  <div class="bulk-add" *ngIf="selectedClubIds.size > 0">
-    <div class="selection-info">
-      <strong>{{ selectedClubIds.size }}</strong> club(s) selected
-    </div>
-    <button class="btn btn-primary" (click)="addSelectedClubsToBag()">
-      Add Selected Clubs to Bag
+  <div class="catalog-bulk-bar" *ngIf="selectedClubIds.size > 0">
+    <span class="bulk-count"><strong>{{ selectedClubIds.size }}</strong> selected</span>
+    <button type="button" class="btn-catalog-primary" (click)="addSelectedClubsToBag()">
+      Add to bag
     </button>
   </div>
 
-  <!-- Seed Database Button -->
-  <div class="seed-db">
-    <button class="btn btn-secondary" (click)="seedDatabase()">Seed catalog (generic + OEM samples)</button>
+  <!-- Card grid (grouped by maker / set) -->
+  <div *ngIf="viewMode === 'list'" class="catalog-list">
+    <div *ngIf="filteredClubs.length === 0" class="catalog-empty">
+      <p>No clubs match your search. Try different filters or seed the catalog.</p>
+    </div>
+
+    <section class="catalog-set-group" *ngFor="let group of nestedClubs">
+      <div class="set-group-block" *ngFor="let setEntry of (group.sets | keyvalue)">
+        <header class="set-group-header">
+          <div class="set-group-titles">
+            <span class="set-group-maker">{{ group.maker }}</span>
+            <h2 class="set-group-name">{{ setEntry.key }}</h2>
+          </div>
+          <span class="set-group-count">{{ clubCountInSet(setEntry.value) }} clubs</span>
+        </header>
+
+        <div class="club-grid">
+          <article
+            *ngFor="let club of clubsInSet(setEntry.value)"
+            class="club-card"
+            [class.selected]="selectedClubIds.has(club.id)"
+            (click)="toggleClubSelection(club.id, $event)"
+          >
+            <div class="club-card-top">
+              <label class="club-check-wrap" (click)="$event.stopPropagation()">
+                <input
+                  type="checkbox"
+                  [checked]="selectedClubIds.has(club.id)"
+                  (change)="toggleClubSelection(club.id, $event)"
+                  class="club-checkbox"
+                />
+              </label>
+              <span class="club-number-badge">{{ club.number }}</span>
+              <div class="club-card-meta">
+                <span class="club-category-tag">{{ club.category }}</span>
+                <span [class]="tierBadgeClass(club)">{{ labelForTier(tierOf(club)) }}</span>
+              </div>
+            </div>
+
+            <dl class="club-spec-grid" *ngIf="club.loft || club.length || club.lie_angle || club.club_offset || club.bounce">
+              <div *ngIf="club.loft">
+                <dt>Loft</dt>
+                <dd>{{ club.loft }}°</dd>
+              </div>
+              <div *ngIf="club.length">
+                <dt>Length</dt>
+                <dd>{{ club.length }}"</dd>
+              </div>
+              <div *ngIf="club.lie_angle">
+                <dt>Lie</dt>
+                <dd>{{ club.lie_angle }}°</dd>
+              </div>
+              <div *ngIf="club.club_offset">
+                <dt>Offset</dt>
+                <dd>{{ club.club_offset }}"</dd>
+              </div>
+              <div *ngIf="club.bounce">
+                <dt>Bounce</dt>
+                <dd>{{ club.bounce }}°</dd>
+              </div>
+            </dl>
+          </article>
+        </div>
+      </div>
+    </section>
   </div>
 
-  <!-- List View -->
-  <div *ngIf="viewMode === 'list'" class="club-list-view">
-    <div *ngIf="filteredClubs.length === 0" class="no-results">
-      <p>No clubs found. Try adjusting your search or filters.</p>
+  <!-- Tree view -->
+  <div *ngIf="viewMode === 'nested'" class="catalog-tree">
+    <div *ngIf="filteredClubs.length === 0" class="catalog-empty">
+      <p>No clubs match your search.</p>
     </div>
-    <div class="club-grid" *ngIf="filteredClubs.length > 0">
-      <div *ngFor="let club of filteredClubs" class="club-card">
-        <div class="club-card-header">
-          <input 
-            type="checkbox" 
-            [checked]="selectedClubIds.has(club.id)"
-            (click)="toggleClubSelection(club.id, $event)" 
-            class="club-checkbox"
-          />
-          <div class="club-title">
-            <strong>{{ club.maker }} {{ club.set }}</strong>
-            <div class="club-title-line2">
-              <span class="club-number">{{ club.number }}</span>
-              <span [class]="tierBadgeClass(club)">{{ labelForTier(tierOf(club)) }}</span>
+
+    <div class="tree-maker" *ngFor="let group of nestedClubs">
+      <button type="button" class="tree-row tree-maker-row" (click)="toggleMaker(group.maker)">
+        <span class="tree-arrow" [class.open]="makerOpen[group.maker]">▶</span>
+        <span class="tree-maker-name">{{ group.maker }}</span>
+        <span class="tree-count">{{ makerClubCount(group) }}</span>
+      </button>
+
+      <div class="tree-children" *ngIf="makerOpen[group.maker]">
+        <div *ngFor="let setEntry of (group.sets | keyvalue)" class="tree-set">
+          <button
+            type="button"
+            class="tree-row tree-set-row"
+            (click)="toggleSet(group.maker, setEntry.key)"
+          >
+            <span class="tree-arrow" [class.open]="setOpen[group.maker]?.[setEntry.key]">▶</span>
+            <span class="tree-set-name">{{ setEntry.key }}</span>
+            <span class="tree-count">{{ clubCountInSet(setEntry.value) }}</span>
+          </button>
+
+          <div class="tree-children" *ngIf="setOpen[group.maker]?.[setEntry.key]">
+            <div *ngFor="let catEntry of (setEntry.value | keyvalue)" class="tree-category">
+              <button
+                type="button"
+                class="tree-row tree-category-row"
+                (click)="toggleCategory(group.maker, setEntry.key, catEntry.key)"
+              >
+                <span class="tree-arrow" [class.open]="categoryOpen[group.maker]?.[setEntry.key]?.[catEntry.key]">▶</span>
+                <span class="tree-category-name">{{ catEntry.key }}</span>
+                <span class="tree-count">{{ catEntry.value.length }}</span>
+              </button>
+
+              <ul class="tree-club-list" *ngIf="categoryOpen[group.maker]?.[setEntry.key]?.[catEntry.key]">
+                <li *ngFor="let club of catEntry.value" class="tree-club-item">
+                  <label class="tree-club-row">
+                    <input
+                      type="checkbox"
+                      [checked]="selectedClubIds.has(club.id)"
+                      (change)="toggleClubSelection(club.id, $event)"
+                    />
+                    <span class="tree-club-number">{{ club.number }}</span>
+                    <span [class]="tierBadgeClass(club)">{{ labelForTier(tierOf(club)) }}</span>
+                    <span class="tree-club-specs">
+                      <ng-container *ngIf="club.loft">{{ club.loft }}° loft</ng-container>
+                      <ng-container *ngIf="club.length"> · {{ club.length }}"</ng-container>
+                      <ng-container *ngIf="club.lie_angle"> · {{ club.lie_angle }}° lie</ng-container>
+                    </span>
+                  </label>
+                </li>
+              </ul>
             </div>
-          </div>
-        </div>
-        <div class="club-card-body">
-          <div class="club-category">{{ club.category }}</div>
-          <div class="club-specs">
-            <span *ngIf="club.loft">Loft: {{ club.loft }}°</span>
-            <span *ngIf="club.length">Length: {{ club.length }}"</span>
-            <span *ngIf="club.lie_angle">Lie: {{ club.lie_angle }}°</span>
-            <span *ngIf="club.club_offset">Offset: {{ club.club_offset }}"</span>
-            <span *ngIf="club.bounce">Bounce: {{ club.bounce }}°</span>
           </div>
         </div>
       </div>
     </div>
-  </div>
-
-  <!-- Nested View (Original) -->
-  <div *ngIf="viewMode === 'nested'">
-    <!-- Maker Loop -->
-    <div class="maker-level" *ngFor="let group of nestedClubs">
-    <!-- Maker Header -->
-    <div class="maker-header" (click)="toggleMaker(group.maker)">
-      <h3>{{ group.maker }}</h3>
-      <span class="arrow" [class.open]="makerOpen[group.maker]">▶</span>
-    </div>
-
-    <!-- Sets for this maker -->
-    <div class="set-level" *ngIf="makerOpen[group.maker]">
-      <div *ngFor="let setEntry of (group.sets | keyvalue)" class="set-item">
-        <div class="set-header" (click)="toggleSet(group.maker, setEntry.key)">
-          <h4>{{ setEntry.key }}</h4>
-          <span class="arrow" [class.open]="setOpen[group.maker] && setOpen[group.maker][setEntry.key]">▶</span>
-        </div>
-
-        <!-- Categories for this set -->
-        <div class="category-level" *ngIf="setOpen[group.maker]?.[setEntry.key]">
-          <div *ngFor="let catEntry of (setEntry.value | keyvalue)" class="category-item">
-            <div class="category-header" (click)="toggleCategory(group.maker, setEntry.key, catEntry.key)">
-              <h5>{{ catEntry.key }}</h5>
-              <span class="arrow" [class.open]="categoryOpen[group.maker] && categoryOpen[group.maker][setEntry.key] && categoryOpen[group.maker][setEntry.key][catEntry.key]">▶</span>
-            </div>
-
-            <!-- Clubs in this category -->
-            <ul class="club-list" *ngIf="categoryOpen[group.maker]?.[setEntry.key]?.[catEntry.key]">
-              <li *ngFor="let club of catEntry.value" class="club-item">
-                <div class="club-row">
-                  <input type="checkbox" [checked]="selectedClubIds.has(club.id)"
-                    (click)="toggleClubSelection(club.id, $event)" />
-                  <strong>{{ club.number }}</strong>
-                  <span [class]="tierBadgeClass(club)">{{ labelForTier(tierOf(club)) }}</span>
-                </div>
-                <div class="club-details">
-                  Loft: {{ club.loft }}°, Length: {{ club.length }}" Offset: {{ club.club_offset }}"
-                  Lie: {{ club.lie_angle }}°
-                </div>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
   </div>
 </div>

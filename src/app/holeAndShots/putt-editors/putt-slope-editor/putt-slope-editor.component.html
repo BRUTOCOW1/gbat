@@ -1,0 +1,56 @@
+<div class="putt-editor putt-slope-editor">
+  <p class="putt-editor-hint">
+    Side view — tap the yellow curve to add breakpoints; drag handles for uphill / downhill.
+  </p>
+  <div class="putt-break-toolbar">
+    <button type="button" class="putt-toolbar-btn" (click)="resetProfile()">Flat profile</button>
+    <button type="button" class="putt-toolbar-btn" (click)="removeLastBreakpoint()" [disabled]="innerPoints().length === 0">
+      Remove last point
+    </button>
+  </div>
+  <svg
+    #slopeSvg
+    class="putt-editor-svg putt-slope-svg"
+    [attr.viewBox]="'0 0 ' + viewSize + ' ' + viewSize"
+    role="img"
+    aria-label="Putt elevation curve"
+    (pointerdown)="onSvgPointerDown($event, slopeSvg)"
+    (pointermove)="onSvgPointerMove($event, slopeSvg)"
+    (pointerup)="onSvgPointerUp($event)"
+    (pointercancel)="onSvgPointerUp($event)"
+  >
+    <rect class="putt-green-bg putt-slope-bg" x="0" y="0" [attr.width]="viewSize" [attr.height]="viewSize" rx="6" />
+    <line class="putt-ground" x1="8" y1="50" x2="92" y2="50" />
+    <text class="putt-label" [attr.x]="points[0].x" [attr.y]="points[0].y + 8">Ball</text>
+    <text class="putt-label putt-label--hole" [attr.x]="points[points.length - 1].x" [attr.y]="points[points.length - 1].y - 6">Hole</text>
+    <path class="putt-elevation-curve" [attr.d]="curvePath()" />
+    <circle class="putt-ball putt-slope-decor" [attr.cx]="points[0].x" [attr.cy]="points[0].y" r="4" />
+    <circle class="putt-hole-cup putt-slope-decor" [attr.cx]="points[points.length - 1].x" [attr.cy]="points[points.length - 1].y" r="4" />
+    <g *ngFor="let pt of innerPoints(); let i = index">
+      <circle class="slope-handle-ring" [attr.cx]="pt.x" [attr.cy]="pt.y" r="8" />
+      <circle
+        class="slope-handle"
+        [attr.cx]="pt.x"
+        [attr.cy]="pt.y"
+        r="5"
+        [attr.data-idx]="innerIndex(i)"
+      />
+    </g>
+    <circle class="slope-handle-ring" [attr.cx]="points[points.length - 1].x" [attr.cy]="points[points.length - 1].y" r="8" />
+    <circle
+      class="slope-handle slope-handle--hole"
+      [attr.cx]="points[points.length - 1].x"
+      [attr.cy]="points[points.length - 1].y"
+      r="6"
+      [attr.data-idx]="points.length - 1"
+    />
+    <!-- Hit target on top — wide stroke for taps -->
+    <path class="putt-curve-hit" [attr.d]="curvePath()" />
+  </svg>
+  <ul class="putt-segment-preview" *ngIf="extrapolated.length">
+    <li *ngFor="let seg of extrapolated">
+      {{ seg.slope }} · {{ seg.distance_start }}–{{ seg.distance_end }} ft
+    </li>
+  </ul>
+  <p class="putt-editor-summary">Overall slope: <strong>{{ slope }}</strong></p>
+</div>

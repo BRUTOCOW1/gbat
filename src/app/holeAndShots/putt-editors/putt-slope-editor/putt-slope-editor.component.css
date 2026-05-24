@@ -1,0 +1,66 @@
+.putt-slope-bg {
+  fill: #2a3540;
+}
+
+.putt-ground {
+  stroke: #5a6a62;
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+}
+
+.putt-elevation-curve {
+  fill: none;
+  stroke: #e8c547;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  pointer-events: none;
+}
+
+.putt-curve-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 16;
+  cursor: crosshair;
+}
+
+.slope-handle {
+  fill: #c9a227;
+  stroke: #fff;
+  stroke-width: 1.2;
+  cursor: grab;
+}
+
+.slope-handle-ring {
+  fill: none;
+  stroke: rgba(201, 162, 39, 0.45);
+  stroke-width: 1;
+  pointer-events: none;
+}
+
+.putt-slope-decor,
+.putt-ground,
+.putt-label {
+  pointer-events: none;
+}
+
+.putt-hole-cup {
+  fill: #1a1a1a;
+  stroke: #eee;
+  stroke-width: 1;
+}
+
+.putt-slope-svg .slope-handle-ring {
+  pointer-events: none;
+}
+
+.putt-curve-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 18;
+  cursor: crosshair;
+  pointer-events: stroke;
+}
+
+.slope-handle--hole {
+  fill: #e8c547;
+}
