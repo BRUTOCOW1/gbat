@@ -9,6 +9,22 @@ import { User } from '../shared/models/user.model';
 import { GolfCourse, GolfHole } from '../shared/models/golf-course.model';
 import { environment } from '../../environments/environment';
 
+/** Aggregated shot history for one bag slot (`golfer_club.id` → `golf_shot.club_id`). */
+export interface GolferClubUsageStats {
+  totalShots: number;
+  /** Distinct rounds where this club appears on at least one shot */
+  roundsWithClub: number;
+  /** `totalShots / roundsWithClub` when rounds > 0 */
+  avgShotsPerRound: number | null;
+  fullSwingCount: number;
+  puttCount: number;
+  penaltyCount: number;
+  /** Non-putt, non-penalty shots with distance > 0 */
+  avgCarryYds: number | null;
+  /** Most recent `date_played` among rounds that include this club */
+  lastUsedDate: string | null;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -430,6 +446,50 @@ export class SupabaseService {
     }
   }
 
+  /** Count played_golf_hole rows per round (for list progress). */
+  async getPlayedHoleCountsByRoundIds(roundIds: string[]): Promise<Map<string, number>> {
+    const map = new Map<string, number>();
+    if (!roundIds.length) {
+      return map;
+    }
+    try {
+      const { data, error } = await this.supabase.from('played_golf_hole').select('round_id').in('round_id', roundIds);
+      if (error) {
+        throw error;
+      }
+      for (const row of data ?? []) {
+        const id = String((row as { round_id: string }).round_id);
+        map.set(id, (map.get(id) ?? 0) + 1);
+      }
+      return map;
+    } catch (error: any) {
+      this.handleError('getPlayedHoleCountsByRoundIds', error);
+      return map;
+    }
+  }
+
+  /** Count golf_holes rows per course (expected holes in a full round). */
+  async getHoleCountsByCourseIds(courseIds: string[]): Promise<Map<string, number>> {
+    const map = new Map<string, number>();
+    if (!courseIds.length) {
+      return map;
+    }
+    try {
+      const { data, error } = await this.supabase.from('golf_holes').select('course_id').in('course_id', courseIds);
+      if (error) {
+        throw error;
+      }
+      for (const row of data ?? []) {
+        const cid = String((row as { course_id: string }).course_id);
+        map.set(cid, (map.get(cid) ?? 0) + 1);
+      }
+      return map;
+    } catch (error: any) {
+      this.handleError('getHoleCountsByCourseIds', error);
+      return map;
+    }
+  }
+
   /** Latest stimp on this round (by hole order, then stroke), in two queries — avoids N+1 per hole. */
   async getLastPuttGreenSpeedForRound(roundId: string): Promise<number | undefined> {
     try {
@@ -539,6 +599,106 @@ export class SupabaseService {
     } catch (error: any) {
       this.handleError('getAverageDistanceForGolferClub', error);
       return null;
+    }
+  }
+
+  /**
+   * Shot and round usage for a single golfer_club row (FK target of `golf_shot.club_id`).
+   */
+  async getGolferClubUsageStats(golferClubId: string): Promise<GolferClubUsageStats> {
+    const empty = (): GolferClubUsageStats => ({
+      totalShots: 0,
+      roundsWithClub: 0,
+      avgShotsPerRound: null,
+      fullSwingCount: 0,
+      puttCount: 0,
+      penaltyCount: 0,
+      avgCarryYds: null,
+      lastUsedDate: null,
+    });
+
+    try {
+      const { data: shots, error: shotsErr } = await this.supabase
+        .from('golf_shot')
+        .select('hole_id, shot_type, distance')
+        .eq('club_id', golferClubId);
+      if (shotsErr) throw shotsErr;
+      if (!shots?.length) return empty();
+
+      const totalShots = shots.length;
+      let puttCount = 0;
+      let penaltyCount = 0;
+      let fullSwingCount = 0;
+      let carrySum = 0;
+      let carryN = 0;
+
+      for (const s of shots as { hole_id: string; shot_type: string | null; distance: number | null }[]) {
+        const st = s.shot_type || '';
+        if (st === 'Putt') puttCount++;
+        else if (st === 'Penalty') penaltyCount++;
+        else {
+          fullSwingCount++;
+          const d = Number(s.distance);
+          if (d > 0) {
+            carrySum += d;
+            carryN++;
+          }
+        }
+      }
+
+      const holeIds = [...new Set(shots.map((s: { hole_id: string }) => s.hole_id).filter(Boolean))];
+      const roundIdSet = new Set<string>();
+
+      const chunkSize = 200;
+      for (let i = 0; i < holeIds.length; i += chunkSize) {
+        const slice = holeIds.slice(i, i + chunkSize);
+        const { data: played, error: phErr } = await this.supabase
+          .from('played_golf_hole')
+          .select('id, round_id')
+          .in('id', slice);
+        if (phErr) throw phErr;
+        for (const row of played || []) {
+          if (row.round_id) roundIdSet.add(String(row.round_id));
+        }
+      }
+
+      const roundsWithClub = roundIdSet.size;
+      const avgShotsPerRound =
+        roundsWithClub > 0 ? Math.round((totalShots / roundsWithClub) * 10) / 10 : null;
+
+      const avgCarryYds = carryN > 0 ? Math.round(carrySum / carryN) : null;
+
+      let lastUsedDate: string | null = null;
+      const roundIds = [...roundIdSet];
+      if (roundIds.length) {
+        for (let i = 0; i < roundIds.length; i += chunkSize) {
+          const slice = roundIds.slice(i, i + chunkSize);
+          const { data: rounds, error: rErr } = await this.supabase
+            .from('golf_rounds')
+            .select('date_played')
+            .in('id', slice);
+          if (rErr) throw rErr;
+          for (const r of rounds || []) {
+            const d = (r as { date_played?: string }).date_played;
+            if (!d) continue;
+            if (!lastUsedDate || d > lastUsedDate) lastUsedDate = d;
+          }
+        }
+      }
+
+      return {
+        totalShots,
+        roundsWithClub,
+        avgShotsPerRound,
+        fullSwingCount,
+        puttCount,
+        penaltyCount,
+        avgCarryYds,
+        lastUsedDate,
+      };
+    } catch (error: any) {
+      this.handleError('getGolferClubUsageStats', error);
+      return empty();
     }
   }
 

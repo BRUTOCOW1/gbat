@@ -32,14 +32,61 @@
 
     <section class="panel-card">
       <div class="panel-card-head">Club &amp; shot</div>
-      <div class="panel-card-body panel-card-body--club">
-        <div class="panel-field">
-          <label class="field-label-min" for="club_id">Club</label>
-          <select id="club_id" [(ngModel)]="newShot.club_id" name="club_id" required (ngModelChange)="onClubChanged()" class="select-compact">
-            <option *ngFor="let club of golferClubs" [value]="club.id">
-              {{ club.number }} – {{ club.category }}
-            </option>
-          </select>
+      <div class="panel-card-body panel-card-body--club panel-card-body--club-stack">
+        <div class="panel-field panel-field--club-slider">
+          <span class="field-label-min" id="club-slider-label">Club</span>
+          <p class="club-slider-empty" *ngIf="golferClubs.length === 0">
+            No clubs in this bag. Add clubs to your bag to pick a club for this shot.
+          </p>
+          <div
+            class="club-slider"
+            role="group"
+            aria-labelledby="club-slider-label"
+            *ngIf="golferClubs.length > 0"
+          >
+            <div class="club-slider-hero" aria-live="polite">
+              <span class="club-slider-hero-num">{{ selectedClub?.number ?? '—' }}</span>
+              <span class="club-slider-hero-cat">{{ selectedClub?.category ?? '' }}</span>
+            </div>
+            <div class="club-slider-frame">
+              <button
+                type="button"
+                class="club-slider-arrow"
+                (click)="clubSliderPrev()"
+                [disabled]="!canPrevClub()"
+                aria-label="Previous club"
+              >
+                ‹
+              </button>
+              <div class="club-slider-rail-wrap">
+                <div class="club-slider-rail">
+                  <button
+                    type="button"
+                    *ngFor="let club of golferClubs"
+                    class="club-chip"
+                    [class.club-chip--active]="newShot.club_id === club.id"
+                    [id]="'club-chip-' + club.id"
+                    [attr.aria-pressed]="newShot.club_id === club.id"
+                    (click)="selectClub(club)"
+                  >
+                    <span class="club-chip-num">{{ club.number }}</span>
+                    <span class="club-chip-cat">{{ club.category }}</span>
+                  </button>
+                </div>
+              </div>
+              <button
+                type="button"
+                class="club-slider-arrow"
+                (click)="clubSliderNext()"
+                [disabled]="!canNextClub()"
+                aria-label="Next club"
+              >
+                ›
+              </button>
+            </div>
+            <p class="club-slider-hint">Swipe or tap — use arrows to move one club</p>
+          </div>
+          <input type="hidden" [(ngModel)]="newShot.club_id" name="club_id" [required]="golferClubs.length > 0" />
         </div>
         <div class="panel-field" *ngIf="!teeShotLocked">
           <label class="field-label-min" for="shot_type">Shot type</label>

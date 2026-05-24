@@ -182,6 +182,13 @@ body.dark-mode .club-card:hover {
   font-weight: 600;
 }
 
+.club-title-line2 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .club-card-body {
   display: flex;
   flex-direction: column;

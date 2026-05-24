@@ -21,6 +21,15 @@
       />
     </div>
     <div class="filter-group">
+      <label for="tierFilter">Catalog:</label>
+      <select id="tierFilter" [(ngModel)]="tierFilter" (change)="applyFilter()" class="filter-select">
+        <option value="">All</option>
+        <option value="generic">Generic</option>
+        <option value="oem">OEM samples</option>
+        <option value="custom">Custom (your entries)</option>
+      </select>
+    </div>
+    <div class="filter-group">
       <label for="categoryFilter">Category:</label>
       <select id="categoryFilter" [(ngModel)]="categoryFilter" (change)="applyFilter()" class="filter-select">
         <option value="">All Categories</option>
@@ -55,7 +64,7 @@
 
   <!-- Seed Database Button -->
   <div class="seed-db">
-    <button class="btn btn-secondary" (click)="seedDatabase()">Seed Club Database</button>
+    <button class="btn btn-secondary" (click)="seedDatabase()">Seed catalog (generic + OEM samples)</button>
   </div>
 
   <!-- List View -->
@@ -74,7 +83,10 @@
           />
           <div class="club-title">
             <strong>{{ club.maker }} {{ club.set }}</strong>
-            <span class="club-number">{{ club.number }}</span>
+            <div class="club-title-line2">
+              <span class="club-number">{{ club.number }}</span>
+              <span [class]="tierBadgeClass(club)">{{ labelForTier(tierOf(club)) }}</span>
+            </div>
           </div>
         </div>
         <div class="club-card-body">
@@ -124,6 +136,7 @@
                   <input type="checkbox" [checked]="selectedClubIds.has(club.id)"
                     (click)="toggleClubSelection(club.id, $event)" />
                   <strong>{{ club.number }}</strong>
+                  <span [class]="tierBadgeClass(club)">{{ labelForTier(tierOf(club)) }}</span>
                 </div>
                 <div class="club-details">
                   Loft: {{ club.loft }}°, Length: {{ club.length }}" Offset: {{ club.club_offset }}"

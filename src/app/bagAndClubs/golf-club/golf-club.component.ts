@@ -4,6 +4,12 @@ import { HttpClient } from '@angular/common/http';
 import { SupabaseService } from '../../services/supabase.service';
 import { GolfClub } from '../../shared/models/golf-club.model';
 import { NotificationService } from '../../shared/services/notification.service';
+import {
+  CatalogTier,
+  catalogTierForClub,
+  catalogTierLabel,
+  deriveCatalogTier,
+} from '../../shared/golf-club-tier';
 
 interface NestedClubs {
   maker: string;
@@ -34,7 +40,10 @@ export class GolfClubComponent implements OnInit {
 
   // Optional category filter
   categoryFilter: string = '';
-  
+
+  /** Empty = all tiers (generic catalog, OEM samples, custom user rows). */
+  tierFilter: '' | CatalogTier = '';
+
   // Search filter
   searchTerm: string = '';
 
@@ -95,7 +104,11 @@ export class GolfClubComponent implements OnInit {
         c.category?.toLowerCase().includes(searchLower)
       );
     }
-    
+
+    if (this.tierFilter) {
+      filtered = filtered.filter((c) => deriveCatalogTier(c.id) === this.tierFilter);
+    }
+
     this.filteredClubs = filtered;
     this.groupClubs();
   }
@@ -219,7 +232,7 @@ export class GolfClubComponent implements OnInit {
   }
 
   async seedDatabase() {
-    if (!confirm('This will add popular clubs to the database. Continue?')) return;
+    if (!confirm('This will upsert the bundled catalog (generic bag + OEM sample clubs). Existing rows with the same ids are updated. Continue?')) return;
 
     this.http.get<GolfClub[]>('assets/club_catalog.json').subscribe(async (clubs) => {
       if (clubs && clubs.length > 0) {
@@ -252,6 +265,18 @@ export class GolfClubComponent implements OnInit {
   
   navigateToAddClub() {
     this.router.navigate(['/add-club']);
+  }
+
+  tierOf(club: GolfClub): CatalogTier {
+    return catalogTierForClub(club);
+  }
+
+  labelForTier(tier: CatalogTier): string {
+    return catalogTierLabel(tier);
+  }
+
+  tierBadgeClass(club: GolfClub): string {
+    return 'tier-badge tier-' + this.tierOf(club);
   }
 }
 

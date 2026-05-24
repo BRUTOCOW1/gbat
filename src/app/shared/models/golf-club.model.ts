@@ -1,4 +1,5 @@
 export interface GolfClub {
+  /** Stable ids: `gen_*` = generic catalog, `oem_*` = OEM samples, UUID = user custom (see `golf-club-tier.ts`). */
   id: string;
   golf_bag_id?: string;
   maker: string;   // Made optional

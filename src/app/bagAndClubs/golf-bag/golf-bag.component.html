@@ -1,58 +1,142 @@
-<div class="golf-bags-container">
-  <h2 class="bags-title">Your Golf Bags</h2>
-  
-  <!-- Action buttons -->
-  <div class="bags-actions">
-    <button class="btn btn-primary" (click)="navigateTocreateBag()">Create New Golf Bag</button>
-    <button class="btn btn-secondary" (click)="navigateToAddClub()">Add New Club</button>
+<div class="golf-bags-page">
+  <header class="bags-hero">
+    <p class="bags-eyebrow">Equipment</p>
+    <h1 class="bags-title">Your golf bags</h1>
+    <p class="bags-subtitle">
+      Select a bag to see what’s in play. Expand a club for specs and how often you’ve used it in rounds.
+    </p>
+    <div class="bags-actions">
+      <button type="button" class="btn-bags-cta" (click)="navigateTocreateBag()">
+        <span class="btn-bags-cta-label">New bag</span>
+        <span class="btn-bags-cta-hint" aria-hidden="true">→</span>
+      </button>
+      <button type="button" class="btn-bags-secondary" (click)="navigateToAddClub()">
+        Add custom club
+      </button>
+    </div>
+  </header>
+
+  <div class="bags-loading" *ngIf="pageLoading">
+    <span class="bags-loading-dot" aria-hidden="true"></span>
+    Loading bags…
   </div>
 
-  <!-- Grid of Bag Cards -->
-  <div class="bag-list">
-    <div 
-      class="bag-card card"
+  <section class="bags-empty" *ngIf="!pageLoading && golfBags.length === 0">
+    <p>You don’t have any bags yet. Create one, then add clubs from the catalog.</p>
+    <button type="button" class="btn-bags-cta" (click)="navigateTocreateBag()">Create your first bag</button>
+  </section>
+
+  <div class="bag-list" *ngIf="!pageLoading && golfBags.length > 0">
+    <article
+      class="bag-card"
       *ngFor="let bag of golfBags"
       (click)="selectBag(bag.golfbag_id, $event)"
       [class.selected]="bag.golfbag_id === selectedBagId"
     >
-      <h3 class="bag-name">{{ bag.name }}</h3>
-
-      <!-- Show "Add Clubs" button only if this bag is selected -->
-      <button 
-        *ngIf="bag.golfbag_id === selectedBagId"
-        class="btn btn-secondary add-clubs-btn"
-        (click)="navigateToAddClubs(bag.golfbag_id, $event)"
-      >
-        Add Clubs
-      </button>
-
-      <!-- Expandable Clubs List -->
-      <div class="club-list" *ngIf="bag.golfbag_id === selectedBagId">
-        <h4>Clubs in this Bag:</h4>
-        <ul>
-          <li *ngFor="let club of clubsByBag[bag.golfbag_id]">
-            
-            <!-- Club Header Row -->
-            <div 
-              class="club-header"
-              (click)="toggleClubDetails(club.id, $event)"
-            >
-              <strong>{{ club.maker }} {{club.set}} {{ club.number }} {{ club.category }} </strong>
-              <span class="arrow" [class.open]="clubExpanded[club.id]">▼</span>
-            </div>
-
-            <!-- Dropdown with Additional Club Details -->
-            <div class="club-dropdown" *ngIf="clubExpanded[club.id]">
-              <p><strong>Loft:</strong> {{ club.loft }}°</p>
-              <p><strong>Length:</strong> {{ club.length }}"</p>
-              <p><strong>Offset:</strong> {{ club.club_offset }}"</p>
-              <p><strong>Lie Angle:</strong> {{ club.lie_angle }}°</p>
-              <!-- Add more fields if needed -->
-            </div>
-
-          </li>
-        </ul>
+      <div class="bag-card-top">
+        <h2 class="bag-name">{{ bag.name }}</h2>
+        <span class="bag-chevron" [class.open]="bag.golfbag_id === selectedBagId" aria-hidden="true">▶</span>
       </div>
-    </div>
+
+      <div class="bag-card-actions" *ngIf="bag.golfbag_id === selectedBagId" (click)="$event.stopPropagation()">
+        <button type="button" class="btn-bags-inline" (click)="navigateToAddClubs(bag.golfbag_id, $event)">
+          Add clubs from catalog
+        </button>
+      </div>
+
+      <div class="club-panel" *ngIf="bag.golfbag_id === selectedBagId">
+        <p class="club-panel-hint" *ngIf="clubsByBag[bag.golfbag_id]?.length === 0">
+          No clubs in this bag yet.
+        </p>
+
+        <div class="club-grid" *ngIf="clubsByBag[bag.golfbag_id]?.length">
+          <div class="club-card" *ngFor="let club of clubsByBag[bag.golfbag_id]">
+            <button
+              type="button"
+              class="club-card-toggle"
+              (click)="toggleClubDetails(club, $event)"
+              [attr.aria-expanded]="clubExpanded[club.golferClubId]"
+            >
+              <div class="club-card-head">
+                <div class="club-card-titles">
+                  <span class="club-maker-line">{{ club.maker }} {{ club.set }}</span>
+                  <span class="club-number-line">
+                    <span class="club-number">{{ club.number }}</span>
+                    <span class="club-category-pill">{{ club.category }}</span>
+                    <span [class]="tierBadgeClass(club)">{{ labelForTier(tierOf(club)) }}</span>
+                  </span>
+                </div>
+                <span class="club-chevron" [class.open]="clubExpanded[club.golferClubId]">▶</span>
+              </div>
+            </button>
+
+            <div class="club-detail" *ngIf="clubExpanded[club.golferClubId]">
+              <div class="club-spec-block">
+                <h3 class="club-detail-heading">Specs</h3>
+                <ul class="club-spec-list">
+                  <li *ngIf="club.loft"><span>Loft</span> <strong>{{ club.loft }}°</strong></li>
+                  <li *ngIf="club.length"><span>Length</span> <strong>{{ club.length }}"</strong></li>
+                  <li *ngIf="club.club_offset != null && club.club_offset !== ''">
+                    <span>Offset</span> <strong>{{ club.club_offset }}"</strong>
+                  </li>
+                  <li *ngIf="club.lie_angle"><span>Lie</span> <strong>{{ club.lie_angle }}°</strong></li>
+                  <li *ngIf="club.bounce"><span>Bounce</span> <strong>{{ club.bounce }}°</strong></li>
+                </ul>
+              </div>
+
+              <div class="club-stats-block">
+                <h3 class="club-detail-heading">Round history</h3>
+                <div class="club-stats-loading" *ngIf="statsLoading[club.golferClubId]">
+                  <span class="bags-loading-dot" aria-hidden="true"></span>
+                  Loading stats…
+                </div>
+                <ng-container *ngIf="!statsLoading[club.golferClubId] && clubStats[club.golferClubId] as st">
+                  <ng-container *ngIf="st.totalShots > 0; else clubNoStats">
+                    <div class="club-stats-grid">
+                      <div class="club-stat">
+                        <span class="club-stat-value">{{ st.totalShots }}</span>
+                        <span class="club-stat-label">Total shots</span>
+                      </div>
+                      <div class="club-stat">
+                        <span class="club-stat-value">{{ st.roundsWithClub }}</span>
+                        <span class="club-stat-label">Rounds used</span>
+                      </div>
+                      <div class="club-stat">
+                        <span class="club-stat-value">{{ st.avgShotsPerRound ?? '—' }}</span>
+                        <span class="club-stat-label">Avg / round</span>
+                      </div>
+                      <div class="club-stat">
+                        <span class="club-stat-value">{{ st.avgCarryYds ?? '—' }}</span>
+                        <span class="club-stat-label">Avg carry (yds)</span>
+                      </div>
+                      <div class="club-stat">
+                        <span class="club-stat-value">{{ st.fullSwingCount }}</span>
+                        <span class="club-stat-label">Full swings</span>
+                      </div>
+                      <div class="club-stat">
+                        <span class="club-stat-value">{{ st.puttCount }}</span>
+                        <span class="club-stat-label">Putts logged</span>
+                      </div>
+                      <div class="club-stat club-stat-wide" *ngIf="st.penaltyCount > 0">
+                        <span class="club-stat-value">{{ st.penaltyCount }}</span>
+                        <span class="club-stat-label">Penalty strokes (this club)</span>
+                      </div>
+                    </div>
+                    <p class="club-last-used">
+                      Last used: <strong>{{ formatLastUsed(st.lastUsedDate) }}</strong>
+                    </p>
+                  </ng-container>
+                  <ng-template #clubNoStats>
+                    <p class="club-stats-none">
+                      No recorded shots with this club yet. Stats appear after you log shots in a round.
+                    </p>
+                  </ng-template>
+                </ng-container>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
   </div>
 </div>

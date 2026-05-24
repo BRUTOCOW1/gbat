@@ -2,6 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { SupabaseService } from '../../services/supabase.service';
 import { GolfClub } from '../../shared/models/golf-club.model';
+import {
+  CatalogTier,
+  catalogTierForClub,
+  catalogTierLabel,
+  deriveCatalogTier,
+} from '../../shared/golf-club-tier';
 import { GolfBag } from '../../shared/models/golf-bag.model'; // Import the GolfBag interface
 import { User } from '../../shared/models/user.model';
 import { Router } from '@angular/router';
@@ -20,6 +26,8 @@ export class CreateGolfBagComponent implements OnInit {
   step: number = 1; // 1 = bag form, 2 = club selection
   newBagId: string | null = null;
   allClubs: GolfClub[] = [];
+  /** Empty = show generic, OEM, and custom clubs together. */
+  tierFilter: '' | CatalogTier = '';
   selectedClubIds = new Set<string>();
   errorMessage: string | null = null; // Holds error messages for the form
 
@@ -113,6 +121,26 @@ export class CreateGolfBagComponent implements OnInit {
     this.step = 2;
     // Load clubs for selection
     await this.loadClubs();
+  }
+
+  /** Clubs visible with the current catalog filter (step 2). */
+  get displayedClubs(): GolfClub[] {
+    if (!this.tierFilter) {
+      return this.allClubs;
+    }
+    return this.allClubs.filter((c) => deriveCatalogTier(c.id) === this.tierFilter);
+  }
+
+  tierOf(club: GolfClub): CatalogTier {
+    return catalogTierForClub(club);
+  }
+
+  tierBadgeClass(club: GolfClub): string {
+    return 'tier-badge tier-' + this.tierOf(club);
+  }
+
+  labelForTier(club: GolfClub): string {
+    return catalogTierLabel(catalogTierForClub(club));
   }
 
   /** Load all clubs for selection */

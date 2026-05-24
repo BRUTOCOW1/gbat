@@ -8,9 +8,22 @@
 }
 
 .add-club-container h2 {
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
   color: var(--primary-color, #2A4A16);
   text-align: center;
+}
+
+.add-club-lede {
+  max-width: 36rem;
+  margin: 0 auto 1.5rem;
+  text-align: center;
+  line-height: 1.5;
+  color: var(--text-muted-light, #666);
+  font-size: 0.95rem;
+}
+
+body.dark-mode .add-club-lede {
+  color: var(--text-muted-dark, #aaa);
 }
 
 .club-form {

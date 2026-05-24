@@ -1,47 +1,196 @@
-<div class="golf-rounds-wrapper">
-  <h2 class="rounds-title">Golf Rounds</h2>
-  
-  <div class="rounds-actions">
-    <button class="btn btn-primary" (click)="startNewRound()">Start New Round</button>
+<div class="golf-rounds-page">
+  <header class="rounds-hero">
+    <p class="rounds-eyebrow">Score history</p>
+    <h1 class="rounds-title">Golf Rounds</h1>
+    <p class="rounds-subtitle">Open a round for stats, or tee up something new.</p>
+    <div class="rounds-actions">
+      <button type="button" class="btn-rounds-cta" (click)="startNewRound()">
+        <span class="btn-rounds-cta-label">Start new round</span>
+        <span class="btn-rounds-cta-hint" aria-hidden="true">→</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="rounds-loading" *ngIf="loading">
+    <span class="rounds-loading-dot" aria-hidden="true"></span>
+    Loading rounds…
   </div>
 
-  <!-- Two-column layout: left for the round cards, right for the selected details -->
-  <div class="rounds-layout">
-    
-    <!-- Left Column: Round Cards Grid -->
-    <div class="round-list">
-      <div
-        *ngFor="let round of rounds"
-        class="round-card"
-        (click)="selectRound(round)"
-        [class.selected]="selectedRound?.id === round.id"
-      >
-        <div class="round-header">
-          <h3 class="round-date">{{ round.date_played | date: 'mediumDate' }}</h3>
-          <p class="round-course">{{ round.course_name }}</p>
-        </div>
+  <section
+    class="round-stats-summary"
+    *ngIf="!loading && rounds.length > 0 && roundStats"
+    aria-label="Round statistics"
+  >
+    <div class="round-stats-header">
+      <h2 class="round-stats-title">Your stats</h2>
+      <p class="round-stats-period">{{ roundStats.periodLabel }} <span class="round-stats-period-hint">(rolling)</span></p>
+    </div>
+
+    <div class="round-stats-grid">
+      <div class="stat-block">
+        <span class="stat-block-value">{{ roundStats.roundsInPeriod }}</span>
+        <span class="stat-block-label">Rounds</span>
+      </div>
+      <div class="stat-block">
+        <span class="stat-block-value">{{ roundStats.completeInPeriod }}</span>
+        <span class="stat-block-label">Finished</span>
+      </div>
+      <div class="stat-block">
+        <span class="stat-block-value">{{ roundStats.inProgressInPeriod }}</span>
+        <span class="stat-block-label">In progress</span>
+      </div>
+      <div class="stat-block">
+        <span class="stat-block-value">{{ roundStats.roundsInPeriod ? roundStats.roundsPerMonthAvg : '—' }}</span>
+        <span class="stat-block-label">Avg / month</span>
+      </div>
+      <div class="stat-block">
+        <span class="stat-block-value">{{ roundStats.avgStrokes ?? '—' }}</span>
+        <span class="stat-block-label">Avg score (strokes)</span>
+      </div>
+      <div class="stat-block">
+        <span class="stat-block-value">{{ roundStats.bestStrokes ?? '—' }}</span>
+        <span class="stat-block-label">Best round</span>
+      </div>
+      <div class="stat-block">
+        <span class="stat-block-value">{{ roundStats.worstStrokes ?? '—' }}</span>
+        <span class="stat-block-label">High round</span>
+      </div>
+      <div class="stat-block">
+        <span class="stat-block-value">{{ roundStats.avgPutts ?? '—' }}</span>
+        <span class="stat-block-label">Avg putts</span>
       </div>
     </div>
 
-    <!-- Right Column: Expanded Details (only shown if selectedRound is defined) -->
-    <div class="selected-round-details card" *ngIf="selectedRound">
-      <h3 class="selected-round-date">{{ selectedRound.date_played | date:'mediumDate' }}</h3>
-      <p class="selected-round-course">{{ selectedRound.course_name }}</p>
-      
-      <div class="round-stats">
-        <p><strong>Total Strokes:</strong> {{ selectedRound.total_strokes }}</p>
-        <p><strong>Fairways Hit:</strong> {{ selectedRound.fairways_hit }}</p>
-        <p><strong>Putts:</strong> {{ selectedRound.putts }}</p>
+    <p class="round-stats-note" *ngIf="roundStats.roundsInPeriod === 0 && roundStats.allTimeRounds > 0">
+      No rounds in the last 12 months — older rounds are still counted in all-time below.
+    </p>
+
+    <p
+      class="round-stats-note"
+      *ngIf="roundStats.roundsInPeriod > 0 && roundStats.scoredRoundsInPeriod < roundStats.roundsInPeriod"
+    >
+      Averages for score use {{ roundStats.scoredRoundsInPeriod }} of {{ roundStats.roundsInPeriod }} rounds with a recorded total.
+    </p>
+
+    <div class="round-stats-alltime">
+      <span class="round-stats-alltime-label">All-time</span>
+      <span><strong>{{ roundStats.allTimeRounds }}</strong> rounds</span>
+      <span> · <strong>{{ roundStats.allTimeComplete }}</strong> finished</span>
+      <span> · <strong>{{ roundStats.allTimeInProgress }}</strong> in progress</span>
+      <span *ngIf="roundStats.allTimeAvgStrokes != null"> · avg <strong>{{ roundStats.allTimeAvgStrokes }}</strong> strokes</span>
+      <span *ngIf="roundStats.allTimeBestStrokes != null"> · best <strong>{{ roundStats.allTimeBestStrokes }}</strong></span>
+    </div>
+  </section>
+
+  <div class="rounds-empty panel-empty" *ngIf="!loading && rounds.length === 0">
+    <p class="panel-empty-title">No rounds yet</p>
+    <p class="panel-empty-text">Start a round to build your timeline here.</p>
+    <button type="button" class="btn-rounds-cta btn-rounds-cta--ghost" (click)="startNewRound()">Start new round</button>
+  </div>
+
+  <div class="rounds-layout" *ngIf="!loading && rounds.length > 0">
+    <section class="round-list-section" aria-label="Past rounds">
+      <h2 class="rounds-section-heading">Past rounds</h2>
+      <div class="round-list">
+        <button
+          type="button"
+          *ngFor="let round of rounds"
+          class="round-card"
+          (click)="selectRound(round)"
+          [class.selected]="selectedRound?.id === round.id"
+          [class.round-card--complete]="round.is_round_complete"
+          [attr.aria-pressed]="selectedRound?.id === round.id"
+        >
+          <div class="round-card-row">
+            <span class="round-date">{{ round.date_played | date: 'mediumDate' }}</span>
+            <span
+              class="round-badge"
+              *ngIf="round.holes_total > 0"
+              [class.round-badge--complete]="round.is_round_complete"
+              [class.round-badge--partial]="!round.is_round_complete"
+            >
+              {{ round.is_round_complete ? 'Complete' : 'In progress' }}
+            </span>
+          </div>
+          <span class="round-course">{{ round.course_name }}</span>
+          <div
+            class="round-holes-track"
+            *ngIf="round.holes_total > 0"
+            [attr.aria-hidden]="true"
+          >
+            <div
+              class="round-holes-fill"
+              [style.width.%]="min100(100 * round.holes_played / round.holes_total)"
+            ></div>
+          </div>
+          <p class="round-holes-label" *ngIf="round.holes_total > 0">
+            <strong>{{ round.holes_played }}</strong> / {{ round.holes_total }} holes
+          </p>
+          <p class="round-holes-label round-holes-label--muted" *ngIf="round.holes_total === 0 && round.holes_played > 0">
+            {{ round.holes_played }} holes logged
+          </p>
+          <p class="round-holes-label round-holes-label--muted" *ngIf="round.holes_total === 0 && round.holes_played === 0">
+            Not started
+          </p>
+        </button>
       </div>
+    </section>
 
-      <button
-        class="btn btn-secondary"
-        (click)="goToRound(selectedRound.id)"
-      >
-        Go To Round
-      </button>
+    <div class="round-sidebar">
+      <aside class="selected-round-details" *ngIf="selectedRound">
+        <div class="detail-card-inner">
+          <p class="detail-eyebrow">Selected round</p>
+          <h2 class="detail-title">{{ selectedRound.date_played | date: 'mediumDate' }}</h2>
+          <p class="detail-course">{{ selectedRound.course_name }}</p>
 
+          <div class="detail-hole-progress" *ngIf="selectedRound.holes_total > 0">
+            <span
+              class="round-badge round-badge--large"
+              [class.round-badge--complete]="selectedRound.is_round_complete"
+              [class.round-badge--partial]="!selectedRound.is_round_complete"
+            >
+              {{ selectedRound.is_round_complete ? 'Round complete' : 'In progress' }}
+            </span>
+            <div class="round-holes-track" [attr.aria-hidden]="true">
+              <div
+                class="round-holes-fill"
+                [style.width.%]="min100(100 * selectedRound.holes_played / selectedRound.holes_total)"
+              ></div>
+            </div>
+            <p class="round-holes-label detail-hole-progress-label">
+              <strong>{{ selectedRound.holes_played }}</strong> of {{ selectedRound.holes_total }} holes with scores
+            </p>
+          </div>
+          <p class="detail-hole-unknown" *ngIf="selectedRound.holes_total === 0">
+            <span *ngIf="selectedRound.holes_played > 0">{{ selectedRound.holes_played }} holes logged — course hole list unavailable.</span>
+            <span *ngIf="selectedRound.holes_played === 0">No holes logged yet.</span>
+          </p>
 
+          <div class="round-stat-grid">
+            <div class="stat-pill">
+              <span class="stat-pill-value">{{ selectedRound.total_strokes ?? '—' }}</span>
+              <span class="stat-pill-label">Strokes</span>
+            </div>
+            <div class="stat-pill">
+              <span class="stat-pill-value">{{ selectedRound.fairways_hit ?? '—' }}</span>
+              <span class="stat-pill-label">Fairways</span>
+            </div>
+            <div class="stat-pill">
+              <span class="stat-pill-value">{{ selectedRound.putts ?? '—' }}</span>
+              <span class="stat-pill-label">Putts</span>
+            </div>
+          </div>
+
+          <button type="button" class="btn-rounds-secondary" (click)="goToRound(selectedRound.id)">
+            Open round
+          </button>
+        </div>
+      </aside>
+
+      <div class="rounds-hint-card" *ngIf="!selectedRound" role="status">
+        <p class="rounds-hint-title">Choose a round</p>
+        <p class="rounds-hint-text">Tap a card for hole progress (e.g. 12/18), round stats, and the full scorecard.</p>
+      </div>
     </div>
   </div>
 </div>

@@ -1,6 +1,11 @@
 <div class="add-club-container">
   <h2>Add New Golf Club</h2>
-  
+  <p class="add-club-lede">
+    Enter your own specs for a club that is not in the catalog. These are saved as
+    <strong>custom</strong> clubs (you can filter to them on the Golf Clubs page). For a quick
+    baseline bag, use <strong>Seed catalog</strong> there for generic and OEM sample clubs.
+  </p>
+
   <form [formGroup]="clubForm" (ngSubmit)="onSubmit()" class="club-form">
     <div class="form-row">
       <div class="form-group">

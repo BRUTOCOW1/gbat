@@ -4,6 +4,9 @@
   max-width: 800px;
   margin: 20px auto;
   padding: 20px;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow-x: clip;
 }
 
 .golf-shot-container {
@@ -111,6 +114,10 @@
   background: #181818;
   border: 1px solid #333;
   border-radius: 12px;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: clip;
 }
 
 .panel-card-head {
@@ -135,6 +142,238 @@
   flex-wrap: wrap;
   gap: 12px 16px;
   align-items: flex-end;
+}
+
+.panel-card-body--club-stack {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.panel-field--club-slider {
+  flex: 1 1 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+.club-slider-empty {
+  margin: 0 0 8px;
+  padding: 12px;
+  font-size: 0.85rem;
+  color: #b88;
+  background: #2a1818;
+  border: 1px solid #553333;
+  border-radius: 8px;
+}
+
+.club-slider {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  background: linear-gradient(145deg, #1f2420 0%, #161816 100%);
+  border: 1px solid #333;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow-x: clip;
+}
+
+/* Column flex items default to min-width:auto; chips row must not widen the card */
+.club-slider > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.club-slider-hero {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 10px;
+  padding: 8px 4px 4px;
+}
+
+.club-slider-hero-num {
+  font-size: 2.25rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #e8f5e0;
+  letter-spacing: -0.02em;
+}
+
+.club-slider-hero-cat {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #7cb342;
+}
+
+.club-slider-frame {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.club-slider-arrow {
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  align-self: center;
+  border-radius: 10px;
+  border: 1px solid #444;
+  background: #2a2f2a;
+  color: #ddd;
+  font-size: 1.35rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.club-slider-arrow:hover:not(:disabled) {
+  background: #353a35;
+  border-color: var(--primary-color, #6a9f4a);
+}
+
+.club-slider-arrow:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.club-slider-rail-wrap {
+  flex: 1 1 0%;
+  min-width: 0;
+  max-width: 100%;
+  position: relative;
+  overflow: hidden;
+  /* Grid lets this column shrink below intrinsic chip width (flex min-width:auto bug) */
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.club-slider-rail-wrap::before,
+.club-slider-rail-wrap::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 16px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.club-slider-rail-wrap::before {
+  left: 0;
+  background: linear-gradient(to right, #1f2420, transparent);
+}
+
+.club-slider-rail-wrap::after {
+  right: 0;
+  background: linear-gradient(to left, #1f2420, transparent);
+}
+
+.club-slider-rail {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  padding: 4px 2px 8px;
+  scroll-padding-inline: 8px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  grid-column: 1;
+}
+
+.club-slider-rail::-webkit-scrollbar {
+  height: 6px;
+}
+
+.club-slider-rail::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 3px;
+}
+
+.club-chip {
+  flex: 0 0 auto;
+  scroll-snap-align: center;
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  min-height: 40px;
+  max-height: 40px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid #3a3a3a;
+  background: #222;
+  color: #bbb;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: border-color 0.12s, background 0.12s, color 0.12s, box-shadow 0.12s;
+}
+
+.club-chip:hover {
+  border-color: var(--primary-color, #6a9f4a);
+  color: #eee;
+}
+
+.club-chip--active {
+  border-color: #7cb342;
+  background: linear-gradient(180deg, #2d3a28 0%, #1e261b 100%);
+  color: #f0fff0;
+  box-shadow: inset 0 0 0 1px rgba(124, 179, 66, 0.45);
+}
+
+.club-chip-num {
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1;
+  flex-shrink: 0;
+  min-width: 1em;
+  text-align: center;
+}
+
+.club-chip-cat {
+  font-size: 0.62rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: #888;
+  line-height: 1.2;
+  text-align: left;
+  max-width: 4.75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.club-chip--active .club-chip-cat {
+  color: #a8d87a;
+}
+
+.club-slider-hint {
+  margin: 0;
+  font-size: 0.7rem;
+  color: #666;
+  text-align: center;
 }
 
 .panel-field {
@@ -881,6 +1120,11 @@ body.dark-mode .club { color: var(--accent-color); }
   background: #232323;
   padding: 20px;
   border-radius: 10px;
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: clip;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
   text-align: left;
 }

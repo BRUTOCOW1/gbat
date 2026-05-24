@@ -19,8 +19,22 @@
     <h3>Select clubs for "{{ golfBagForm.get('name')?.value }}"</h3>
     <div *ngIf="allClubs.length === 0" class="loading-message">Loading clubs…</div>
     <div *ngIf="allClubs.length > 0" class="club-selection-container">
+      <div class="club-picker-filters">
+        <label for="bagTierFilter">Catalog</label>
+        <select
+          id="bagTierFilter"
+          name="bagTierFilter"
+          [(ngModel)]="tierFilter"
+          class="form-control tier-filter-select"
+        >
+          <option value="">All</option>
+          <option value="generic">Generic</option>
+          <option value="oem">OEM samples</option>
+          <option value="custom">Custom (your entries)</option>
+        </select>
+      </div>
       <div class="club-grid">
-        <div *ngFor="let club of allClubs" class="club-selection-card">
+        <div *ngFor="let club of displayedClubs" class="club-selection-card">
           <input 
             type="checkbox" 
             [id]="'club-' + club.id"
@@ -31,7 +45,10 @@
           <label [for]="'club-' + club.id" class="club-label">
             <div class="club-name">
               <strong>{{ club.maker }} {{ club.set }}</strong>
-              <span class="club-number">{{ club.number }}</span>
+              <div class="club-name-line2">
+                <span class="club-number">{{ club.number }}</span>
+                <span [class]="tierBadgeClass(club)">{{ labelForTier(club) }}</span>
+              </div>
             </div>
             <div class="club-category">{{ club.category }}</div>
             <div class="club-specs">

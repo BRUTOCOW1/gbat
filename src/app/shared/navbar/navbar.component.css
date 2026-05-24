@@ -71,7 +71,7 @@ body.dark-mode .toggle-dark-mode {
   top: 0;
   left: 0;
   right: 0;
-  height: 60px;
+  height: var(--nav-height, 60px);
   background-color: var(--primary-color);
   display: flex;
   align-items: center;
@@ -79,6 +79,7 @@ body.dark-mode .toggle-dark-mode {
   padding: 0 var(--spacing-2);
   z-index: 1000;
   border-bottom: 2px solid var(--accent-color);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 .top-nav ul {

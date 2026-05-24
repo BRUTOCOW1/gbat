@@ -1,3 +1,12 @@
+/* Offset fixed .top-nav (navbar.component.css) so page content is not clipped */
+.app-shell {
+  padding-top: calc(var(--nav-height, 60px) + env(safe-area-inset-top, 0px));
+  min-height: 100vh;
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
 /* Global button styles */
 .btn {
   display: inline-block;

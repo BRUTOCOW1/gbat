@@ -1,3 +1,4 @@
+import { Location } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SupabaseService } from '../../services/supabase.service';
@@ -116,6 +117,7 @@ export class GolfShotEntryComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
+    private location: Location,
     private supabaseService: SupabaseService,
     private notificationService: NotificationService
   ) {
@@ -131,6 +133,8 @@ export class GolfShotEntryComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     this.holeNum = this.route.snapshot.paramMap.get('holeNumber')!;
     this.holeNumber = parseInt(this.holeNum, 10);
+
+    this.hydrateNavContextFromStorageAndHistory();
 
     const shotNumParam = this.route.snapshot.paramMap.get('shotNumber'); // only if you route here for edit
     const st = (this.router.getCurrentNavigation()?.extras.state as any) ?? (window.history.state as any);
@@ -186,6 +190,81 @@ export class GolfShotEntryComponent implements OnInit {
       if (stored !== null) {
         this.advancedShotFields = stored === 'true';
       }
+    }
+
+    this.persistShotNavContext();
+    setTimeout(() => this.scrollSelectedClubIntoView(), 0);
+  }
+
+  private scrollSelectedClubIntoView(): void {
+    const id = this.newShot.club_id;
+    if (!id) return;
+    requestAnimationFrame(() => {
+      document.getElementById('club-chip-' + id)?.scrollIntoView({ behavior: 'auto', inline: 'center', block: 'nearest' });
+    });
+  }
+
+  /** Router state is often missing in the constructor; merge Location + sessionStorage (same as penalty flow). */
+  private hydrateNavContextFromStorageAndHistory(): void {
+    try {
+      const raw = sessionStorage.getItem('gbat-shot-context');
+      if (raw) {
+        const c = JSON.parse(raw) as Record<string, string>;
+        if (!this.userId && c['userId']) {
+          this.userId = c['userId'];
+        }
+        if (!this.golfBagId && c['golfBagId']) {
+          this.golfBagId = c['golfBagId'];
+        }
+        if (!this.holeId && c['holeId']) {
+          this.holeId = c['holeId'];
+        }
+        if (!this.roundId && c['roundId']) {
+          this.roundId = c['roundId'];
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+    const pick = (o: Record<string, unknown>): Record<string, unknown> => {
+      if (!o || typeof o !== 'object') {
+        return {};
+      }
+      const inner = o['state'];
+      return (inner && typeof inner === 'object' ? inner : o) as Record<string, unknown>;
+    };
+    for (const src of [pick(this.location.getState() as Record<string, unknown>), pick(window.history.state as Record<string, unknown>)]) {
+      if (!this.userId && typeof src['userId'] === 'string') {
+        this.userId = src['userId'];
+      }
+      if (!this.golfBagId && typeof src['golfBagId'] === 'string') {
+        this.golfBagId = src['golfBagId'];
+      }
+      if (!this.holeId && typeof src['holeId'] === 'string') {
+        this.holeId = src['holeId'];
+      }
+      if (!this.roundId && typeof src['roundId'] === 'string') {
+        this.roundId = src['roundId'];
+      }
+    }
+  }
+
+  private persistShotNavContext(): void {
+    if (!this.userId || !this.golfBagId || !this.holeId || !this.roundId) {
+      return;
+    }
+    try {
+      sessionStorage.setItem(
+        'gbat-shot-context',
+        JSON.stringify({
+          userId: this.userId,
+          golfBagId: this.golfBagId,
+          holeId: this.holeId,
+          roundId: this.roundId,
+        })
+      );
+    } catch {
+      /* ignore */
     }
   }
 
@@ -263,7 +342,45 @@ export class GolfShotEntryComponent implements OnInit {
     }
   }
 
+  get selectedClub(): GolferClub | undefined {
+    return this.golferClubs.find((c) => c.id === this.newShot.club_id);
+  }
+
+  selectClub(club: GolferClub): void {
+    this.newShot.club_id = club.id;
+    void this.onClubChanged();
+    requestAnimationFrame(() => {
+      const el = document.getElementById('club-chip-' + club.id);
+      el?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    });
+  }
+
+  canPrevClub(): boolean {
+    const i = this.golferClubs.findIndex((c) => c.id === this.newShot.club_id);
+    return i > 0;
+  }
+
+  canNextClub(): boolean {
+    const i = this.golferClubs.findIndex((c) => c.id === this.newShot.club_id);
+    return i >= 0 && i < this.golferClubs.length - 1;
+  }
+
+  clubSliderPrev(): void {
+    const i = this.golferClubs.findIndex((c) => c.id === this.newShot.club_id);
+    if (i > 0) {
+      this.selectClub(this.golferClubs[i - 1]);
+    }
+  }
+
+  clubSliderNext(): void {
+    const i = this.golferClubs.findIndex((c) => c.id === this.newShot.club_id);
+    if (i >= 0 && i < this.golferClubs.length - 1) {
+      this.selectClub(this.golferClubs[i + 1]);
+    }
+  }
+
   navigateToPenaltyShot(): void {
+    this.persistShotNavContext();
     this.router.navigate([`/golf-shot/${this.holeNumber}/penalty`], {
       state: {
         userId: this.userId,
@@ -489,26 +606,110 @@ export class GolfShotEntryComponent implements OnInit {
         console.error('Error fetching club details:', clubsErr);
         return;
       }
-      this.golferClubs = data.map((gc) => {
-        const match = (clubs || []).find((club) => club.id === gc.club_id);
-        return match
-          ? {
-              id: gc.id,                // ✅ golfer_club.id
-              club_id: gc.club_id,      // ✅ FK to golfclub
-              number: match.number,
-              category: match.category
-            }
-          : {
-              id: gc.id,                // ✅ still use golfer_club.id
-              club_id: gc.club_id,
-              number: 'Unknown',
-              category: 'Unknown'
-            };
-      });
-      
-      
-      
+      this.golferClubs = this.sortGolferClubsForDisplay(
+        data.map((gc) => {
+          const match = (clubs || []).find((club) => club.id === gc.club_id);
+          return match
+            ? {
+                id: gc.id,
+                club_id: gc.club_id,
+                number: match.number,
+                category: match.category
+              }
+            : {
+                id: gc.id,
+                club_id: gc.club_id,
+                number: 'Unknown',
+                category: 'Unknown'
+              };
+        })
+      );
     }
+  }
+
+  /**
+   * Bag order: driver → woods → hybrids → irons (3–9) → wedges → putter.
+   */
+  private sortGolferClubsForDisplay(clubs: GolferClub[]): GolferClub[] {
+    return [...clubs].sort((a, b) => {
+      const [ta, sa] = this.clubBagSortComponents(a);
+      const [tb, sb] = this.clubBagSortComponents(b);
+      if (ta !== tb) {
+        return ta - tb;
+      }
+      if (sa !== sb) {
+        return sa - sb;
+      }
+      const n = (a.number || '').localeCompare(b.number || '', undefined, { numeric: true });
+      if (n !== 0) {
+        return n;
+      }
+      return (a.category || '').localeCompare(b.category || '');
+    });
+  }
+
+  /** Primary tier (bag order) and secondary key (loft / iron # / wood #). */
+  private clubBagSortComponents(c: GolferClub): [number, number] {
+    const cat = (c.category || '').toLowerCase();
+    const numRaw = (c.number || '').trim();
+    const num = numRaw.toLowerCase().replace(/\s+/g, '');
+
+    if (cat.includes('putter') || num.includes('putter')) {
+      return [80, 0];
+    }
+    if (cat.includes('driver') || num.includes('driver')) {
+      return [0, 0];
+    }
+    if (cat.includes('wood') || cat.includes('fairway')) {
+      const n = parseInt(numRaw.replace(/[^0-9]/g, ''), 10);
+      return [5, Number.isNaN(n) ? 99 : n];
+    }
+    if (cat.includes('hybrid') || /\d+h$/i.test(numRaw.replace(/\s/g, '')) || /h$/i.test(num.replace(/\s/g, ''))) {
+      const n = parseInt(numRaw.replace(/[^0-9]/g, ''), 10);
+      return [10, Number.isNaN(n) ? 99 : n];
+    }
+    if (cat.includes('iron')) {
+      const n = parseInt(numRaw.replace(/[^0-9]/g, ''), 10);
+      return [20, Number.isNaN(n) ? 99 : n];
+    }
+    if (
+      cat.includes('wedge') ||
+      cat.includes('pitching') ||
+      cat.includes('gap') ||
+      cat.includes('sand') ||
+      cat.includes('lob')
+    ) {
+      return [40, this.wedgeSecondarySort(c)];
+    }
+
+    return [70, 0];
+  }
+
+  private wedgeSecondarySort(c: GolferClub): number {
+    const n = (c.number || '').toUpperCase().replace(/\s+/g, '');
+    const cat = (c.category || '').toLowerCase();
+
+    if (n.includes('PW') || cat.includes('pitching')) {
+      return 410;
+    }
+    if (n.includes('GW') || cat.includes('gap')) {
+      return 420;
+    }
+    if (n.includes('AW') || cat.includes('approach')) {
+      return 425;
+    }
+    if (n.includes('SW') || (cat.includes('sand') && cat.includes('wedge'))) {
+      return 430;
+    }
+    if (n.includes('LW') || cat.includes('lob')) {
+      return 440;
+    }
+
+    const loft = parseInt(n.replace(/\D/g, ''), 10);
+    if (!Number.isNaN(loft) && loft >= 40 && loft <= 70) {
+      return 500 + loft;
+    }
+    return 600;
   }
 
   getClubName(clubId: string): string {
@@ -789,16 +990,8 @@ export class GolfShotEntryComponent implements OnInit {
       return;
     }
     
-    // Otherwise, suggest the longest club (lowest number in irons, or wood)
-    const sortedClubs = [...this.golferClubs].sort((a, b) => {
-      const aNum = parseInt(a.number || '99');
-      const bNum = parseInt(b.number || '99');
-      return aNum - bNum;
-    });
-    
-    if (sortedClubs.length > 0) {
-      this.newShot.club_id = sortedClubs[0].id;
-    }
+    // Otherwise first club in bag order (woods / longest club before irons)
+    this.newShot.club_id = this.golferClubs[0].id;
   }
 
   /**

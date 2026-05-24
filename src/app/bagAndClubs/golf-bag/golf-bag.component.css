@@ -1,292 +1,541 @@
-/* Golf Bag Container */
-.golf-bag-container {
-  max-width: 1200px;
-  margin: auto;
+:host {
+  display: block;
+}
+
+.golf-bags-page {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: var(--spacing-3) var(--spacing-3) var(--spacing-4);
+  min-height: calc(100vh - var(--nav-height, 60px) - 48px);
+}
+
+:host-context(body.dark-mode) .golf-bags-page {
+  background: radial-gradient(ellipse 120% 80% at 50% -20%, rgba(59, 110, 35, 0.18) 0%, transparent 55%),
+    var(--bg-color-dark);
+}
+
+:host-context(body:not(.dark-mode)) .golf-bags-page {
+  background: radial-gradient(ellipse 100% 60% at 50% 0%, rgba(194, 169, 53, 0.08) 0%, transparent 50%),
+    var(--bg-color-light);
+}
+
+.bags-hero {
   text-align: center;
-  padding: 40px 20px;
+  margin-bottom: var(--spacing-4);
+  padding-bottom: var(--spacing-3);
+  border-bottom: 1px solid rgba(194, 169, 53, 0.25);
 }
 
-h2 {
-  font-size: 28px;
-  font-weight: bold;
-  margin-bottom: 20px;
+.bags-eyebrow {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--secondary-color);
+  margin: 0 0 8px;
+}
+
+.bags-title {
+  font-size: clamp(1.75rem, 4vw, 2.35rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  margin: 0 0 10px;
   color: var(--primary-color);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
-/* Empty State */
-.no-bags p {
-  font-size: 18px;
-  color: #bbb;
-  margin-bottom: 15px;
+body.dark-mode .bags-title {
+  color: var(--accent-color);
+  text-shadow: 0 2px 24px rgba(194, 169, 53, 0.15);
 }
 
-.no-bags .btn-primary {
-  background: var(--primary-color);
-  color: white;
-  font-size: 16px;
-  padding: 12px 18px;
-  border-radius: var(--radius-md);
-  transition: var(--transition-base);
+.bags-subtitle {
+  margin: 0 auto var(--spacing-3);
+  max-width: 32rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--text-muted-light);
 }
 
-.no-bags .btn-primary:hover {
-  background: var(--primary-hover);
+body.dark-mode .bags-subtitle {
+  color: var(--text-muted-dark);
 }
 
-/* Golf Bags Grid */
-.golf-bag-list {
+.bags-actions {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 20px;
+  gap: 12px;
 }
 
-/* Golf Bag Card */
-.golf-bag-card {
-  width: 320px;
-  padding: 18px;
-  background: var(--card-bg-dark);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-md);
-  border: 2px solid transparent;
-  transition: all var(--transition-base);
-  text-align: center;
+.btn-bags-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 14px 28px;
+  border: none;
+  border-radius: 12px;
   cursor: pointer;
-  position: relative;
-}
-
-body.dark-mode .golf-bag-card {
-  background: var(--card-bg-dark);
-}
-
-body:not(.dark-mode) .golf-bag-card {
-  background: var(--card-bg-light);
-}
-
-.golf-bag-card:hover {
-  transform: translateY(-3px);
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
   box-shadow: var(--shadow-golf);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.btn-bags-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-bags-cta-label {
+  letter-spacing: 0.02em;
+}
+
+.btn-bags-cta-hint {
+  opacity: 0.9;
+  font-weight: 600;
+}
+
+.btn-bags-secondary {
+  padding: 14px 22px;
+  border-radius: 12px;
+  border: 2px solid var(--secondary-color);
+  background: transparent;
+  color: var(--secondary-color);
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.btn-bags-secondary:hover {
+  background: rgba(59, 110, 35, 0.12);
+}
+
+body.dark-mode .btn-bags-secondary {
+  color: var(--accent-color);
   border-color: var(--accent-color);
 }
 
-/* Bag Title */
-.bag-title {
-  font-size: 20px;
-  font-weight: bold;
-  color: var(--primary-color);
-  margin-bottom: 10px;
+body.dark-mode .btn-bags-secondary:hover {
+  background: rgba(194, 169, 53, 0.12);
 }
 
-/* Add Clubs Button */
-.btn-secondary {
-  background: var(--secondary-color);
-  color: white;
-  padding: 8px 12px;
-  border-radius: var(--radius-md);
-  border: none;
-  cursor: pointer;
-  font-size: 14px;
-  transition: var(--transition-base);
-  margin-bottom: 10px;
-}
-
-.btn-secondary:hover {
-  background: var(--secondary-hover);
-}
-
-/* Clubs List */
-.club-sections {
-  background: rgba(42, 74, 22, 0.1);
-  padding: 12px;
-  border-radius: var(--radius-lg);
-  font-size: 14px;
-  color: var(--text-color-dark);
-  margin-top: 10px;
-  border: 1px solid var(--border-color-dark);
-}
-
-body:not(.dark-mode) .club-sections {
-  background: rgba(42, 74, 22, 0.05);
-  color: var(--text-color-light);
-  border-color: var(--border-color-light);
-}
-
-.club-sections h4 {
-  font-size: 16px;
-  font-weight: bold;
-  color: var(--accent-color);
-  border-bottom: 2px solid var(--accent-color);
-  padding-bottom: 5px;
-  text-align: left;
-}
-
-/* Club List */
-.golf-club-list {
-  list-style: none;
-  padding: 0;
-  margin: 5px 0;
-}
-
-.golf-club-list li {
-  padding: 8px;
-  font-size: 15px;
-  font-weight: bold;
-  background: rgba(59, 110, 35, 0.2);
-  margin-bottom: 5px;
-  border-radius: var(--radius-md);
+.bags-loading {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  border-left: 3px solid var(--secondary-color);
+  justify-content: center;
+  gap: 10px;
+  padding: var(--spacing-4);
+  color: var(--text-muted-light);
+  font-size: 1rem;
 }
 
-/* Light Mode Support */
-@media (prefers-color-scheme: light) {
-  .golf-bag-card {
-    background: var(--card-bg-light);
-    color: var(--text-color-light);
-    box-shadow: var(--shadow-md);
-  }
+body.dark-mode .bags-loading {
+  color: var(--text-muted-dark);
+}
 
-  .club-sections {
-    background: var(--bg-color-light);
-    color: var(--text-color-light);
+.bags-loading-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-color);
+  animation: bags-pulse 1s ease-in-out infinite;
+}
+
+@keyframes bags-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
   }
 }
 
-/* Container for the entire page */
-.golf-bags-container {
-  max-width: 900px;
-  margin: 2rem auto;
-  padding: 1rem;
+.bags-empty {
   text-align: center;
+  padding: var(--spacing-4);
+  max-width: 28rem;
+  margin: 0 auto;
+  color: var(--text-muted-light);
+  line-height: 1.6;
 }
 
-/* Title styling */
-.bags-title {
-  margin-bottom: 1rem;
-  font-size: 2rem;
-  color: var(--primary-color);
+body.dark-mode .bags-empty {
+  color: var(--text-muted-dark);
 }
 
-/* Actions row (e.g., "Create New Bag" button) */
-.bags-actions {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  margin-bottom: 2rem;
+.bags-empty .btn-bags-cta {
+  margin-top: var(--spacing-3);
 }
 
-/* Responsive grid for the bag cards */
 .bag-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
-  text-align: left; /* So text in the cards is left-aligned */
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
 }
 
-/* Individual Bag Card */
 .bag-card {
-  background-color: var(--card-bg-light);
+  background: var(--card-bg-light);
   color: var(--text-color-light);
   border-radius: var(--radius-xl);
-  padding: 1.25rem;
+  padding: var(--spacing-3);
   box-shadow: var(--shadow-md);
   border: 2px solid transparent;
   cursor: pointer;
   transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
-  position: relative;
+  text-align: left;
 }
 
 body.dark-mode .bag-card {
-  background-color: var(--card-bg-dark);
+  background: var(--card-bg-dark);
   color: var(--text-color-dark);
 }
 
 .bag-card:hover {
-  transform: translateY(-3px);
+  transform: translateY(-2px);
   box-shadow: var(--shadow-golf);
-  border-color: var(--accent-color);
+  border-color: rgba(194, 169, 53, 0.35);
 }
 
-/* Highlight the selected bag card */
 .bag-card.selected {
-  border: 2px solid var(--accent-color);
+  border-color: var(--accent-color);
   box-shadow: var(--shadow-golf);
 }
 
-/* Bag name styling */
+.bag-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
 .bag-name {
-  margin-top: 0;
-  font-size: 1.25rem;
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 800;
   color: var(--primary-color);
+  letter-spacing: -0.02em;
 }
 
 body.dark-mode .bag-name {
   color: var(--accent-color);
 }
 
-/* "Add Clubs" button displayed in selected bag */
-.add-clubs-btn {
-  margin: 0.5rem 0 1rem;
+.bag-chevron {
+  flex-shrink: 0;
+  color: var(--secondary-color);
+  transition: transform var(--transition-fast);
+  font-size: 0.85rem;
 }
 
-/* The list of clubs in a bag */
-.club-list {
-  border-top: 1px solid rgba(255,255,255,0.2);
-  margin-top: 1rem;
-  padding-top: 1rem;
-}
-
-.club-list h4 {
-  margin: 0 0 0.5rem;
-  font-size: 1.1rem;
-  color: var(--accent-color);
-}
-
-.club-list ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.club-list li {
-  margin-bottom: 0.75rem;
-}
-
-/* Club header row for each club */
-.club-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: rgba(255,255,255,0.05);
-  padding: 0.5rem;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.club-header:hover {
-  background: rgba(255,255,255,0.1);
-}
-
-/* The arrow that rotates when expanded */
-.arrow {
-  margin-left: 0.5rem;
-  transition: transform 0.2s;
-}
-.arrow.open {
+.bag-chevron.open {
   transform: rotate(90deg);
 }
 
-/* Dropdown container for extra club details */
-.club-dropdown {
-  margin: 0.25rem 0 0 0.5rem;
-  padding: 0.5rem;
-  background: rgba(255,255,255,0.02);
-  border-radius: 6px;
-  font-size: 0.9rem;
-}
-.club-dropdown p {
-  margin: 0.25rem 0;
+.bag-card-actions {
+  margin-top: var(--spacing-2);
 }
 
+.btn-bags-inline {
+  padding: 10px 18px;
+  border-radius: var(--radius-lg);
+  border: none;
+  background: var(--secondary-color);
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.btn-bags-inline:hover {
+  background: var(--secondary-hover);
+}
+
+.club-panel {
+  margin-top: var(--spacing-3);
+  padding-top: var(--spacing-3);
+  border-top: 1px solid var(--border-color-light);
+}
+
+body.dark-mode .club-panel {
+  border-top-color: var(--border-color-dark);
+}
+
+.club-panel-hint {
+  margin: 0;
+  color: var(--text-muted-light);
+  font-size: 0.95rem;
+}
+
+body.dark-mode .club-panel-hint {
+  color: var(--text-muted-dark);
+}
+
+.club-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--spacing-2);
+  margin-top: var(--spacing-2);
+}
+
+.club-card {
+  background: rgba(42, 74, 22, 0.06);
+  border: 1px solid var(--border-color-light);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  cursor: default;
+}
+
+body.dark-mode .club-card {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--border-color-dark);
+}
+
+.club-card-toggle {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+}
+
+.club-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--spacing-2);
+  padding: 14px 16px;
+  transition: background var(--transition-fast);
+}
+
+.club-card-toggle:hover .club-card-head {
+  background: rgba(42, 74, 22, 0.08);
+}
+
+body.dark-mode .club-card-toggle:hover .club-card-head {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.club-card-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.club-maker-line {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--primary-color);
+}
+
+body.dark-mode .club-maker-line {
+  color: var(--text-color-dark);
+}
+
+.club-number-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.club-number {
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: var(--secondary-color);
+}
+
+.club-category-pill {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: var(--radius-xl);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: rgba(42, 74, 22, 0.15);
+  color: var(--primary-color);
+}
+
+body.dark-mode .club-category-pill {
+  background: rgba(194, 169, 53, 0.15);
+  color: var(--accent-color);
+}
+
+.club-chevron {
+  flex-shrink: 0;
+  margin-top: 4px;
+  color: var(--secondary-color);
+  font-size: 0.75rem;
+  transition: transform var(--transition-fast);
+}
+
+.club-chevron.open {
+  transform: rotate(90deg);
+}
+
+.club-detail {
+  padding: 0 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.club-detail-heading {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--secondary-color);
+  margin: 0 0 10px;
+}
+
+.club-spec-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px 16px;
+  font-size: 0.9rem;
+}
+
+.club-spec-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+body.dark-mode .club-spec-list li {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.club-spec-list span {
+  color: var(--text-muted-light);
+}
+
+body.dark-mode .club-spec-list span {
+  color: var(--text-muted-dark);
+}
+
+.club-spec-list strong {
+  color: var(--text-color-light);
+  font-weight: 600;
+}
+
+body.dark-mode .club-spec-list strong {
+  color: var(--text-color-dark);
+}
+
+.club-stats-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: var(--text-muted-light);
+}
+
+body.dark-mode .club-stats-loading {
+  color: var(--text-muted-dark);
+}
+
+.club-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+.club-stat {
+  padding: 12px;
+  border-radius: var(--radius-md);
+  background: rgba(194, 169, 53, 0.12);
+  border: 1px solid rgba(194, 169, 53, 0.25);
+  text-align: center;
+}
+
+body.dark-mode .club-stat {
+  background: rgba(194, 169, 53, 0.08);
+}
+
+.club-stat-wide {
+  grid-column: 1 / -1;
+}
+
+.club-stat-value {
+  display: block;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--primary-color);
+  line-height: 1.2;
+}
+
+body.dark-mode .club-stat-value {
+  color: var(--accent-color);
+}
+
+.club-stat-label {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted-light);
+}
+
+body.dark-mode .club-stat-label {
+  color: var(--text-muted-dark);
+}
+
+.club-last-used {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-muted-light);
+}
+
+body.dark-mode .club-last-used {
+  color: var(--text-muted-dark);
+}
+
+.club-stats-none {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text-muted-light);
+}
+
+body.dark-mode .club-stats-none {
+  color: var(--text-muted-dark);
+}
+
+@media (max-width: 600px) {
+  .bags-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-bags-cta,
+  .btn-bags-secondary {
+    width: 100%;
+  }
+}

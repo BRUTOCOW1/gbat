@@ -1,8 +1,43 @@
+import { Location } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SupabaseService } from '../../services/supabase.service';
 import { GolfShot } from '../../shared/models/golf-shot.model';
 import { NotificationService } from '../../shared/services/notification.service';
+
+const SHOT_CONTEXT_KEY = 'gbat-shot-context';
+
+interface ShotNavContext {
+  userId?: string;
+  golfBagId?: string;
+  holeId?: string;
+  roundId?: string;
+}
+
+function mergeNavState(...sources: unknown[]): ShotNavContext {
+  const out: ShotNavContext = {};
+  for (const src of sources) {
+    if (!src || typeof src !== 'object') {
+      continue;
+    }
+    const o = src as Record<string, unknown>;
+    const inner = o['state'];
+    const pick = (inner && typeof inner === 'object' ? inner : o) as Record<string, unknown>;
+    if (!out.userId && typeof pick['userId'] === 'string') {
+      out.userId = pick['userId'];
+    }
+    if (!out.golfBagId && typeof pick['golfBagId'] === 'string') {
+      out.golfBagId = pick['golfBagId'];
+    }
+    if (!out.holeId && typeof pick['holeId'] === 'string') {
+      out.holeId = pick['holeId'];
+    }
+    if (!out.roundId && typeof pick['roundId'] === 'string') {
+      out.roundId = pick['roundId'];
+    }
+  }
+  return out;
+}
 
 @Component({
   selector: 'app-penalty-shot-entry',
@@ -26,26 +61,36 @@ export class PenaltyShotEntryComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
+    private location: Location,
     private supabaseService: SupabaseService,
     private notificationService: NotificationService
-  ) {
-    const nav = this.router.getCurrentNavigation();
-    const st =
-      nav?.extras.state ??
-      (typeof history !== 'undefined' ? ((history.state as Record<string, unknown>) || {}) : {});
-    this.userId = st['userId'] as string;
-    this.golfBagId = st['golfBagId'] as string;
-    this.holeId = st['holeId'] as string;
-    this.roundId = st['roundId'] as string;
-  }
+  ) {}
 
   async ngOnInit(): Promise<void> {
     const hn = this.route.snapshot.paramMap.get('holeNumber');
     this.holeNumber = hn ? parseInt(hn, 10) : 1;
 
+    const fromLocation = this.location.getState();
+    const fromHistory = typeof history !== 'undefined' ? history.state : {};
+    let stored: ShotNavContext = {};
+    try {
+      const raw = sessionStorage.getItem(SHOT_CONTEXT_KEY);
+      if (raw) {
+        stored = JSON.parse(raw) as ShotNavContext;
+      }
+    } catch {
+      /* ignore */
+    }
+
+    const merged = mergeNavState(fromLocation, fromHistory, stored);
+    this.userId = merged.userId ?? '';
+    this.golfBagId = merged.golfBagId ?? '';
+    this.holeId = merged.holeId ?? '';
+    this.roundId = merged.roundId ?? '';
+
     if (!this.userId || !this.golfBagId || !this.holeId || !this.roundId) {
-      this.notificationService.showWarning('Missing round context.');
-      this.router.navigate(['/new-round']);
+      this.notificationService.showWarning('Missing round context. Open this screen from the hole or add-shot page.');
+      this.router.navigate(['/dashboard']);
       return;
     }
 
