@@ -1,0 +1,111 @@
+.layout-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.layout-editor-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 10px;
+}
+
+.toolbar-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.toolbar-label {
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #888;
+  margin-right: 4px;
+}
+
+.toolbar-hint {
+  font-size: 0.8rem;
+  color: #9a9a9a;
+}
+
+.layout-select {
+  background: #252525;
+  color: #eee;
+  border: 1px solid #444;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 0.85rem;
+}
+
+.layout-btn {
+  border: 1px solid #444;
+  background: #2a2a2a;
+  color: #ddd;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.layout-btn:hover:not(:disabled) {
+  border-color: var(--primary-color, #c9a227);
+}
+
+.layout-btn.active {
+  border-color: var(--primary-color, #c9a227);
+  background: #3a3520;
+  color: #fff;
+}
+
+.layout-btn--primary {
+  background: #3d4a22;
+  border-color: #6a8f4a;
+}
+
+.layout-btn--danger {
+  border-color: #844;
+  color: #fbb;
+}
+
+.layout-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.layout-editor-svg {
+  max-width: 480px;
+  cursor: crosshair;
+}
+
+.hole-feature--selected {
+  stroke: #e8c547;
+  stroke-width: 1.2;
+}
+
+.layout-draft-line {
+  fill: none;
+  stroke: #e8c547;
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+  pointer-events: none;
+}
+
+.layout-vertex {
+  fill: #e8c547;
+  stroke: #222;
+  stroke-width: 0.8;
+  cursor: grab;
+}
+
+.layout-editor-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}

@@ -1,0 +1,19 @@
+<div class="layout-page" *ngIf="hole">
+  <header class="layout-page-header">
+    <button type="button" class="layout-back" (click)="goBack()">← Back</button>
+    <div>
+      <h1>Hole {{ hole.hole_number }} diagram</h1>
+      <p class="layout-page-sub">{{ courseName }} · Par {{ hole.par }} · {{ statusLabel() }}</p>
+    </div>
+  </header>
+  <p class="layout-page-lede">
+    Draw fairways, hazards, and green shapes for this hole. <strong>Publish</strong> when ready —
+    only published diagrams appear during rounds.
+  </p>
+  <app-hole-layout-editor
+    [par]="hole.par"
+    [initialLayout]="initialLayout()"
+    [saving]="saving"
+    (save)="onSave($event)"
+  ></app-hole-layout-editor>
+</div>

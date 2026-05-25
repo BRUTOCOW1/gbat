@@ -1,0 +1,27 @@
+<div class="hole-diagram">
+  <p class="hole-diagram-hint">Tap where the ball ended — sets side and surface below.</p>
+  <svg
+    #holeSvg
+    class="hole-diagram-svg"
+    [attr.viewBox]="viewBox()"
+    role="img"
+    aria-label="Hole diagram"
+    (pointerdown)="onSvgTap($event, holeSvg)"
+  >
+    <g *ngFor="let f of sortedFeatures()">
+      <polygon
+        [class]="featureClass(f.kind)"
+        [attr.points]="pointsAttr(f)"
+      />
+    </g>
+    <circle class="hole-tee-marker" [attr.cx]="layout.tee.x" [attr.cy]="layout.tee.y" r="3" />
+    <circle class="hole-pin-marker" [attr.cx]="layout.pin.x" [attr.cy]="layout.pin.y" r="3.5" />
+    <circle
+      *ngIf="landingMarker"
+      class="hole-landing-marker"
+      [attr.cx]="landingMarker.x"
+      [attr.cy]="landingMarker.y"
+      r="4.5"
+    />
+  </svg>
+</div>

@@ -1,0 +1,84 @@
+<div class="quick-hole-entry" *ngIf="ready">
+  <header class="quick-header">
+    <h1>Hole {{ holeNumber }}</h1>
+    <p class="lede">How many shots did you take? We’ll suggest clubs — swipe to adjust each one.</p>
+  </header>
+
+  <div class="existing-warning card" *ngIf="existingShotCount > 0">
+    <p>This hole already has {{ existingShotCount }} shot{{ existingShotCount === 1 ? '' : 's' }} logged.</p>
+    <button type="button" class="btn ghost" (click)="goToHoleView()">View hole</button>
+  </div>
+
+  <section class="card stroke-count-card" *ngIf="existingShotCount === 0">
+    <label class="field-label" for="stroke-count">Shots on this hole</label>
+    <div class="stroke-stepper">
+      <button type="button" class="stepper-btn" (click)="decrementStrokes()" [disabled]="strokeCount <= strokeBounds.min" aria-label="Fewer shots">−</button>
+      <input
+        id="stroke-count"
+        type="number"
+        class="stroke-input"
+        [(ngModel)]="strokeCount"
+        (ngModelChange)="onStrokeCountChange()"
+        [min]="strokeBounds.min"
+        [max]="strokeBounds.max"
+      />
+      <button type="button" class="stepper-btn" (click)="incrementStrokes()" [disabled]="strokeCount >= strokeBounds.max" aria-label="More shots">+</button>
+    </div>
+  </section>
+
+  <section class="shots-list" *ngIf="existingShotCount === 0 && drafts.length">
+    <div class="shot-row card" *ngFor="let draft of drafts; let i = index">
+      <div class="shot-row-head">
+        <span class="shot-num">Shot {{ draft.stroke_number }}</span>
+        <span class="shot-type-pill">{{ draft.shot_type }}</span>
+      </div>
+
+      <div class="club-slider" *ngIf="selectedClubForDraft(draft) as selected">
+        <div class="club-slider-hero">
+          <span class="club-slider-hero-num">{{ selected.number }}</span>
+          <span class="club-slider-hero-cat">{{ selected.category }}</span>
+        </div>
+        <div class="club-slider-frame">
+          <button
+            type="button"
+            class="club-slider-arrow"
+            (click)="clubSliderPrev(draft)"
+            [disabled]="!canPrevClub(draft)"
+            aria-label="Previous club"
+          >‹</button>
+          <div class="club-slider-rail-wrap">
+            <div class="club-slider-rail">
+              <button
+                type="button"
+                *ngFor="let club of golferClubs"
+                class="club-chip"
+                [class.club-chip--active]="draft.club_id === club.id"
+                [id]="'club-chip-' + draft.stroke_number + '-' + club.id"
+                [attr.aria-pressed]="draft.club_id === club.id"
+                (click)="selectClubForDraft(draft, club)"
+              >
+                <span class="club-chip-num">{{ club.number }}</span>
+                <span class="club-chip-cat">{{ club.category }}</span>
+              </button>
+            </div>
+          </div>
+          <button
+            type="button"
+            class="club-slider-arrow"
+            (click)="clubSliderNext(draft)"
+            [disabled]="!canNextClub(draft)"
+            aria-label="Next club"
+          >›</button>
+        </div>
+        <p class="club-slider-hint">Swipe or tap — arrows move one club</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="quick-actions" *ngIf="existingShotCount === 0">
+    <button type="button" class="btn primary" [disabled]="saving || !drafts.length" (click)="saveHole()">
+      {{ saving ? 'Saving…' : 'Save hole' }}
+    </button>
+    <button type="button" class="btn ghost" [disabled]="saving" (click)="cancel()">Back to round</button>
+  </footer>
+</div>

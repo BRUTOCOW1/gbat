@@ -1,0 +1,45 @@
+.layout-page {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.layout-page-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.layout-page-header h1 {
+  margin: 0;
+  font-size: 1.35rem;
+  color: var(--primary-color, #c9a227);
+}
+
+.layout-page-sub {
+  margin: 4px 0 0;
+  font-size: 0.88rem;
+  color: #888;
+}
+
+.layout-page-lede {
+  margin: 0 0 16px;
+  font-size: 0.9rem;
+  color: #aaa;
+  line-height: 1.45;
+}
+
+.layout-back {
+  background: transparent;
+  border: 1px solid #444;
+  color: #ccc;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.layout-back:hover {
+  border-color: var(--primary-color, #c9a227);
+}

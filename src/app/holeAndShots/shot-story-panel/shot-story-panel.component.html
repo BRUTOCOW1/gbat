@@ -1,0 +1,259 @@
+<div class="shot-story">
+  <div class="shot-story-hero" [class.shot-story-hero--filled]="hasContent()">
+    <p class="shot-story-hero-text" aria-live="polite">
+      {{ summary() || 'Optional — pick a tab and tap what happened.' }}
+    </p>
+    <button type="button" class="shot-story-clear" *ngIf="hasContent()" (click)="clearStory()">
+      Clear
+    </button>
+  </div>
+
+  <button
+    type="button"
+    class="shot-story-open"
+    *ngIf="compact && !panelOpen"
+    (click)="togglePanel()"
+  >
+    Add shot details
+  </button>
+
+  <ng-container *ngIf="!compact || panelOpen">
+    <button
+      type="button"
+      class="shot-story-open shot-story-open--ghost"
+      *ngIf="compact && panelOpen"
+      (click)="togglePanel()"
+    >
+      Hide details
+    </button>
+
+    <nav class="shot-story-tabs" role="tablist" aria-label="Shot story layers">
+      <button
+        type="button"
+        role="tab"
+        class="shot-story-tab"
+        *ngFor="let tab of tabs"
+        [class.shot-story-tab--active]="tabActive(tab.id)"
+        [class.shot-story-tab--set]="tabHasValue(tab.id)"
+        [attr.aria-selected]="tabActive(tab.id)"
+        (click)="selectTab(tab.id)"
+      >
+        {{ tab.label }}
+      </button>
+    </nav>
+
+    <div class="shot-story-pane" role="tabpanel">
+      <!-- Play -->
+      <div class="shot-story-section" *ngIf="activeTab === 'play'">
+        <p class="shot-story-section-lede">Technique, height, and curve.</p>
+        <div class="shot-story-field">
+          <span class="shot-story-label">Technique</span>
+          <div class="story-chips">
+            <button
+              type="button"
+              class="story-chip"
+              *ngFor="let tech of techniquesCommon"
+              [class.story-chip--on]="isTechniqueActive(tech)"
+              (click)="toggleTechniqueChip(tech)"
+            >
+              {{ tech }}
+            </button>
+          </div>
+          <button type="button" class="story-more-toggle" (click)="showMoreTechniques = !showMoreTechniques">
+            {{ showMoreTechniques ? 'Fewer' : 'More techniques' }}
+          </button>
+          <div class="story-chips" *ngIf="showMoreTechniques">
+            <button
+              type="button"
+              class="story-chip"
+              *ngFor="let tech of techniquesMore"
+              [class.story-chip--on]="isTechniqueActive(tech)"
+              (click)="toggleTechniqueChip(tech)"
+            >
+              {{ tech }}
+            </button>
+          </div>
+        </div>
+        <div class="shot-story-field">
+          <span class="shot-story-label">Height</span>
+          <div class="story-chips story-chips--segmented">
+            <button
+              type="button"
+              class="story-chip"
+              *ngFor="let t of trajectories"
+              [class.story-chip--on]="isSingleActive('trajectory', t)"
+              (click)="pickSingle('trajectory', t)"
+            >
+              {{ t }}
+            </button>
+          </div>
+        </div>
+        <div class="shot-story-field">
+          <span class="shot-story-label">Curve</span>
+          <div class="story-chips story-chips--segmented">
+            <button
+              type="button"
+              class="story-chip"
+              *ngFor="let s of shapes"
+              [class.story-chip--on]="isSingleActive('shape', s)"
+              (click)="pickSingle('shape', s)"
+            >
+              {{ s }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Air -->
+      <div class="shot-story-section" *ngIf="activeTab === 'air'">
+        <p class="shot-story-section-lede">How far it carried vs your plan.</p>
+        <div class="story-chips story-chips--segmented">
+          <button
+            type="button"
+            class="story-chip"
+            *ngFor="let c of carryVsPlan"
+            [class.story-chip--on]="isSingleActive('carry_vs_plan', c)"
+            (click)="pickSingle('carry_vs_plan', c)"
+          >
+            {{ c }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Ground -->
+      <div class="shot-story-section" *ngIf="activeTab === 'ground'">
+        <p class="shot-story-section-lede">Release, run, and slope where it landed.</p>
+        <div class="shot-story-field">
+          <span class="shot-story-label">Planned</span>
+          <div class="story-chips">
+            <button
+              type="button"
+              class="story-chip"
+              *ngFor="let g of groundPlanCommon"
+              [class.story-chip--on]="isSingleActive('ground_plan', g)"
+              (click)="pickSingle('ground_plan', g)"
+            >
+              {{ g }}
+            </button>
+          </div>
+          <button type="button" class="story-more-toggle" (click)="showMoreGroundPlan = !showMoreGroundPlan">
+            {{ showMoreGroundPlan ? 'Fewer' : 'More planned' }}
+          </button>
+          <div class="story-chips" *ngIf="showMoreGroundPlan">
+            <button
+              type="button"
+              class="story-chip"
+              *ngFor="let g of groundPlanMore"
+              [class.story-chip--on]="isSingleActive('ground_plan', g)"
+              (click)="pickSingle('ground_plan', g)"
+            >
+              {{ g }}
+            </button>
+          </div>
+        </div>
+        <div class="shot-story-field">
+          <span class="shot-story-label">What happened</span>
+          <div class="story-chips">
+            <button
+              type="button"
+              class="story-chip"
+              *ngFor="let g of groundActualCommon"
+              [class.story-chip--on]="isSingleActive('ground_actual', g)"
+              (click)="pickSingle('ground_actual', g)"
+            >
+              {{ g }}
+            </button>
+          </div>
+          <button type="button" class="story-more-toggle" (click)="showMoreGroundActual = !showMoreGroundActual">
+            {{ showMoreGroundActual ? 'Fewer' : 'More outcomes' }}
+          </button>
+          <div class="story-chips" *ngIf="showMoreGroundActual">
+            <button
+              type="button"
+              class="story-chip"
+              *ngFor="let g of groundActualMore"
+              [class.story-chip--on]="isSingleActive('ground_actual', g)"
+              (click)="pickSingle('ground_actual', g)"
+            >
+              {{ g }}
+            </button>
+          </div>
+        </div>
+        <div class="shot-story-field">
+          <span class="shot-story-label">Lie / slope</span>
+          <div class="story-chips">
+            <button
+              type="button"
+              class="story-chip"
+              *ngFor="let t of landingTerrainCommon"
+              [class.story-chip--on]="isSingleActive('landing_terrain', t)"
+              (click)="pickSingle('landing_terrain', t)"
+            >
+              {{ t }}
+            </button>
+          </div>
+          <button type="button" class="story-more-toggle" (click)="showMoreTerrain = !showMoreTerrain">
+            {{ showMoreTerrain ? 'Fewer' : 'More lies' }}
+          </button>
+          <div class="story-chips" *ngIf="showMoreTerrain">
+            <button
+              type="button"
+              class="story-chip"
+              *ngFor="let t of landingTerrainMore"
+              [class.story-chip--on]="isSingleActive('landing_terrain', t)"
+              (click)="pickSingle('landing_terrain', t)"
+            >
+              {{ t }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Strike -->
+      <div class="shot-story-section" *ngIf="activeTab === 'strike'">
+        <p class="shot-story-section-lede">Only if contact mattered on this shot.</p>
+        <div class="shot-story-field">
+          <span class="shot-story-label">Feel</span>
+          <div class="story-chips story-chips--segmented">
+            <button
+              type="button"
+              class="story-chip"
+              *ngFor="let f of strikeFeel"
+              [class.story-chip--on]="isSingleActive('strike_feel', f)"
+              (click)="pickSingle('strike_feel', f)"
+            >
+              {{ f }}
+            </button>
+          </div>
+        </div>
+        <div class="shot-story-field">
+          <span class="shot-story-label">Face</span>
+          <div class="story-chips story-chips--segmented">
+            <button
+              type="button"
+              class="story-chip"
+              *ngFor="let f of impactFace"
+              [class.story-chip--on]="isSingleActive('impact_face', f)"
+              (click)="pickSingle('impact_face', f)"
+            >
+              {{ f }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Note -->
+      <div class="shot-story-section" *ngIf="activeTab === 'note'">
+        <p class="shot-story-section-lede">Anything the chips didn’t cover.</p>
+        <input
+          type="text"
+          class="shot-story-note"
+          [value]="story.note || ''"
+          (input)="onNoteInput($any($event.target).value)"
+          placeholder="Stuck on upslope, short of green…"
+          autocomplete="off"
+        />
+      </div>
+    </div>
+  </ng-container>
+</div>

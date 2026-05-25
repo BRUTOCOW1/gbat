@@ -1,0 +1,74 @@
+.hole-diagram {
+  margin-top: 4px;
+}
+
+.hole-diagram-hint {
+  margin: 0 0 10px;
+  font-size: 0.82rem;
+  color: #9a9a9a;
+  line-height: 1.4;
+}
+
+.hole-diagram-svg {
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+  display: block;
+  touch-action: none;
+  user-select: none;
+  border-radius: 10px;
+  border: 1px solid #3a3a3a;
+  cursor: crosshair;
+}
+
+.hole-feature--rough {
+  fill: #3d5c32;
+}
+
+.hole-feature--fairway {
+  fill: #4a7a38;
+}
+
+.hole-feature--green {
+  fill: #5d9a48;
+  stroke: #8bc96e;
+  stroke-width: 0.6;
+}
+
+.hole-feature--tee {
+  fill: #6b8f5a;
+  stroke: #a8c898;
+  stroke-width: 0.5;
+}
+
+.hole-feature--bunker {
+  fill: #c9b896;
+  stroke: #a89068;
+  stroke-width: 0.4;
+}
+
+.hole-feature--water {
+  fill: #3a6ea8;
+  opacity: 0.85;
+}
+
+.hole-tee-marker {
+  fill: #f0f0f0;
+  stroke: #333;
+  stroke-width: 0.8;
+  pointer-events: none;
+}
+
+.hole-pin-marker {
+  fill: none;
+  stroke: #e8c547;
+  stroke-width: 1.2;
+  pointer-events: none;
+}
+
+.hole-landing-marker {
+  fill: #ff6b4a;
+  stroke: #fff;
+  stroke-width: 1;
+  pointer-events: none;
+}

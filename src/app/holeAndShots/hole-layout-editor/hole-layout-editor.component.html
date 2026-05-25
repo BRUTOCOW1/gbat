@@ -1,0 +1,103 @@
+<div class="layout-editor">
+  <div class="layout-editor-toolbar">
+    <div class="toolbar-row">
+      <span class="toolbar-label">Starter</span>
+      <select
+        class="layout-select"
+        [(ngModel)]="selectedTemplate"
+        name="layout_template"
+      >
+        <option *ngFor="let t of templateOptions" [value]="t.id">{{ t.label }}</option>
+      </select>
+      <button type="button" class="layout-btn" (click)="applyStarterTemplate()">
+        Load starter
+      </button>
+    </div>
+
+    <div class="toolbar-row">
+      <span class="toolbar-label">Draw</span>
+      <button
+        type="button"
+        class="layout-btn"
+        *ngFor="let k of drawKinds"
+        [class.active]="tool === 'draw' && drawKind === k"
+        (click)="setDrawKind(k)"
+      >
+        {{ k }}
+      </button>
+      <button type="button" class="layout-btn" [class.active]="tool === 'select'" (click)="setTool('select')">
+        Select
+      </button>
+      <button type="button" class="layout-btn" [class.active]="tool === 'move-tee'" (click)="setTool('move-tee')">
+        Move tee
+      </button>
+      <button type="button" class="layout-btn" [class.active]="tool === 'move-pin'" (click)="setTool('move-pin')">
+        Move pin
+      </button>
+    </div>
+
+    <div class="toolbar-row" *ngIf="tool === 'draw'">
+      <span class="toolbar-hint">Click corners of the shape, then close it.</span>
+      <button type="button" class="layout-btn layout-btn--primary" (click)="closeDraftShape()" [disabled]="draftPoints.length < 3">
+        Close shape ({{ draftPoints.length }})
+      </button>
+      <button type="button" class="layout-btn" (click)="undoDraftPoint()" [disabled]="!draftPoints.length">
+        Undo point
+      </button>
+    </div>
+
+    <div class="toolbar-row" *ngIf="selectedFeatureIndex != null">
+      <span class="toolbar-hint">Selected: {{ selectedFeature()?.label || selectedFeature()?.kind }}</span>
+      <button type="button" class="layout-btn layout-btn--danger" (click)="deleteSelectedFeature()">
+        Delete shape
+      </button>
+    </div>
+  </div>
+
+  <svg
+    #layoutSvg
+    class="hole-diagram-svg layout-editor-svg"
+    [attr.viewBox]="viewBox()"
+    role="img"
+    aria-label="Hole layout editor"
+    (pointerdown)="onSvgPointerDown($event, layoutSvg)"
+    (pointermove)="onSvgPointerMove($event, layoutSvg)"
+    (pointerup)="onSvgPointerUp($event)"
+    (pointercancel)="onSvgPointerUp($event)"
+  >
+    <g *ngFor="let f of sortedFeatures(); let si = index">
+      <polygon
+        [class]="featureClass(f.kind)"
+        [class.hole-feature--selected]="isFeatureSelected(si)"
+        [attr.points]="pointsAttr(f)"
+      />
+    </g>
+    <polyline
+      *ngIf="draftPoints.length"
+      class="layout-draft-line"
+      [attr.points]="draftPreviewPoints()"
+    />
+    <g *ngIf="selectedFeatureIndex != null && selectedFeature() as sel">
+      <circle
+        *ngFor="let p of sel.points; let vi = index"
+        class="layout-vertex"
+        [attr.cx]="p.x"
+        [attr.cy]="p.y"
+        r="4"
+        [attr.data-fidx]="selectedFeatureIndex"
+        [attr.data-vidx]="vi"
+      />
+    </g>
+    <circle class="hole-tee-marker" [attr.cx]="layout.tee.x" [attr.cy]="layout.tee.y" r="3.5" />
+    <circle class="hole-pin-marker" [attr.cx]="layout.pin.x" [attr.cy]="layout.pin.y" r="3.5" />
+  </svg>
+
+  <div class="layout-editor-actions">
+    <button type="button" class="layout-btn" (click)="emitSave('draft')" [disabled]="saving">
+      Save draft
+    </button>
+    <button type="button" class="layout-btn layout-btn--primary" (click)="emitSave('published')" [disabled]="saving">
+      Publish for play
+    </button>
+  </div>
+</div>
